@@ -1,0 +1,4 @@
+<sitemesh>
+  <mapping path="/*" decorator="/decorators/main.jsp"/>
+  <mapping path="/" exclude=""/> <!-- Não sei que bug é esse, mas só funciona assim -->
+</sitemesh>
