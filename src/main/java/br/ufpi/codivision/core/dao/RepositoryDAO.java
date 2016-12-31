@@ -48,7 +48,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 	 * @return List<RepositoryVO> - The list of repositories from a User 
 	 */
 	public List<RepositoryVO> listMyRepositories(Long userId) {
-		return em.createQuery("select new br.ufpi.ppgcc.mi.core.model.vo.RepositoryVO(repository) "
+		return em.createQuery("select new br.ufpi.codivision.core.model.vo.RepositoryVO(repository) "
 				+ "from Repository as repository, IN(repository.userRepositories) as ur "
 				+ "where ur.user.id = :userId and repository.deleted = false order by repository.name asc", RepositoryVO.class)
 				.setParameter("userId", userId)
@@ -92,7 +92,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				+ "rev3.author = revision.author and "
 				+ "file3.operationType = 'ADD' )"; 
 		
-		List<AuthorPercentage> at =  em.createQuery("select new br.ufpi.ppgcc.mi.core.model.vo.AuthorPercentage( revision.author, sum(3.293 + (1.98 * " + firstAuthor + ") + (0.164 * " + myAlterations + ") - (0.321 * log( 1 + " + otherAlterations + "))), 0l) from Repository as repository, "
+		List<AuthorPercentage> at =  em.createQuery("select new br.ufpi.codivision.core.model.vo.AuthorPercentage( revision.author, sum(3.293 + (1.98 * " + firstAuthor + ") + (0.164 * " + myAlterations + ") - (0.321 * log( 1 + " + otherAlterations + "))), 0l) from Repository as repository, "
 				+ "IN(repository.revisions) as revision, IN(revision.files) as file where repository.id = :repositoryId and file.path like :path group by revision.author", AuthorPercentage.class)
 				.setParameter("repositoryId", repositoryId)
 				.setParameter("path", path + "%")
@@ -134,7 +134,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		 * 				por outros desenvolvedores (5% por cada alteração realizada por outro desenvolvedor). 
 		 * 		- Todo esse calculo é feito para cada arquivo e depois agregado por todos os arquivos 
 		 * 				por meio da função SUM e agrupado por cada desenvolvedor */
-		String newAuthorPercentace = "new br.ufpi.ppgcc.mi.core.model.vo.AuthorPercentage("
+		String newAuthorPercentace = "new br.ufpi.codivision.core.model.vo.AuthorPercentage("
 										+ "revision.author, "
 								   		+ "sum( "
 								   			+ "((file.lineAdd * configuration.addWeight) + (file.lineMod * configuration.modWeight) + (file.lineDel * configuration.delWeight)) * "
