@@ -320,7 +320,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				
 				List<Object[]> list = em.createQuery(query).getResultList();
 				
-				ArrayList<CommitHistory> lista = new ArrayList<>();
+				ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
 				for(int i = 0; i<list.size(); i++){
 					CommitHistory history = new CommitHistory();
 					history.setName((String) list.get(i)[0]);
@@ -371,7 +371,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		
-		ArrayList<CommitHistory> lista = new ArrayList<>();
+		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
 		for(int i = 0; i<list.size(); i++){
 			CommitHistory history = new CommitHistory();
 			history.setName((String) list.get(i)[0]);
@@ -422,7 +422,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		
-		ArrayList<CommitHistory> lista = new ArrayList<>();
+		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
 		for(int i = 0; i<list.size(); i++){
 			CommitHistory history = new CommitHistory();
 			history.setName((String) list.get(i)[0]);

@@ -82,10 +82,10 @@ public class Repository implements PersistenceEntity{
 	private Configuration configuration;
 	
 	public Repository(){
-		this.revisions = new ArrayList<>();
-		this.deletedRevisions = new ArrayList<>();
-		this.extractionPaths = new ArrayList<>();
-		this.testFiles = new ArrayList<>();
+		this.revisions = new ArrayList<Revision>();
+		this.deletedRevisions = new ArrayList<String>();
+		this.extractionPaths = new ArrayList<ExtractionPath>();
+		this.testFiles = new ArrayList<TestFile>();
 	}
 	
 	public List<TestFile> getTestFiles() {

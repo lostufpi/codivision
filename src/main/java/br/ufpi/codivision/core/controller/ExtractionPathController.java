@@ -49,7 +49,7 @@ public class ExtractionPathController {
 		DirTree dirTree = dao.findById(repositoryId,extractionPathId).getDirTree();
 		Configuration configuration = repositoryDAO.getConfiguration(repositoryId);
 		double threshold = configuration.getAlertThreshold() / 100.0;
-		List<DirTree> warningPaths = new ArrayList<>();
+		List<DirTree> warningPaths = new ArrayList<DirTree>();
 		
 		for (DirTree temp : dirTree.getChildren()) {
 			warningPaths.addAll(getWarningPaths(repositoryId, "/" + temp.getText(), temp, threshold));
@@ -82,7 +82,7 @@ public class ExtractionPathController {
 	private List<DirTree> getWarningPaths(Long repositoryId, String path, DirTree dirTree, double threshold) {
 
 		List<AuthorPercentage> result = repositoryDAO.getPercentage(repositoryId, path);
-		List<DirTree> warningPaths = new ArrayList<>();
+		List<DirTree> warningPaths = new ArrayList<DirTree>();
 		
 		double total = 0;
 		for (AuthorPercentage percentage : result)
