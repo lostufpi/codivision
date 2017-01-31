@@ -67,6 +67,8 @@
 			</div>
 		</div>
 	</div>
+	
+	
 
 	<input type="hidden" id="repository" value="${repository.id}" />
 	<input type="hidden" id="extractionPath" value="${extractionPath.id}" />
@@ -232,99 +234,7 @@
 						});
 						
   						
-					    /* var totalByMetrics = 0,
-					    	totalAbsolute = 0,
-					    	categories = [],
-					    	absolute = [],
-					    	byMetrics = [];
-  						
-  						$.each(chartData, function(i, item) {
-    						
-  							totalByMetrics += item.y;
-							totalAbsolute += item.absolute;
-
-							categories[categories.length] =  item.name;
-    						absolute[absolute.length] = item.absolute;
-    						byMetrics[byMetrics.length] = item.y;
-    						
-  						});
-  						
-  						$('#chart').highcharts({
-  					        chart: {
-  					            type: 'column'
-  					        },
-  					        title: {
-  					            text: 'Quantidade de alterações'
-  					        },
-  					        subtitle: {
-  					        	text: '#',
-  					        	style: {
-  					        		color: '#ffffff'
-  					        	}
-  					        },
-  					        credits: {
-  					        	enabled: false
-  					        },
-  					        xAxis: {
-  					            categories: categories,
-  					            crosshair: true
-  					        },
-  					        yAxis: {
-  					            min: 0,
-  					            title: {
-  					                text: 'Linhas alteradas'
-  					            },
-  					        	opposite: true
-  					        },
-  					        tooltip: {
-  					            headerFormat: '<b>{point.key}</b><table>',
-  					            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-  					                '<td style="padding:0"><b>{point.y: .1f}</b></td></tr>',
-  					            footerFormat: '</table>',
-  					            shared: true,
-  					            useHTML: true,
-  					            followPointer: true
-  					        },
-  					        plotOptions: {
-  					            column: {
-  					                pointPadding: 0.2,
-  					                borderWidth: 0
-  					            }
-  					        },
-	  					    plotOptions: {
-	  					        column: {
-	  					            dataLabels: {
-	  					                enabled: true
-	  					            }
-	  					        },
-	  					        series: {
-	  					            dataLabels: {
-	  					                enabled: true,
-	  					                formatter: function () {
-  					                        if (this.series.name == 'Valor real') {
-  					                    		var pcnt = (this.y / totalAbsolute) * 100;
-  					                    		return Highcharts.numberFormat(pcnt) + '%';
-  					                        } else if (this.series.name == 'Valor calculado pelas métricas') {
-  					                        	var pcnt = (this.y / totalByMetrics) * 100;
-  					                        	if (pcnt > existence) {
-  					                        		this.series.chart.setTitle(null, { text: this.x + ' detém bastante conhecimento', style : {color: 'red', fontWeight: 'bold'}});
-  					                        	} else if (pcnt > alert) {
-  					                    			this.series.chart.setTitle(null, { text: this.x + ' detém bastante conhecimento', style : {color: '#EAC300', fontWeight: 'bold'}});
-  					                    		}
-  					                    		return Highcharts.numberFormat(pcnt) + '%';
-  					                        }
-	  					                }
-	  					            }
-	  					        }
-	  					    },
-  					        series: [{
-  					            	name: 'Valor real',
-  					            	data: absolute
-  					        	},{
-  					            	name: 'Valor calculado pelas métricas',
-  					            	data: byMetrics
-  					        	}]
-  					    }); */
+					   
 
 						//Fim callback principal
 					}

@@ -9,7 +9,7 @@ package br.ufpi.codivision.core.model.enums;
  */
 public enum RepositoryType {
 	
-	SVN("vcs.svn"), GITHUB("vcs.github");
+	SVN("vcs.svn"), GITHUB("vcs.github"), GIT("vcs.git");;
 	
 	private String type;
 	

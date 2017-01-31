@@ -167,16 +167,19 @@
 								</tr>
 							</thead>
 							<tbody>
-								<c:forEach items="${extractionPathList}" var="member" varStatus="s">
+								<c:forEach items="${extractionPathList}" var="extraction" varStatus="s">
 									<tr>
 										<td>${s.index + 1}</td>
-										<td>${member.path}</td>
+										<td>${extraction.path}</td>
 										<td class="text-center">
 											<a class="btn btn-primary" 
-											href="${linkTo[RepositoryController].chart(repository.id, member.id)}">
-											<fmt:message key="visualize" /></a>
+											href="${linkTo[RepositoryController].chart(repository.id, extraction.id)}">
+											Familiaridade</a>
+											<a class="btn btn-primary" 
+											href="${linkTo[RepositoryController].testInformation(repository.id, extraction.id)}">
+											Relatório de Teste</a>
 											<a class="btn btn-danger" 
-											href="${linkTo[ExtractionPathController].remove(repository.id, member.id)}">
+											href="${linkTo[ExtractionPathController].remove(repository.id, extraction.id)}">
 											<fmt:message key="remove" /></a>
 										</td>
 									</tr>
@@ -252,4 +255,5 @@
 		</div>
 	</div>
 
+<input type="hidden" id="configuration" value="${configuration}" />
 </body>

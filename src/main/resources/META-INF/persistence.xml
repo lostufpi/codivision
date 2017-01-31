@@ -4,7 +4,7 @@
   <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
 		<properties>
 			
-			 <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/codivision2"/>
+			 <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/codivision"/>
 		     <property name="hibernate.connection.username" value="root"/>
 		     <property name="hibernate.connection.password" value="root"/>
 		     <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>

@@ -307,7 +307,7 @@ public class TaskRunner implements Task{
 		Map<String, Object> velocityParams = new HashMap<String, Object>();
 		velocityParams.put("username", user.getName());
 		velocityParams.put("repositoryName", repositoryName);
-		velocityParams.put("url", "http://localhost:8080/codivision");
+		velocityParams.put("url", "http://easii.ufpi.br/codivision/");
 		String message = VelocityEngineUtil.getTemplate(velocityParams, "/templates/repository_updated.html");
 		
 		final Properties properties = new Properties(); 

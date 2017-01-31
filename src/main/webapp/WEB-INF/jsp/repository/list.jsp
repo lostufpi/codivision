@@ -66,7 +66,7 @@
 							<div class="col-lg-4">
 								<label for="path">Extrair a partir de:</label> <input
 									type="text" class="form-control" id="path"
-									name="extractionPath.path">
+									name="extractionPath.path" required>
 							</div>
 						</div>
 
@@ -78,7 +78,7 @@
 
 						<div id="div-url" class="form-group">
 							<label for="url"><fmt:message key="repository.url" />:</label> <input
-								type="text" class="form-control" id="url" name="repository.url">
+								type="text" class="form-control" id="url" name="repository.url" required>
 						</div>
 
 						<hr>
@@ -167,14 +167,21 @@
 					$('#path').removeAttr('readonly');
 					$('#path').val("/trunk");
 					$('#name').removeAttr('disabled');
-				} else {
+				} if($('#type option:selected').attr('id') == 'GITHUB') {
 					$('#local').val("false").attr('selected', 'selected');
 					$('#local').attr('disabled', 'disabled');
 					$('#path').val("/master");
 					$('#path').attr('readonly', 'readonly');
 					$('#name').val(" ");
 					$('#name').attr('disabled', 'disabled');
+				} if($('#type option:selected').attr('id') == 'GIT') {
+					$('#local').attr('disabled', 'disabled');
+					$('#local').val("true").attr('selected', 'selected');
+					$('#path').removeAttr('readonly');
+					$('#path').val("/master");
+					$('#name').removeAttr('disabled');
 				}
+				
 			}
 		});
 	</script>

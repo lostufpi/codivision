@@ -6,6 +6,7 @@ package br.ufpi.codivision.core.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -28,18 +29,15 @@ import br.ufpi.codivision.common.annotation.Permission;
 import br.ufpi.codivision.common.security.UserSession;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
 import br.ufpi.codivision.core.dao.ExtractionPathDAO;
-import br.ufpi.codivision.core.dao.OperationFileDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
-import br.ufpi.codivision.core.dao.RevisionDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.dao.UserRepositoryDAO;
 import br.ufpi.codivision.core.extractor.service.TaskService;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.ExtractionPath;
-import br.ufpi.codivision.core.model.OperationFile;
 import br.ufpi.codivision.core.model.Repository;
-import br.ufpi.codivision.core.model.Revision;
+import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.UserRepository;
 import br.ufpi.codivision.core.model.enums.NodeType;
@@ -50,6 +48,8 @@ import br.ufpi.codivision.core.model.validator.ConfigurationValidator;
 import br.ufpi.codivision.core.model.validator.ExtractionPathValidator;
 import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
+import br.ufpi.codivision.core.model.vo.CommitHistory;
+import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.util.BinaryFile;
 
@@ -68,10 +68,7 @@ public class RepositoryController {
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
 	@Inject private ExtractionPathDAO extractionPathDAO;
-	@Inject private OperationFileDAO fileDAO;
-	@Inject private RevisionDAO revisionDAO;
 	
-
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
 	@Inject private ExtractionPathValidator extractionPathValidator;
@@ -90,6 +87,7 @@ public class RepositoryController {
 		List<RepositoryVO> repositoryList = dao.listMyRepositories(userSession.getUser().getId());
 		List<UserRepository> userRepositoryList = userRepositoryDAO.listByRepositoryId(repositoryId);
 		
+		result.include("configuration", repository.getConfiguration());
 		result.include("repository", repositoryVO);
 		result.include("repositoryList", repositoryList);
 		result.include("extractionPathList", extractionPathList);
@@ -123,6 +121,11 @@ public class RepositoryController {
 			repository.setName(split[1]);
 			
 		}
+		if(repository.getType().equals(RepositoryType.GIT)){
+			repository.setRepositoryRoot(repository.getUrl());
+			repository.setLocal(true);
+		}
+			
 		
 		repository = validator.validateRepository(repository);
 		validator.onErrorRedirectTo(this.getClass()).list();
@@ -130,9 +133,9 @@ public class RepositoryController {
 		extractionPathValidator.validateAdd(extractionPath, repository);
 		extractionPathValidator.onErrorRedirectTo(this.getClass()).list();
 		
-		Repository repositoryPersisted = dao.findByUrl(repository.getUrl());
+		//Repository repositoryPersisted = dao.findByUrl(repository.getUrl());
 		
-		if (repositoryPersisted == null) {
+		//if (repositoryPersisted == null) {
 			
 			/* O repositório é novo */
 			
@@ -177,21 +180,21 @@ public class RepositoryController {
 				taskService.addToUpdate(repository.getId());
 			
 			if(repository.isLocal())
-				result.include("notice", new SimpleMessage("info", "Para realizar a atualização, é necessário realizar a extração por meio da ferramenta CoDiVisionDesktop", Severity.INFO));
+				result.include("notice", new SimpleMessage("info", "repository.update.desktop.message", Severity.INFO));
 			else
 				result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
 			
-		} else {
-			
-			/* O repositório já existe */
-			
-			validator.validateReactivate(repositoryPersisted, userSession.getUser().getId());
-			validator.onErrorRedirectTo(this.getClass()).list();
-			
-			repositoryPersisted.setDeleted(false);
-			dao.save(repositoryPersisted);
-			
-		}
+//		} else {
+//			
+//			/* O repositório já existe */
+//			
+//			validator.validateReactivate(repositoryPersisted, userSession.getUser().getId());
+//			validator.onErrorRedirectTo(this.getClass()).list();
+//			
+//			repositoryPersisted.setDeleted(false);
+//			dao.save(repositoryPersisted);
+//			
+//		}
 		
 		result.redirectTo(this).list();
 
@@ -225,27 +228,10 @@ public class RepositoryController {
 		UserRepository ur = userRepositoryDAO.findByIds(userSession.getUser().getId(), repositoryId);
 		
 		if(ur.getPermission() == PermissionType.OWNER){
-			//repository.setDeleted(true);
-			userRepositoryDAO.delete(userRepositoryDAO.findByLogin(userSession.getUser().getLogin(), repositoryId).getId());
-			repository.setConfiguration(null);
 			repository.setDeleted(true);
-			repository.setUrl(null);
-			repository.setName(null);
+			
 			dao.save(repository);
-			
-			for(ExtractionPath aux: repository.getExtractionPaths()){
-			//	dirTreeDAO.delete(aux.getDirTree().getId());
-				extractionPathDAO.delete(aux.getId());
-			}
-			//configurationDAO.delete(repositoryId);
-			
-			for(Revision aux: repository.getRevisions()){
-				for(OperationFile aux1: aux.getFiles()){
-					fileDAO.delete(aux1.getId());
-				}
-				revisionDAO.delete(aux.getId());
-			}
-			dao.delete(repositoryId);
+		
 		} else {
 			userRepositoryDAO.delete(ur.getId());		
 		}
@@ -303,9 +289,9 @@ public class RepositoryController {
 			newPath = extractionPathDAO.findById(repositoryId, extractionPathId).getPath();
 		}
 		//referente ao /master
-		if(repository.getType()==RepositoryType.GITHUB){
+		if(repository.getType()==RepositoryType.GITHUB || repository.getType()==RepositoryType.GIT){
 			if(!newPath.equals("/"))
-				newPath = newPath.substring(7);
+				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
 		}
 			
 		List<AuthorPercentage> percentage = dao.getPercentage(repositoryId,repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
@@ -343,10 +329,18 @@ public class RepositoryController {
 			validator.onErrorRedirectTo(this.getClass()).list();
 			
 			repositoryCurrent.setRepositoryRoot(repositoryUpdate.getRepositoryRoot());
-			repositoryCurrent.setExtractionPaths(repositoryUpdate.getExtractionPaths());	
+			
+			for(ExtractionPath path: repositoryCurrent.getExtractionPaths()){
+				for(ExtractionPath path2:repositoryUpdate.getExtractionPaths()){
+					if(path.getPath().equals(path2.getPath())){
+						path.setDirTree(path2.getDirTree());
+					}
+				}
+			}
 			repositoryCurrent.setRevisions(repositoryUpdate.getRevisions());
 			repositoryCurrent.setLastRevision(repositoryUpdate.getLastRevision());
 			repositoryCurrent.setLastUpdate(repositoryUpdate.getLastUpdate());
+			repositoryCurrent.setTestFiles(repositoryUpdate.getTestFiles());
 			
 			dao.save(repositoryCurrent);
 			
@@ -368,6 +362,7 @@ public class RepositoryController {
 		Repository newRepo = new Repository();
 		
 		newRepo.setUrl(repository.getUrl());
+		newRepo.setType(repository.getType());
 		
 		newRepo.setExtractionPaths(new ArrayList<ExtractionPath>());
 		for(ExtractionPath aux:repository.getExtractionPaths()){
@@ -377,5 +372,202 @@ public class RepositoryController {
 		
 	    return new FileDownload(BinaryFile.writeObject(newRepo, repository.getName()), "application/octet-stream");
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/path/{extractionPathId}/testConfiguration")
+	public void testConfig(Long repositoryId, Long extractionPathId, Configuration configuration) {
+		
+		Configuration config = dao.getConfiguration(repositoryId);
+	
+		
+		if(configuration.getTimeWindow()!=null){
+			if(configuration.getTimeWindow()==TimeWindow.CUSTOM){
+				if(configuration.getEndDate()!=null && configuration.getInitDate()!=null){
+				config.setTimeWindow(TimeWindow.CUSTOM);
+				config.setEndDate(configuration.getEndDate());
+				config.setInitDate(configuration.getInitDate());
+				configurationDAO.save(config);
+				}else if(configuration.getEndDate()!=null){
+					Date date = new Date(configuration.getEndDate().getTime() + (24 * 60 * 60 * 1000));
+					config.setTimeWindow(TimeWindow.CUSTOM);
+					config.setEndDate(date);
+					config.setInitDate(configuration.getEndDate());
+					configurationDAO.save(config);
+				}else if(configuration.getInitDate()!=null){
+					config.setTimeWindow(TimeWindow.CUSTOM);
+					Date date = new Date(configuration.getInitDate().getTime() + (24 * 60 * 60 * 1000));
+					config.setEndDate(date);
+					config.setInitDate(configuration.getInitDate());
+					configurationDAO.save(config);
+				}
+				
+			}else{
+			
+				config.setTimeWindow(configuration.getTimeWindow());
+				config.refreshTime();
+				configurationDAO.save(config);
+			}
+		}else{
+			config.refreshTime();
+		}
+		
+		result.redirectTo(this).testInformation(repositoryId, extractionPathId);
+	}
+	
+	
+	@Permission(PermissionType.MEMBER)
+	@Get("/repository/{repositoryId}/test/{extractionPathId}/information")
+	public void testInformation(Long repositoryId, Long extractionPathId) {
+		
+		Repository repository = dao.findById(repositoryId);
+		
+//		/* Calcula as revisoes que possuem mais arquivos que o normal */
+//		int limiar = (int) Outliers.indentify(revisionDAO.getTotalFilesOfRevisions(repository.getId()));
+//		List<String> revisionOutliers = revisionDAO.getRevisionOutliers(repository.getId(), limiar);
+//		repository.setDeletedRevisions(revisionOutliers);
+//
+//		/* Exclui as revisões com mais arquivos que o normal */
+//		if(!revisionOutliers.isEmpty()){
+//			for(Long temp : revisionDAO.getIdFromRevisionOutliers(repository.getId(), revisionOutliers)) {
+//				Revision revision = revisionDAO.findById(temp);
+//				for(OperationFile aux: revision.getFiles()){
+//					aux.setLineAdd(0);
+//					aux.setLineCondition(0);
+//					aux.setLineDel(0);
+//					aux.setLineMod(0);
+//					aux.setPath("");
+//					fileDAO.save(aux);
+//				}
+//					
+//				
+//				
+//			}
+//		}
+		
+		RepositoryVO repositoryVO = new RepositoryVO(repository);
+
+		ExtractionPath extractionPath = extractionPathDAO.findById(extractionPathId);
+		
+		Configuration configuration = repository.getConfiguration();
+		configuration.refreshTime();
+		
+		List<TimeWindow> windows = new ArrayList<TimeWindow>(Arrays.asList(TimeWindow.values()));
+		
+		List<ExtractionPath> extractionPaths = extractionPathDAO.getExtractionPaths(repositoryId);
+		
+		result.include("testFiles",repository.getTestFiles());
+		result.include("windows", windows);
+		result.include("configuration", configuration);
+		result.include("repository", repositoryVO);
+		result.include("extractionPath", extractionPath);
+		result.include("extractionPaths", extractionPaths);
+		
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/authors")
+	public void getAuthors(Long repositoryId) {
+		
+		result.use(Results.json()).withoutRoot().from(dao.getAuthors(repositoryId)).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/historyAuthor")
+	public void getAuthorHistory(Long repositoryId, String author) {
+		
+		LineChart chart = new LineChart();
+		chart = dao.getTestCommitsHistoryAuthor(repositoryId, author);
+		result.use(Results.json()).withoutRoot().from(chart).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/testInformation")
+	public void getTestInformation(Long repositoryId) {
+		
+		LineChart chart = new LineChart();
+		chart = dao.getTestCommitsHistory(repositoryId);
+		result.use(Results.json()).withoutRoot().from(chart).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/path/{extractionPathId}/alterationsQntLine")
+	public void getAlterationsQntLine(Long repositoryId,Long extractionPathId, String newPath){
+
+		Repository repository = dao.findById(repositoryId);
+		
+		if(repository.getType()==RepositoryType.SVN && newPath.equals("/")){
+			newPath = extractionPathDAO.findById(repositoryId, extractionPathId).getPath();
+		}
+		//referente ao /master
+		if(repository.getType()==RepositoryType.GITHUB || repository.getType()==RepositoryType.GIT){
+			if(!newPath.equals("/"))
+				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
+		}
+		List<CommitHistory> percentage = dao.getContribuitionQntLine(repositoryId, repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
+		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+		
+		
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/path/{extractionPathId}/alterationsQntLineTest")
+	public void getAlterationQntLineTest(Long repositoryId,Long extractionPathId, String newPath){
+
+		Repository repository = dao.findById(repositoryId);
+		
+		if(repository.getType()==RepositoryType.SVN && newPath.equals("/")){
+			newPath = extractionPathDAO.findById(repositoryId, extractionPathId).getPath();
+		}
+		//referente ao /master
+		if(repository.getType()==RepositoryType.GITHUB || repository.getType()==RepositoryType.GIT){
+			if(!newPath.equals("/"))
+				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
+		}
+		List<CommitHistory> percentage = dao.getContribuitionQntLineTest(repositoryId, repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
+		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+		
+		
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/testFile")
+	public void getTestFiles(Long repositoryId) {
+		
+		result.use(Results.json()).withoutRoot().from(dao.findById(repositoryId).getTestFiles()).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/addTestPath")
+	public void addTestPath(Long repositoryId, String newPathTest) {
+		Repository repository = dao.findById(repositoryId);
+		for(TestFile file: repository.getTestFiles()){
+			if(file.getPath().equals(newPathTest)){
+				result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+				return;
+			}
+		}
+		
+		TestFile file = new TestFile();
+		file.setPath(newPathTest);
+		repository.getTestFiles().add(file);
+		dao.save(repository);
+		
+		result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+		return;
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/deleteTestPath")
+	public void deleteTestPath(Long repositoryId, int pathId) {
+		Repository repository = dao.findById(repositoryId);
+		
+		repository.getTestFiles().remove(pathId);
+		
+		dao.save(repository);
+		
+		result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+		return;
+	}
+	
 
 }

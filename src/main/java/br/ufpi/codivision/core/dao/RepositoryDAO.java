@@ -3,6 +3,7 @@
  */
 package br.ufpi.codivision.core.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.NoResultException;
@@ -11,6 +12,8 @@ import br.ufpi.codivision.common.dao.GenericDAO;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
+import br.ufpi.codivision.core.model.vo.CommitHistory;
+import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 
 /**
@@ -167,4 +170,398 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 	}
 	
+	public LineChart getTestCommitsHistory(long repositoryId){
+		
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		//todos os commits
+		String query = "SELECT DAY(revision.date) as day, MONTHNAME(revision.date) as month "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN (repository.revisions) as revision "
+				+ "WHERE repository.id = "+repositoryId+" "
+				+ "and revision.date >= configuration.initDate and "
+						+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		//commits sem ser de testes
+		String query1 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" "+testPathNot
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		//commits de testes
+		String query2 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" "+testPath
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		
+		LineChart chart = new LineChart();
+		
+		
+		List<Object[]> list = em.createQuery(query).getResultList();
+		String[] categories = new String[list.size()];
+		
+		for(int i = 0; i < list.size(); i++){
+			categories[i] =   list.get(i)[0] + " - " +  list.get(i)[1];
+			
+		}
+		List<Object[]> list1 = em.createQuery(query1).getResultList();
+		CommitHistory history = new CommitHistory();
+		history.setName("Commits Comuns");
+		
+		long[] vetor = new long[list.size()];
+		fodefora: for(int i = 0; i < list.size(); i++){
+			for(int j = 0;j < list1.size(); j++){
+				vetor[i] = 0l;
+			if(categories[i].equals(list1.get(j)[0] + " - " +  list1.get(j)[1])){
+				vetor[i] = (long) list1.get(j)[2];
+				continue fodefora;
+			}
+			}
+		}
+		
+		history.setData(vetor);
+		
+		List<Object[]> list2 = em.createQuery(query2).getResultList();
+		CommitHistory history2 = new CommitHistory();
+		history2.setName("Commits de Teste");
+		
+		long[] vetor2 = new long[list.size()];
+		
+		fora: for(int i = 0; i < list.size(); i++){
+			for(int j = 0;j < list2.size(); j++){
+				vetor2[i] = 0l;
+				if(categories[i].equals(list2.get(j)[0] + " - " +  list2.get(j)[1])){
+					vetor2[i] = (long) list2.get(j)[2];
+					continue fora;
+				}
+			}
+		}
+		
+		history2.setData(vetor2);
+		
+		List<CommitHistory> commits = new ArrayList<CommitHistory>();
+		commits.add(history);
+		commits.add(history2);
+		chart.setDataSeries(commits);
+		chart.setDataCategories(categories);
+		
+		
+		
+		return chart;
+		
+		
+	}
+	
+	public List<CommitHistory> getContribuitionAuthorTest(long repositoryId){
+		
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		
+				String query = "SELECT revision.author as author, "
+						+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+						+ "FROM Repository AS repository "
+						+ "inner join repository.configuration as configuration, "
+						+ "IN(repository.revisions) as revision, "
+						+ "IN(revision.files) as file "
+						+ "WHERE repository.id = "+repositoryId+" "+testPath
+						+ "and revision.date >= configuration.initDate and "
+						+ "revision.date <= configuration.endDate "
+						+ "GROUP BY revision.author "
+						+ "ORDER BY revision.author";
+				
+				List<Object[]> list = em.createQuery(query).getResultList();
+				
+				ArrayList<CommitHistory> lista = new ArrayList<>();
+				for(int i = 0; i<list.size(); i++){
+					CommitHistory history = new CommitHistory();
+					history.setName((String) list.get(i)[0]);
+					long[] vetor = new long[1];
+					history.setName((String) list.get(i)[0]);
+					vetor[0] = (long) list.get(i)[1];
+					history.setData(vetor);
+					lista.add(history);
+				}
+				
+				return lista;
+				
+	}
+	
+	public List<CommitHistory> getContribuitionQntLine(long repositoryId, String path){
+	
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		
+		String query = "SELECT revision.author as author, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPathNot
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY revision.author "
+				+ "ORDER BY revision.author";
+		
+		List<Object[]> list = em.createQuery(query).getResultList();
+		
+		ArrayList<CommitHistory> lista = new ArrayList<>();
+		for(int i = 0; i<list.size(); i++){
+			CommitHistory history = new CommitHistory();
+			history.setName((String) list.get(i)[0]);
+			long[] vetor = new long[1];
+			history.setName((String) list.get(i)[0]);
+			vetor[0] = (long) list.get(i)[1];
+			history.setData(vetor);
+			lista.add(history);
+		}
+		
+		return lista;
+		
+		
+	}
+	
+	public List<CommitHistory> getContribuitionQntLineTest(long repositoryId, String path){
+		
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		String query = "SELECT revision.author as author, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPath
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY revision.author "
+				+ "ORDER BY revision.author";
+		
+		List<Object[]> list = em.createQuery(query).getResultList();
+		
+		ArrayList<CommitHistory> lista = new ArrayList<>();
+		for(int i = 0; i<list.size(); i++){
+			CommitHistory history = new CommitHistory();
+			history.setName((String) list.get(i)[0]);
+			long[] vetor = new long[1];
+			history.setName((String) list.get(i)[0]);
+			vetor[0] = (long) list.get(i)[1];
+			history.setData(vetor);
+			lista.add(history);
+		}
+		
+		return lista;
+		
+	}
+	
+public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
+	
+	Repository repository = findById(repositoryId);
+	String testPathNot = "";
+	String testPath = "AND file.path LIKE '' ";
+	if(repository.getTestFiles().size()!=0){
+		testPath = "AND (";
+		testPathNot = "AND NOT(";
+	}
+	for(int i = 0; i < repository.getTestFiles().size(); i++){
+		testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+		testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+		if(i < repository.getTestFiles().size()-1){
+			testPathNot = testPathNot + " OR ";
+			testPath = testPath + " OR ";
+		}
+	}
+	if(repository.getTestFiles().size()!=0){
+		testPathNot = testPathNot + ") ";
+		testPath = testPath + ") ";
+	}
+		
+		//todos os commits
+		String query = "SELECT DAY(revision.date) as day, MONTHNAME(revision.date) as month "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN (repository.revisions) as revision "
+				+ "WHERE repository.id = "+repositoryId+" "
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		//commits sem ser de testes
+		String query1 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND revision.author LIKE '"+author+"' "+testPathNot
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		//commits de testes
+		String query2 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND revision.author LIKE '"+author+"' "+testPath
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
+				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
+				+ "ORDER BY revision.date";
+		
+		LineChart chart = new LineChart();
+		
+		
+		List<Object[]> list = em.createQuery(query).getResultList();
+		String[] categories = new String[list.size()];
+		
+		for(int i = 0; i < list.size(); i++){
+			categories[i] =   list.get(i)[0] + " - " +  list.get(i)[1];
+			
+		}
+		List<Object[]> list1 = em.createQuery(query1).getResultList();
+		CommitHistory history = new CommitHistory();
+		history.setName("Commits");
+		
+		long[] vetor = new long[list.size()];
+		fodefora: for(int i = 0; i < list.size(); i++){
+			for(int j = 0;j < list1.size(); j++){
+				vetor[i] = 0l;
+			if(categories[i].equals(list1.get(j)[0] + " - " +  list1.get(j)[1])){
+				vetor[i] = (long) list1.get(j)[2];
+				continue fodefora;
+			}
+			}
+		}
+		
+		history.setData(vetor);
+		
+		List<Object[]> list2 = em.createQuery(query2).getResultList();
+		CommitHistory history2 = new CommitHistory();
+		history2.setName("Commits de Teste");
+		
+		long[] vetor2 = new long[list.size()];
+		
+		fora: for(int i = 0; i < list.size(); i++){
+			for(int j = 0;j < list2.size(); j++){
+				vetor2[i] = 0l;
+				if(categories[i].equals(list2.get(j)[0] + " - " +  list2.get(j)[1])){
+					vetor2[i] = (long) list2.get(j)[2];
+					continue fora;
+				}
+			}
+		}
+		
+		history2.setData(vetor2);
+		
+		List<CommitHistory> commits = new ArrayList<CommitHistory>();
+		commits.add(history);
+		commits.add(history2);
+		chart.setDataSeries(commits);
+		chart.setDataCategories(categories);
+		
+		
+		
+		return chart;
+		
+		
+	}
+
+	public List<String> getAuthors(long repositoryId){
+		String query = "SELECT revision.author as author "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision "
+				+ "WHERE revision.date >= configuration.initDate AND "
+				+ "revision.date <= configuration.endDate "
+				+ "AND repository.id = "+repositoryId+" GROUP BY author";
+		
+		List<String> list = em.createQuery(query).getResultList();
+		return list;
+	}
 }

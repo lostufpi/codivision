@@ -49,7 +49,7 @@ public class ExtractionPathController {
 		DirTree dirTree = dao.findById(repositoryId,extractionPathId).getDirTree();
 		Configuration configuration = repositoryDAO.getConfiguration(repositoryId);
 		double threshold = configuration.getAlertThreshold() / 100.0;
-		List<DirTree> warningPaths = new ArrayList<DirTree>();
+		List<DirTree> warningPaths = new ArrayList<>();
 		
 		for (DirTree temp : dirTree.getChildren()) {
 			warningPaths.addAll(getWarningPaths(repositoryId, "/" + temp.getText(), temp, threshold));
@@ -62,8 +62,14 @@ public class ExtractionPathController {
 	@Post("/repository/{repositoryId}/path/{extractionPathId}/tree")
 	public void getDirTree(Long repositoryId, Long extractionPathId){
 		
-		DirTree dirTree = dao.findById(repositoryId,extractionPathId).getDirTree();
+		ExtractionPath path= dao.findById(repositoryId,extractionPathId);
 		
+		if(path.getDirTreeJson()!=null && !path.getDirTreeJson().equals("")){
+			result.use(Results.json()).withoutRoot().from(path.getDirTreeJson()).recursive().serialize();
+			return;
+		}
+		
+		DirTree dirTree = path.getDirTree();
 		DirTree tree = new DirTree();
 		tree.setText(dirTree.getText());
 		tree.setType(NodeType.FOLDER);
@@ -72,10 +78,11 @@ public class ExtractionPathController {
 		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
 	}
 	
+	
 	private List<DirTree> getWarningPaths(Long repositoryId, String path, DirTree dirTree, double threshold) {
 
 		List<AuthorPercentage> result = repositoryDAO.getPercentage(repositoryId, path);
-		List<DirTree> warningPaths = new ArrayList<DirTree>();
+		List<DirTree> warningPaths = new ArrayList<>();
 		
 		double total = 0;
 		for (AuthorPercentage percentage : result)
@@ -141,5 +148,6 @@ public class ExtractionPathController {
 		dao.delete(extractionPathId);
 		
 		result.redirectTo(RepositoryController.class).show(repositoryId);
-	}
+	}	
 }
+

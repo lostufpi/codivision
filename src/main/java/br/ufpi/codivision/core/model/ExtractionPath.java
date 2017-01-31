@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
@@ -31,6 +32,17 @@ public class ExtractionPath implements PersistenceEntity{
 	
 	private String path;
 	
+	@Lob
+	private String dirTreeJson;
+	
+	public String getDirTreeJson() {
+		return dirTreeJson;
+	}
+
+	public void setDirTreeJson(String dirTreeJson) {
+		this.dirTreeJson = dirTreeJson;
+	}
+
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private DirTree dirTree;
 

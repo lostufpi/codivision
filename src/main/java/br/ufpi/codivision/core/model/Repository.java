@@ -64,6 +64,10 @@ public class Repository implements PersistenceEntity{
 	@JoinColumn(name="repositoryId")
 	private List<ExtractionPath> extractionPaths;
 	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="repositoryId")
+	private List<TestFile> testFiles;
+	
 	@ElementCollection
 	@CollectionTable(name="DeletedRevision")
 	private List<String> deletedRevisions;
@@ -78,11 +82,20 @@ public class Repository implements PersistenceEntity{
 	private Configuration configuration;
 	
 	public Repository(){
-		this.revisions = new ArrayList<Revision>();
-		this.deletedRevisions = new ArrayList<String>();
-		this.extractionPaths = new ArrayList<ExtractionPath>();
+		this.revisions = new ArrayList<>();
+		this.deletedRevisions = new ArrayList<>();
+		this.extractionPaths = new ArrayList<>();
+		this.testFiles = new ArrayList<>();
 	}
 	
+	public List<TestFile> getTestFiles() {
+		return testFiles;
+	}
+
+	public void setTestFiles(List<TestFile> testFiles) {
+		this.testFiles = testFiles;
+	}
+
 	/**
 	 * @return the id
 	 */
