@@ -87,7 +87,6 @@ public class RepositoryController {
 		List<RepositoryVO> repositoryList = dao.listMyRepositories(userSession.getUser().getId());
 		List<UserRepository> userRepositoryList = userRepositoryDAO.listByRepositoryId(repositoryId);
 		
-		result.include("configuration", repository.getConfiguration());
 		result.include("repository", repositoryVO);
 		result.include("repositoryList", repositoryList);
 		result.include("extractionPathList", extractionPathList);

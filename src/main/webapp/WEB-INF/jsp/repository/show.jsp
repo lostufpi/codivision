@@ -254,6 +254,4 @@
 			</div>
 		</div>
 	</div>
-
-<input type="hidden" id="configuration" value="${configuration}" />
 </body>
