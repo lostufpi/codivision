@@ -110,13 +110,13 @@
 							</div>
 							
 							<div>
-							<form method="post"
+							<!--<form method="post"
 									action="${linkTo[RepositoryController].download(repository.id)}">
 								<button class="btn btn-primary pull-right" data-toggle="modal"
 									data-target="" style="margin-right: 5px">
 									Download
 								</button>
-								</form>
+								</form>-->
 							</div>
 						</c:otherwise>
 					</c:choose>
@@ -177,7 +177,7 @@
 											Familiaridade</a>
 											<a class="btn btn-primary" 
 											href="${linkTo[RepositoryController].testInformation(repository.id, extraction.id)}">
-											Relatório de Teste</a>
+											Relatório dos Commits</a>
 											<a class="btn btn-danger" 
 											href="${linkTo[ExtractionPathController].remove(repository.id, extraction.id)}">
 											<fmt:message key="remove" /></a>

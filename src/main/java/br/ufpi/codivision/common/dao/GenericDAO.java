@@ -3,7 +3,6 @@
  */
 package br.ufpi.codivision.common.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -121,9 +120,9 @@ public abstract class GenericDAO<T extends PersistenceEntity> {
 	 * @return collection of entity
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<T> findAll() {
+	public List<T> findAll() {
 		Query query = em.createQuery("from " + entityClass.getSimpleName());
-		Collection<T> entities = query.getResultList();
+		List<T> entities = query.getResultList();
 		return entities;
 	}
 

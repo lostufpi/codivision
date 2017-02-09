@@ -14,6 +14,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import br.com.caelum.vraptor.Controller;
 import br.com.caelum.vraptor.Get;
 import br.com.caelum.vraptor.Post;
@@ -26,6 +28,7 @@ import br.com.caelum.vraptor.validator.Severity;
 import br.com.caelum.vraptor.validator.SimpleMessage;
 import br.com.caelum.vraptor.view.Results;
 import br.ufpi.codivision.common.annotation.Permission;
+import br.ufpi.codivision.common.annotation.Public;
 import br.ufpi.codivision.common.security.UserSession;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
 import br.ufpi.codivision.core.dao.ExtractionPathDAO;
@@ -37,6 +40,7 @@ import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.ExtractionPath;
 import br.ufpi.codivision.core.model.Repository;
+import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.UserRepository;
@@ -132,9 +136,9 @@ public class RepositoryController {
 		extractionPathValidator.validateAdd(extractionPath, repository);
 		extractionPathValidator.onErrorRedirectTo(this.getClass()).list();
 		
-		//Repository repositoryPersisted = dao.findByUrl(repository.getUrl());
+		Repository repositoryPersisted = dao.findByUrl(repository.getUrl());
 		
-		//if (repositoryPersisted == null) {
+		if (repositoryPersisted == null) {
 			
 			/* O repositório é novo */
 			
@@ -183,17 +187,17 @@ public class RepositoryController {
 			else
 				result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
 			
-//		} else {
-//			
-//			/* O repositório já existe */
-//			
-//			validator.validateReactivate(repositoryPersisted, userSession.getUser().getId());
-//			validator.onErrorRedirectTo(this.getClass()).list();
-//			
-//			repositoryPersisted.setDeleted(false);
-//			dao.save(repositoryPersisted);
-//			
-//		}
+		} else {
+			
+			/* O repositório já existe */
+			
+			validator.validateReactivate(repositoryPersisted, userSession.getUser().getId());
+			validator.onErrorRedirectTo(this.getClass()).list();
+			
+			repositoryPersisted.setDeleted(false);
+			dao.save(repositoryPersisted);
+			
+		}
 		
 		result.redirectTo(this).list();
 
@@ -336,8 +340,19 @@ public class RepositoryController {
 					}
 				}
 			}
-			repositoryCurrent.setRevisions(repositoryUpdate.getRevisions());
+			
+			List<Revision> newRevision = new ArrayList<Revision>();
+			
+			for(int i = 0; i < repositoryUpdate.getRevisions().size(); i++){
+				if(repositoryCurrent.getLastUpdate() == null){
+					newRevision.add(repositoryUpdate.getRevisions().get(i));
+				}else if(repositoryUpdate.getRevisions().get(i).getDate().getTime() > repositoryCurrent.getLastUpdate().getTime()){
+					newRevision.add(repositoryUpdate.getRevisions().get(i));
+				}
+			}
+			
 			repositoryCurrent.setLastRevision(repositoryUpdate.getLastRevision());
+			repositoryCurrent.getRevisions().addAll(newRevision);
 			repositoryCurrent.setLastUpdate(repositoryUpdate.getLastUpdate());
 			repositoryCurrent.setTestFiles(repositoryUpdate.getTestFiles());
 			
@@ -565,7 +580,57 @@ public class RepositoryController {
 		dao.save(repository);
 		
 		result.use(Results.json()).withoutRoot().from("").recursive().serialize();
-		return;
+		
+	}
+	
+	@Public
+	@Post("/repository/remoteUpdate")
+	public void remoteUpdate(String repository) {
+		Gson json = new Gson();
+		Repository repositoryUpdate = json.fromJson(repository, Repository.class);
+		Repository repositoryCurrent = dao.findByUrl(repositoryUpdate.getUrl());
+
+		repositoryCurrent.setRepositoryRoot(repositoryUpdate.getRepositoryRoot());
+		
+		for(ExtractionPath path: repositoryCurrent.getExtractionPaths()){
+			for(ExtractionPath path2:repositoryUpdate.getExtractionPaths()){
+				if(path.getPath().equals(path2.getPath())){
+					path.setDirTree(path2.getDirTree());
+				}
+			}
+		}
+		
+		List<Revision> newRevision = new ArrayList<Revision>();
+		
+		for(int i = 0; i < repositoryUpdate.getRevisions().size(); i++){
+			if(repositoryCurrent.getLastUpdate() == null){
+				newRevision.add(repositoryUpdate.getRevisions().get(i));
+			}else if(repositoryUpdate.getRevisions().get(i).getDate().getTime() > repositoryCurrent.getLastUpdate().getTime()){
+				newRevision.add(repositoryUpdate.getRevisions().get(i));
+			}
+		}
+		
+		repositoryCurrent.setLastRevision(repositoryUpdate.getLastRevision());
+		repositoryCurrent.getRevisions().addAll(newRevision);
+		repositoryCurrent.setLastUpdate(repositoryUpdate.getLastUpdate());
+		
+		for(TestFile file:repositoryUpdate.getTestFiles()){
+			boolean check = false;
+			for(TestFile file2:repositoryCurrent.getTestFiles()){
+				if(file.getPath().equals(file2.getPath())){
+					check = true;
+				}
+			}
+			if(!check){
+				repositoryCurrent.getTestFiles().add(file);
+			}
+		}
+		
+		dao.save(repositoryCurrent);
+		
+		result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+	
+		
 	}
 	
 

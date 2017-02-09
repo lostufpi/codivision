@@ -116,6 +116,7 @@ public class UserController {
 		// e o envio do email
 //		user.setPassword(checkPassword);
 //		emailValidator.validatorADD(user);
+		emailNotification.sendWelcomeUserNotification(user);
 
 		result.include("notice", new SimpleMessage("success", "user.add.success", Severity.INFO));
 		result.redirectTo(UserController.class).login();

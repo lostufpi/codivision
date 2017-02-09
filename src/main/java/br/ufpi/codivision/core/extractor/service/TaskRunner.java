@@ -6,9 +6,7 @@ package br.ufpi.codivision.core.extractor.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -33,7 +31,6 @@ import br.com.caelum.vraptor.tasks.Task;
 import br.com.caelum.vraptor.tasks.scheduler.Scheduled;
 import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.common.notification.EmailDispatcher;
-import br.ufpi.codivision.common.notification.VelocityEngineUtil;
 import br.ufpi.codivision.core.dao.DirTreeDAO;
 import br.ufpi.codivision.core.dao.ExtractionPathDAO;
 import br.ufpi.codivision.core.dao.OperationFileDAO;
@@ -87,6 +84,7 @@ public class TaskRunner implements Task{
 	
 	@Override
 	public void execute() {
+		
 		
 		EntityManager em = factory.createEntityManager();
 		EntityTransaction transaction = em.getTransaction();
@@ -304,11 +302,17 @@ public class TaskRunner implements Task{
 		
 		try {
 		
-		Map<String, Object> velocityParams = new HashMap<String, Object>();
-		velocityParams.put("username", user.getName());
-		velocityParams.put("repositoryName", repositoryName);
-		velocityParams.put("url", "http://easii.ufpi.br/codivision/");
-		String message = VelocityEngineUtil.getTemplate(velocityParams, "/templates/repository_updated.html");
+//		Map<String, Object> velocityParams = new HashMap<String, Object>();
+//		velocityParams.put("username", user.getName());
+//		velocityParams.put("repositoryName", repositoryName);
+//		velocityParams.put("url", "http://easii.ufpi.br/codivision/");
+		//String message = VelocityEngineUtil.getTemplate(velocityParams, "/templates/repository_updated.html");
+		
+		String message = "<html><body>"
+				+ "<p>Ola! "+user.getName()+",<p>"
+				+ "<p>O repositorio "+repositoryName+" foi atualizado.</p>"
+				+ "<p>Acesse a <a href='http://easii.ufpi.br/codivision/'>CODIVISION</a> para verificar o resultado.</p>"
+				+ "</body></html>";
 		
 		final Properties properties = new Properties(); 
 		InputStream in = EmailDispatcher.class.getResourceAsStream("/mail.properties");  

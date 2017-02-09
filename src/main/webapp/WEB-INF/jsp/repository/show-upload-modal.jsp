@@ -27,12 +27,16 @@
 					</div>
 				</div>
 				<div class="modal-footer">
+					<div>
+					<img id="gif" src="http://pentaho.ssp.go.gov.br/pentaho/content/pentaho-cdf-dd/res/observatorio/paineis/sspgo/imagens/carregando-pacotes.gif" width="250" height="42">
+					
 					<button type="button" class="btn btn-default" data-dismiss="modal">
 						<fmt:message key="close" />
 					</button>
-					<button type="submit" class="btn btn-primary">
+					<button id="update" type="submit" class="btn btn-primary">
 						<fmt:message key="update" />
 					</button>
+					</div>
 				</div>
 
 			</form>
@@ -42,3 +46,16 @@
 	</div>
 	
 </div>
+
+<script>
+$(document).ready(function() {
+	$('#gif').hide();
+	$('#update').click(function(){
+		if(document.getElementById("fileRepository").files != null){
+			$('#gif').show();
+		}
+		
+	});
+	
+});
+</script>

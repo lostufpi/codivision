@@ -79,11 +79,15 @@ public class UserValidator extends BaseValidator {
 
 		user.setPassword(generateHashPassword(user.getPassword()));
 		
-		//busca pelo login
+		//busca pelo login e login pois busca
 		User currentUser = dao.find(user);
 		//busca pelo email
-		if(currentUser==null)
+		if(currentUser==null){
 			currentUser = dao.findByEmail(user.getLogin());
+			if(!currentUser.getPassword().equals(user.getPassword())){
+				currentUser = null;
+			}
+		}
 		
 		validator.check(currentUser!=null, new SimpleMessage("error", "user.signin.error"));
 

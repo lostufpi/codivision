@@ -4,9 +4,12 @@
 package br.ufpi.codivision.core.dao;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.NoResultException;
+import javax.persistence.TemporalType;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
 import br.ufpi.codivision.core.model.Configuration;
@@ -15,6 +18,7 @@ import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.CommitHistory;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.util.QuickSort;
 
 /**
  * @author Werney Ayala
@@ -382,6 +386,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 			lista.add(history);
 		}
 		
+		QuickSort.sort(lista);
 		return lista;
 		
 		
@@ -433,6 +438,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 			lista.add(history);
 		}
 		
+		QuickSort.sort(lista);
 		return lista;
 		
 	}
@@ -563,5 +569,120 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		
 		List<String> list = em.createQuery(query).getResultList();
 		return list;
+	}
+	
+	public List<CommitHistory> getContribuitionQntLine(long repositoryId){
+		String path = "/";
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.MONTH, -2);
+		Date initDate = c.getTime();
+		
+		
+		String query = "SELECT revision.author as author, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPathNot
+				+ "and revision.date >= :data and "
+				+ "revision.date <= current_date() "
+				+ "GROUP BY revision.author "
+				+ "ORDER BY revision.author";
+		
+		List<Object[]> list = em.createQuery(query).setParameter("data", initDate, TemporalType.TIMESTAMP).getResultList();
+		
+		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
+		for(int i = 0; i<list.size(); i++){
+			CommitHistory history = new CommitHistory();
+			history.setName((String) list.get(i)[0]);
+			long[] vetor = new long[1];
+			history.setName((String) list.get(i)[0]);
+			vetor[0] = (long) list.get(i)[1];
+			history.setData(vetor);
+			lista.add(history);
+		}
+		
+		QuickSort.sort(lista);
+		return lista;
+		
+		
+	}
+	
+	public List<CommitHistory> getContribuitionQntLineTest(long repositoryId){
+		String path = "/";
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
+		}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
+		
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.MONTH, -2);
+		Date initDate = c.getTime();
+		
+		
+		String query = "SELECT revision.author as author, "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "FROM Repository AS repository "
+				+ "inner join repository.configuration as configuration, "
+				+ "IN(repository.revisions) as revision, "
+				+ "IN(revision.files) as file "
+				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPath
+				+ "and revision.date >= :data and "
+				+ "revision.date <= current_date() "
+				+ "GROUP BY revision.author "
+				+ "ORDER BY revision.author";
+		
+		List<Object[]> list = em.createQuery(query).setParameter("data", initDate, TemporalType.TIMESTAMP).getResultList();
+		
+		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
+		for(int i = 0; i<list.size(); i++){
+			CommitHistory history = new CommitHistory();
+			history.setName((String) list.get(i)[0]);
+			long[] vetor = new long[1];
+			history.setName((String) list.get(i)[0]);
+			vetor[0] = (long) list.get(i)[1];
+			history.setData(vetor);
+			lista.add(history);
+		}
+		
+		QuickSort.sort(lista);
+		return lista;
+		
 	}
 }
