@@ -159,6 +159,20 @@
 			<artifactId>gson</artifactId>
 			<version>2.3.1</version>
 		</dependency>
+		
+		<!-- Dependência para a construção de grafos de direcionais --> 
+		<dependency>
+			<groupId>jgrapht</groupId>
+			<artifactId>jgrapht</artifactId>
+			<version>0.7.3</version>
+		</dependency>
+		
+		<!-- Dependência para utilizar Abstract Syntax Tree de códigos java -->
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>org.eclipse.jdt.core</artifactId>
+			<version>3.10.0</version>
+		</dependency>
 
 	</dependencies>
 
