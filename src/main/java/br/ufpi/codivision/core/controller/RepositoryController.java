@@ -3,6 +3,7 @@
  */
 package br.ufpi.codivision.core.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,11 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +61,9 @@ import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.CommitHistory;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.BinaryFile;
+import br.ufpi.codivision.core.util.DeleteDir;
 
 /**
  * @author Werney Ayala
@@ -106,6 +114,105 @@ public class RepositoryController {
 		result.include("urlImage", urlImage);
 		result.include("types", types);
 		result.include("repositoryList", repositoryList);
+	}
+	
+	@Post("/repository/addRepository")
+	public void addRepository(String url){
+		boolean success = DeleteDir.deleteDir(new File("metadata-codivision"));
+	    if (!success) {
+	        System.out.println("arquivo nao existe"); 
+	    }else{
+	    	System.out.println("arquivo removido");
+	    }
+	    
+	    Configuration configuration = new Configuration();
+		configuration.setAddWeight(1.0);
+		configuration.setModWeight(1.0);
+		configuration.setDelWeight(0.5);
+		configuration.setConditionWeight(1.0);
+		configuration.setChangeDegradation(5);
+		configuration.setMonthlyDegradation(10);
+		configuration.setAlertThreshold(60);
+		configuration.setExistenceThreshold(80);
+		configuration.setTruckFactorThreshold(50);
+		configuration.setTimeWindow(TimeWindow.LAST_SIX_MONTHS);
+		
+		Repository repository = new Repository();
+		
+		//para repositorios do git lab, deve ser adicionado o .git no final. PAra git hub nao eh necessario
+		repository.setName(url.split("/")[url.split("/").length-1]);
+		repository.setUrl(url);
+		repository.setConfiguration(configuration);
+		
+		System.out.println("Iniciando a extracao do repositorio "+repository.getUrl());
+		ExtractionPath path = new ExtractionPath();
+		path.setPath("/master");
+		repository.getExtractionPaths().add(path);
+		
+
+		
+		
+		GitUtil util;
+		try {
+			util = new GitUtil(repository.getUrl());
+			repository.setRepositoryRoot(repository.getUrl());
+			repository.setRevisions(util.getRevisions());
+			repository.setLastUpdate(repository.getRevisions().get(0).getDate());
+			repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
+			
+			DirTree tree = new DirTree();
+			tree.setText("master");
+			tree.setType(NodeType.FOLDER);
+			tree.setChildren(util.getDirTree());
+			
+			repository.getExtractionPaths().get(0).setDirTree(tree);
+			
+			repository = dao.save(repository);
+
+			User user = userDAO.findById(userSession.getUser().getId());
+
+			UserRepository permission = new UserRepository();
+			permission.setPermission(PermissionType.OWNER);
+			permission.setRepository(repository);
+			permission.setUser(user);
+			userRepositoryDAO.save(permission);
+			
+			
+			util.closeRepository();
+		
+		} catch (InvalidRemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransportException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (GitAPIException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (AmbiguousObjectException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IncorrectObjectTypeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
+		
+		success = DeleteDir.deleteDir(new File("metadata-codivision"));
+	    if (!success) {
+	        System.out.println("arquivo nao existe"); 
+	    }else{
+	    	System.out.println("arquivo removido");
+	    }
+	    
+	    System.out.println("Extracao concluida do repositorio "+repository.getUrl());
 	}
 	
 	@Post
@@ -589,11 +696,14 @@ public class RepositoryController {
 		Gson json = new Gson();
 		Repository repositoryUpdate = json.fromJson(repository, Repository.class);
 		Repository repositoryCurrent = dao.findByUrl(repositoryUpdate.getUrl());
+		if(repositoryCurrent==null){
+			result.use(Results.json()).withoutRoot().from("Repositorio inexistente").recursive().serialize();
+		}else{
 
 		repositoryCurrent.setRepositoryRoot(repositoryUpdate.getRepositoryRoot());
 		
 		for(ExtractionPath path: repositoryCurrent.getExtractionPaths()){
-			for(ExtractionPath path2:repositoryUpdate.getExtractionPaths()){
+			for(ExtractionPath path2: repositoryUpdate.getExtractionPaths()){
 				if(path.getPath().equals(path2.getPath())){
 					path.setDirTree(path2.getDirTree());
 				}
@@ -628,8 +738,8 @@ public class RepositoryController {
 		
 		dao.save(repositoryCurrent);
 		
-		result.use(Results.json()).withoutRoot().from("").recursive().serialize();
-	
+		result.use(Results.json()).withoutRoot().from("Repositorio atualizado").recursive().serialize();
+	}
 		
 	}
 	

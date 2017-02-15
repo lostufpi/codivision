@@ -70,7 +70,7 @@ public class TaskEmail implements Task{
 		
 		List<UserRepository> users = userRepositoryDAO.findAll();
 		for(UserRepository user: users){
-			sendMail(user.getUser(), user.getRepository());
+			//sendMail(user.getUser(), user.getRepository());
 		}
 		
 		em.close();

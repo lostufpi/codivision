@@ -25,13 +25,23 @@ public class UserDAO extends GenericDAO<User>{
 	
 	public User find(User user){
 		try{
+			//verifica pelo login
 			return em.createQuery("select user from User as user where user.login = :login "
 					+ "and user.password = :password", User.class)
 					.setParameter("login", user.getLogin())
 					.setParameter("password", user.getPassword())
 					.getSingleResult();
+			
 		} catch (NoResultException e) {
-			return null;
+			try{
+			return   em.createQuery("select user from User as user where user.email = :email "
+					+ "and user.password = :password", User.class)
+					.setParameter("email", user.getLogin())
+					.setParameter("password", user.getPassword())
+					.getSingleResult();
+			} catch (NoResultException e1) {
+				return null;
+			}
 		}
 	}
 	

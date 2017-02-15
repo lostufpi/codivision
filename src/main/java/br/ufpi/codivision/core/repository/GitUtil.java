@@ -18,7 +18,9 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -39,6 +41,8 @@ import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.model.enums.OperationType;
+import br.ufpi.codivision.feature.java.model.Class;
+import br.ufpi.codivision.feature.java.util.Constants;
 
 
 
@@ -51,6 +55,7 @@ public class GitUtil {
 		 git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
+				.setDirectory(new File("metadata-codivision"))
 				.setBranch("master")//define qual ramo sera extraido. Funciona tanto para branch como para tags
 				.call();
 
@@ -65,6 +70,7 @@ public class GitUtil {
 		 git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
+				.setDirectory(new File("metadata-codivision"))
 				.setBranch(branch)//define qual ramo sera extraido. Funciona tanto para branch como para tags
 				.call();
 
@@ -75,6 +81,7 @@ public class GitUtil {
 		 git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
+				.setDirectory(new File("metadata-codivision"))
 				.setBranch("master")//define qual ramo sera extraido. Funciona tanto para branch como para tags
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
@@ -86,6 +93,7 @@ public class GitUtil {
 		 git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
+				.setDirectory(new File("metadata-codivision"))
 				.setBranch(branch)//define qual ramo sera extraido. Funciona tanto para branch como para tags
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
@@ -93,6 +101,10 @@ public class GitUtil {
 		repo = git.getRepository();
 	}
 	
+	public void closeRepository(){
+		repo.close();
+		git.close();
+	}
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 		 
 			Iterable<RevCommit> log = git.log().setMaxCount(500).call();
@@ -275,5 +287,50 @@ public class GitUtil {
 
 		return diffs; 
 	}
-}
+	
+	public List<Class> readFiles() throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		List<Class> classes = new ArrayList<Class>();
+		
+		Ref head = repo.getRef("HEAD");
 
+		RevWalk walk = new RevWalk(repo);
+		RevCommit commit = walk.parseCommit(head.getObjectId()); 
+        RevTree tree = commit.getTree(); 
+        TreeWalk treeWalk = new TreeWalk(repo);
+	    treeWalk.addTree(tree); 
+        treeWalk.setRecursive(true); 
+        
+        Set<DirTree> dirTree = new HashSet<DirTree>();
+ 		
+        while(treeWalk.next()){
+        	
+        	ObjectId objectId = treeWalk.getObjectId(0);
+            ObjectLoader loader = repo.open(objectId);
+            
+            
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			
+            loader.copyTo(stream);
+            
+            String fileCode = stream.toString();
+            
+            String file = "/"+treeWalk.getPathString();
+            
+            if(file.contains(".java")){
+            String name = file.substring(0, file.lastIndexOf(Constants.DOT));
+			name = name.replace(Constants.DOT, Constants.FILE_SEPARATOR);
+			name = name.concat(file.substring(file.lastIndexOf(Constants.DOT), file.length()));			
+			classes.add(new Class(name, fileCode, new String()));
+            }
+ 			
+        	if(treeWalk.isSubtree()){
+        		treeWalk.enterSubtree();
+        	}
+ 		
+        	
+ 		}
+ 		 
+        return classes;
+		
+	}
+}
