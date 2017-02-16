@@ -78,9 +78,10 @@ public class ControllerDefiner {
 	 */
 	private List<Package> candidateControllersFilter(List<NodeInfo> canditateControllers){
 		List<Package> packageControllers = new ArrayList<Package>();
-		boolean added = false;
+		boolean added;
 		
 		for (NodeInfo c : canditateControllers) {
+			added = false;
 			if(c.getDegreeIN() == 0){ //SE NÃO EXISTE REFERÊNCIA À CLASSE, ESTA É ASSUMIDA COMO CONTROLLER
 				for (Package p : packageControllers) {
 					if(p.getName().equals(c.getC().getPackageName())){ //VERIFICA SE O PACOTE DO CONTROLLER JÁ FOI CRIADO 

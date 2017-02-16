@@ -333,7 +333,8 @@ public class FeatureDefiner {
 						types.add(Constants.PRIMITIVE_DOUBLE);
 					}
 				}else{
-					if(argument.contains(Constants.NEW)){
+					//SE ESTÁ SENDO PASSADO COMO ARGUMENTO UMA INSTANCIAÇÃO DE UM OBJETO (EX.: new Object(), O TIPO SERÁ ENTÃO Object). O ESPAÇO APÓS O 'new' É NECESSÁRIO PARA NÃO CAPTURAR ARGUMENTOS COM SUBSTRING 'new'
+					if(argument.contains(Constants.NEW.concat(Constants.WHITESPACE))){ 
 						types.add(argument.substring(argument.indexOf(Constants.NEW) + Constants.NEW.length() + 1, argument.indexOf(Constants.OPEN_PARENTHESE)));
 					}else if(!argument.contains(Constants.OPEN_KEY)){
 						Integer i = null;
@@ -342,11 +343,11 @@ public class FeatureDefiner {
 						} catch (Exception e) {}
 						
 						if(i != null){
-							types.add(Constants.PRIMITIVE_INT); // Considerando que é do tipo int
+							types.add(Constants.PRIMITIVE_INT); // CONSIDERANDO QUE É DO TIPO 'int'
 						}else{
 							boolean isMethodVariable = false;
 							for (Variable variable : sourceMethod.getVariables()) { 
-								if(variable.getName().equals(argument)){ // Verifica se é do tipo de alguma variável do método
+								if(variable.getName().equals(argument)){ // VERIFICA SE É DO TIPO DE ALGUMA VARIÁVEL DO MÉTODO
 									types.add(variable.getType());
 									isMethodVariable = true;
 									break;
