@@ -161,7 +161,11 @@ public class ClassReferenceManager {
 			}
 		});
 		
-		c.setPackageName(unit.getPackage().getName().toString());
+		if(unit.getPackage()!= null){
+			c.setPackageName(unit.getPackage().getName().toString());
+		}else{
+			c.setPackageName(Constants.EMPTY);
+		}
 		c.setMethods(methods);
 		c.setAttributes(attributes);
 		if(extendClass.getName() != null){
