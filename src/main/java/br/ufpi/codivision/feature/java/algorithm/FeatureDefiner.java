@@ -7,6 +7,7 @@ import java.util.List;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.feature.java.algorithm.model.ClassMethodVisit;
 import br.ufpi.codivision.feature.java.model.Attribute;
 import br.ufpi.codivision.feature.java.model.Class;
@@ -16,7 +17,6 @@ import br.ufpi.codivision.feature.java.model.MethodInvocation;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Package;
 import br.ufpi.codivision.feature.java.model.Variable;
-import br.ufpi.codivision.feature.java.util.Constants;
 
 /**
  * @author Vanderson Moura

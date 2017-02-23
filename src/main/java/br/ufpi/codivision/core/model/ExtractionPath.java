@@ -3,16 +3,21 @@
  */
 package br.ufpi.codivision.core.model;
 
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
+import br.ufpi.codivision.feature.java.model.Feature;
 
 /**
  * @author Werney Ayala
@@ -45,6 +50,11 @@ public class ExtractionPath implements PersistenceEntity{
 
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private DirTree dirTree;
+	
+
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="extractionPathId")
+	private List<Feature> features;
 
 	public ExtractionPath(){ }
 

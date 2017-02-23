@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.ReferenceSet;
-import br.ufpi.codivision.feature.java.util.Constants;
 import br.ufpi.codivision.feature.java.model.Class;
 
 /**

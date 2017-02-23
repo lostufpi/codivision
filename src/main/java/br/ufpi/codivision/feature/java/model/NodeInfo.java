@@ -5,7 +5,7 @@ package br.ufpi.codivision.feature.java.model;
  *
  */
 public class NodeInfo {
-	private Class c;
+	private Class class_;
 	private Integer degreeIN;
 	private Integer degreeOUT;
 	private boolean hasCycle;
@@ -15,7 +15,7 @@ public class NodeInfo {
 	 */
 	public NodeInfo(Class c) {
 		super();
-		this.c = c;
+		this.class_ = c;
 		this.degreeIN = new Integer(0);
 		this.degreeOUT = new Integer(0);
 	}
@@ -24,14 +24,14 @@ public class NodeInfo {
 	 * @return the class
 	 */
 	public Class getC() {
-		return c;
+		return class_;
 	}
 
 	/**
 	 * @param c the class to set
 	 */
 	public void setC(Class c) {
-		this.c = c;
+		this.class_ = c;
 	}
 
 	/**

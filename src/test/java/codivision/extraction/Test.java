@@ -1,4 +1,4 @@
-package br.ufpi.codivision.test;
+package codivision.extraction;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,14 +10,11 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.ExtractionPath;
-import br.ufpi.codivision.core.model.OperationFile;
 import br.ufpi.codivision.core.model.Repository;
-import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
@@ -66,7 +63,7 @@ public class Test {
 		repository.getExtractionPaths().get(0).setDirTree(tree);
 		
 		
-		ClassGraphBuilder builder = new ClassGraphBuilder(util.readFiles());
+		ClassGraphBuilder builder = new ClassGraphBuilder(util.getRepositoryJavaFiles());
 		ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
 		
 		FeatureDefiner definer = new FeatureDefiner();

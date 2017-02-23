@@ -18,13 +18,13 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.feature.java.model.Attribute;
 import br.ufpi.codivision.feature.java.model.Class;
 import br.ufpi.codivision.feature.java.model.Method;
 import br.ufpi.codivision.feature.java.model.Parameter;
 import br.ufpi.codivision.feature.java.model.ReferenceSet;
 import br.ufpi.codivision.feature.java.model.Variable;
-import br.ufpi.codivision.feature.java.util.Constants;
 
 /**
  * @author Vanderson Moura

@@ -3,20 +3,42 @@ package br.ufpi.codivision.feature.java.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.ufpi.codivision.feature.java.util.Constants;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import br.ufpi.codivision.common.model.PersistenceEntity;
+import br.ufpi.codivision.core.util.Constants;
 
 /**
  * @author Vanderson Moura
  *
  */
-public class Class {
+@Entity
+public class Class implements PersistenceEntity {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
 	private String name;
 	private String fullname;
-	private String content;
-	private String packageName; 
-	private List<Method> methods;
-	private List<Attribute> attributes;
-	private Class superClass;
+	
+	@Transient private String content;
+	@Transient private String packageName; 
+	@Transient private List<Method> methods;
+	@Transient private List<Attribute> attributes;
+	@Transient private Class superClass;
+	
+	@OneToMany(mappedBy = "class_")
+	private List<FeatureClass> featureClasses;
 	
 	/**
 	 * 
@@ -41,6 +63,16 @@ public class Class {
 		this.methods = new ArrayList<Method>();
 		this.superClass = null;
 		this.attributes = new ArrayList<Attribute>();
+	}
+	
+	@Override
+	public Long getId() {
+		return this.id;
+	}
+	
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
 	}
 	
 	/**

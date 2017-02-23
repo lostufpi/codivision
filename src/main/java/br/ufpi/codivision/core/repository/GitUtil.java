@@ -41,73 +41,119 @@ import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.model.enums.OperationType;
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.feature.java.model.Class;
-import br.ufpi.codivision.feature.java.util.Constants;
-
 
 
 public class GitUtil {
-	
-	private Repository repo;
+	private Repository repository;
 	private Git git;
 	
-	public GitUtil(String url) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
-		 git = Git.cloneRepository()
-				.setURI(url)
-				.setBare(false)
-				.setDirectory(new File("metadata-codivision"))
-				.setBranch("master")//define qual ramo sera extraido. Funciona tanto para branch como para tags
-				.call();
-
-		repo = git.getRepository();
-	}
+	/**
+	 * @param file
+	 * @throws IOException
+	 */
 	public GitUtil(File file) throws IOException{
-		git = Git.open(file);
-		repo = git.getRepository();
+		this.git = Git.open(file);
+		this.repository = this.git.getRepository();
 	}
 	
+	/**
+	 * @param url
+	 * @throws InvalidRemoteException
+	 * @throws TransportException
+	 * @throws IllegalStateException
+	 * @throws GitAPIException
+	 */
+	public GitUtil(String url) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
+		 this.git = Git.cloneRepository()
+				.setURI(url)
+				.setBare(false)
+				.setDirectory(new File(this.getDirectoryToSave()))
+				.setBranch(Constants.MASTER) //DEFINE QUAL BRANCH (OU TAG) SERÁ EXTRAÍDO
+				.call();
+
+		this.repository = git.getRepository();
+	}
+	
+	/**
+	 * @param url
+	 * @param branch
+	 * @throws InvalidRemoteException
+	 * @throws TransportException
+	 * @throws IllegalStateException
+	 * @throws GitAPIException
+	 */
 	public GitUtil(String url, String branch) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
-		 git = Git.cloneRepository()
+		 this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File("metadata-codivision"))
-				.setBranch(branch)//define qual ramo sera extraido. Funciona tanto para branch como para tags
+				.setDirectory(new File(this.getDirectoryToSave()))
+				.setBranch(branch)
 				.call();
 
-		repo = git.getRepository();
+		this.repository = this.git.getRepository();
 	}
 	
+	/**
+	 * @param url
+	 * @param login
+	 * @param password
+	 * @throws InvalidRemoteException
+	 * @throws TransportException
+	 * @throws IllegalStateException
+	 * @throws GitAPIException
+	 */
 	public GitUtil(String url, String login, String password) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
-		 git = Git.cloneRepository()
+		 this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File("metadata-codivision"))
-				.setBranch("master")//define qual ramo sera extraido. Funciona tanto para branch como para tags
+				.setDirectory(new File(this.getDirectoryToSave()))
+				.setBranch(Constants.MASTER)
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
 
-		repo = git.getRepository();
+		this.repository = this.git.getRepository();
 	}
 	
+	/**
+	 * @param url
+	 * @param branch
+	 * @param login
+	 * @param password
+	 * @throws InvalidRemoteException
+	 * @throws TransportException
+	 * @throws IllegalStateException
+	 * @throws GitAPIException
+	 */
 	public GitUtil(String url, String branch, String login, String password) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
-		 git = Git.cloneRepository()
+		this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File("metadata-codivision"))
-				.setBranch(branch)//define qual ramo sera extraido. Funciona tanto para branch como para tags
+				.setDirectory(new File(this.getDirectoryToSave()))
+				.setBranch(branch)
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
 
-		repo = git.getRepository();
+		this.repository = this.git.getRepository();
 	}
+	
 	
 	public void closeRepository(){
-		repo.close();
-		git.close();
+		this.repository.close();
+		this.git.close();
 	}
+	/**
+	 * @return the revisions
+	 * @throws NoHeadException
+	 * @throws GitAPIException
+	 * @throws AmbiguousObjectException
+	 * @throws IncorrectObjectTypeException
+	 * @throws IOException
+	 */
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 		 
-			Iterable<RevCommit> log = git.log().setMaxCount(500).call();
+			Iterable<RevCommit> log = this.git.log().setMaxCount(500).call();
 			List<Revision> revisions = new ArrayList<Revision>();
 			
 			for (RevCommit jgitCommit: log) {
@@ -119,28 +165,28 @@ public class GitUtil {
 				revision.setFiles(new ArrayList<OperationFile>());
 				revision.setExtracted(true);
 				
-				List<DiffEntry> diffsForTheCommit = diffsForTheCommit(repo, jgitCommit);
+				List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 				for (DiffEntry diff : diffsForTheCommit) {
 					
 					OperationFile file = new OperationFile();
 					
-					if(diff.getChangeType().name().equals("ADD")){
+					if(diff.getChangeType().name().equals(Constants.ADD)){
 						file.setOperationType(OperationType.ADD);
-						file.setPath("/"+diff.getNewPath());
+						file.setPath(Constants.FILE_SEPARATOR.concat(diff.getNewPath()));
 					}else
-					if(diff.getChangeType().name().equals("DELETE")){
+					if(diff.getChangeType().name().equals(Constants.DELETE)){
 						file.setOperationType(OperationType.DEL);
-						file.setPath("/"+diff.getOldPath());
+						file.setPath(Constants.FILE_SEPARATOR.concat(diff.getOldPath()));
 					}else
-					if(diff.getChangeType().name().equals("MODIFY")){
+					if(diff.getChangeType().name().equals(Constants.MODIFY)){
 						file.setOperationType(OperationType.MOD);
-						file.setPath("/"+diff.getNewPath());
+						file.setPath(Constants.FILE_SEPARATOR.concat(diff.getNewPath()));
 					}else
 						continue;
 					
 					ByteArrayOutputStream stream = new ByteArrayOutputStream();
 					DiffFormatter diffFormatter = new DiffFormatter( stream );
-					diffFormatter.setRepository(repo);
+					diffFormatter.setRepository(this.repository);
 					diffFormatter.format(diff);
 					
 					String in = stream.toString();
@@ -156,85 +202,85 @@ public class GitUtil {
 					revision.getFiles().add(file);
 					
 					diffFormatter.flush();
+					diffFormatter.close();
 				}
 				revision.setTotalFiles(revision.getFiles().size());
 				revisions.add(revision);
-
-
 			}
-			
 			return revisions;
 	}
 	
+	/**
+	 * @return the test files
+	 * @throws IOException
+	 */
 	public List<TestFile> getTestFiles() throws IOException{
 		List<TestFile> testFiles = new ArrayList<TestFile>();
 		
-		Ref head = repo.getRef("HEAD");
+		Ref head = this.repository.findRef(Constants.HEAD);
 
-		RevWalk walk = new RevWalk(repo);
+		RevWalk walk = new RevWalk(this.repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId()); 
         RevTree tree = commit.getTree(); 
-        TreeWalk treeWalk = new TreeWalk(repo);
+        TreeWalk treeWalk = new TreeWalk(this.repository);
 	    treeWalk.addTree(tree); 
         treeWalk.setRecursive(true); 
         
-        Set<DirTree> dirTree = new HashSet<DirTree>();
- 		
         while(treeWalk.next()){
-        	
         	ObjectId objectId = treeWalk.getObjectId(0);
-            ObjectLoader loader = repo.open(objectId);
-            
-            
+            ObjectLoader loader = this.repository.open(objectId);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			
             loader.copyTo(stream);
-            
             String fileCode = stream.toString();
             
-            if(fileCode.contains("@Test")){
+            if(fileCode.contains(Constants.TEST)){
     			TestFile file = new TestFile();
-    			file.setPath("/"+treeWalk.getPathString());
+    			file.setPath(Constants.FILE_SEPARATOR.concat(treeWalk.getPathString()));
     			testFiles.add(file);
     		}
-        
  			
         	if(treeWalk.isSubtree()){
         		treeWalk.enterSubtree();
         	}
- 		
-        	
  		}
- 		 
+        walk.close();
+        treeWalk.close();
+        
         return testFiles;
 	}
 
+	/**
+	 * @return the DirTree
+	 * @throws IOException
+	 */
 	public Set<DirTree> getDirTree() throws IOException{
-		Ref head = repo.getRef("HEAD");
-
-		RevWalk walk = new RevWalk(repo);
+		Ref head = this.repository.findRef(Constants.HEAD);
+		RevWalk walk = new RevWalk(this.repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId()); 
         RevTree tree = commit.getTree(); 
-        TreeWalk treeWalk = new TreeWalk(repo);
+        TreeWalk treeWalk = new TreeWalk(this.repository);
 	    treeWalk.addTree(tree); 
         treeWalk.setRecursive(true); 
-        
         Set<DirTree> dirTree = new HashSet<DirTree>();
  		
         while(treeWalk.next()){
-        	
         	if(treeWalk.isSubtree()){
         		treeWalk.enterSubtree();
         	}
  		
-        	String[] path = treeWalk.getPathString().split("/");
+        	String[] path = treeWalk.getPathString().split(Constants.FILE_SEPARATOR);
         	findTree(dirTree,path,0);
  		}
- 		 
+ 		walk.close();
+ 		treeWalk.close();
         return dirTree;
-
 	}
 	
+	/**
+	 * @param dirTree
+	 * @param path
+	 * @param i
+	 */
 	private void findTree(Set<DirTree> dirTree, String[] path, int i) {
 		for(DirTree tree:dirTree){
 			if(tree.getText().equals(path[i])){
@@ -262,6 +308,14 @@ public class GitUtil {
 			
 		}
 	}
+	/**
+	 * @param repo
+	 * @param commit
+	 * @return
+	 * @throws IOException
+	 * @throws AmbiguousObjectException
+	 * @throws IncorrectObjectTypeException
+	 */
 	private  List<DiffEntry> diffsForTheCommit(Repository repo, RevCommit commit) throws IOException, AmbiguousObjectException, 
 	IncorrectObjectTypeException { 
 
@@ -269,7 +323,7 @@ public class GitUtil {
 		AnyObjectId parentCommit = commit.getParentCount() > 0 ? repo.resolve(commit.getParent(0).getName()) : null; 
 
 		DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE); 
-		df.setBinaryFileThreshold(2 * 1024); // 2 mb max a file 
+		df.setBinaryFileThreshold(2 * 1024); //2 MB MAX A FILE
 		df.setRepository(repo); 
 		df.setDiffComparator(RawTextComparator.DEFAULT); 
 		df.setDetectRenames(true); 
@@ -282,55 +336,54 @@ public class GitUtil {
 		} else { 
 			diffs = df.scan(parentCommit, currentCommit); 
 		} 
-
-		df.close(); 
-
+		df.close();
+		
 		return diffs; 
 	}
 	
-	public List<Class> readFiles() throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
-		List<Class> classes = new ArrayList<Class>();
-		
-		Ref head = repo.getRef("HEAD");
-
-		RevWalk walk = new RevWalk(repo);
+	/**
+	 * @return
+	 * @throws MissingObjectException
+	 * @throws IncorrectObjectTypeException
+	 * @throws CorruptObjectException
+	 * @throws IOException
+	 */
+	public List<Class> getRepositoryJavaFiles() throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		List<Class> classes = new ArrayList<>();
+		Ref head = this.repository.findRef(Constants.HEAD);
+		RevWalk walk = new RevWalk(repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId()); 
         RevTree tree = commit.getTree(); 
-        TreeWalk treeWalk = new TreeWalk(repo);
+        TreeWalk treeWalk = new TreeWalk(this.repository);
 	    treeWalk.addTree(tree); 
         treeWalk.setRecursive(true); 
         
-        Set<DirTree> dirTree = new HashSet<DirTree>();
- 		
         while(treeWalk.next()){
-        	
         	ObjectId objectId = treeWalk.getObjectId(0);
-            ObjectLoader loader = repo.open(objectId);
-            
-            
+            ObjectLoader loader = this.repository.open(objectId);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			
             loader.copyTo(stream);
+            String content = stream.toString();
+            String filePath = Constants.FILE_SEPARATOR.concat(treeWalk.getPathString());
             
-            String fileCode = stream.toString();
-            
-            String file = "/"+treeWalk.getPathString();
-            
-            if(file.contains(".java")){
-            String name = file.substring(0, file.lastIndexOf(Constants.DOT));
-			name = name.replace(Constants.DOT, Constants.FILE_SEPARATOR);
-			name = name.concat(file.substring(file.lastIndexOf(Constants.DOT), file.length()));			
-			classes.add(new Class(name, fileCode, new String()));
+            if(filePath.contains(Constants.JAVA_EXTENSION)){
+				classes.add(new Class(filePath, content, new String()));
             }
  			
         	if(treeWalk.isSubtree()){
         		treeWalk.enterSubtree();
         	}
- 		
-        	
  		}
- 		 
+        walk.close();
+        treeWalk.close();
+        
         return classes;
-		
+	}
+	
+	/**
+	 * @return directory to save the repository clone 
+	 */
+	private String getDirectoryToSave(){
+		return System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(Constants.METADATA_FOLDER_NAME);
 	}
 }

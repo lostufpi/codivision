@@ -1,4 +1,4 @@
-package br.ufpi.codivision.feature.java.util;
+package br.ufpi.codivision.core.util;
 
 /**
  * @author Vanderson Moura
@@ -37,4 +37,12 @@ public class Constants {
 	public static final String BOOLEAN = new String("Boolean");
 	public static final String UNDEFINED = new String("undefined");
 	public static final String OVERRIDE_MODIFIER = new String("@Override");
+	public static final String TEST = new String("@Test");
+	public static final String ADD = new String("ADD");
+	public static final String MODIFY = new String("MODIFY");
+	public static final String DELETE = new String("DELETE");
+	public static final String MASTER = new String("master");
+	public static final String HEAD = new String("HEAD");
+	public static final String DAT_FILE_NAME = new String("extraction-data-codivision");
+	public static final String METADATA_FOLDER_NAME = new String("metadata-codivision");
 }
