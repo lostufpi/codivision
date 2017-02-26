@@ -12,6 +12,7 @@ import br.ufpi.codivision.feature.java.algorithm.model.ClassMethodVisit;
 import br.ufpi.codivision.feature.java.model.Attribute;
 import br.ufpi.codivision.feature.java.model.Class;
 import br.ufpi.codivision.feature.java.model.Feature;
+import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.Method;
 import br.ufpi.codivision.feature.java.model.MethodInvocation;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
@@ -37,13 +38,23 @@ public class FeatureDefiner {
 	 */
 	public List<Feature> definer(List<Package> controllerPakages, Graph<NodeInfo, DefaultEdge> graph){
 		List<Feature> features = new ArrayList<>();
+		List<FeatureClass> featureClasses = new ArrayList<FeatureClass>();
+		
 		for (Package controllerPackage : controllerPakages) {
 			for (Class controllerClass : controllerPackage.getClasses()) {
 				for (Method controllerMethod : controllerClass.getMethods()) {
-					if(isPrimaryMethod(controllerMethod, graph)){//criar metodo que verifica se o método é um dos principais
+					if(isPrimaryMethod(controllerMethod, graph)){
 						String name = controllerClass.formatName().concat(Constants.DOT).concat(controllerMethod.getName());
-						List<Class> featureClasses = featureClasses(controllerClass, controllerMethod, graph);
-						Feature f = new Feature(name, featureClasses);
+						List<Class> classes = defineClassesToFeature(controllerClass, controllerMethod, graph);
+						Feature f = new Feature(name);
+						featureClasses = new ArrayList<FeatureClass>();
+						for (Class c : classes) {
+							FeatureClass fc = new FeatureClass();
+							fc.setFeature(f);
+							fc.setClass_(c);
+							featureClasses.add(fc);
+						}
+						f.setFeatureClasses(featureClasses);
 						features.add(f);
 					}
 				}
@@ -98,7 +109,7 @@ public class FeatureDefiner {
 	 * @param graph
 	 * @return
 	 */
-	private List<Class> featureClasses(Class controllerClass, Method controllerMethod, Graph<NodeInfo, DefaultEdge> graph) {		
+	private List<Class> defineClassesToFeature (Class controllerClass, Method controllerMethod, Graph<NodeInfo, DefaultEdge> graph) {		
 		List<Method> visitedMethods = new ArrayList<Method>();
 		List<Class> referencesClass = new ArrayList<Class>();
 		List<ClassMethodVisit> cmvList = new ArrayList<ClassMethodVisit>();

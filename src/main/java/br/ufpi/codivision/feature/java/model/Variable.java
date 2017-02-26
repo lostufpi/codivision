@@ -1,12 +1,21 @@
 package br.ufpi.codivision.feature.java.model;
 
+import java.io.Serializable;
+
 /**
  * @author Vanderson Moura
  *
  */
-public class Variable {
+public class Variable implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String type;
 	private String name;
+	
+	public Variable() {
+	}
 	
 	/**
 	 * @param type

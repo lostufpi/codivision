@@ -11,6 +11,7 @@ import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Class;
 import br.ufpi.codivision.feature.java.model.Feature;
+import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Package;
 
@@ -89,13 +90,10 @@ public class TestFeatureDefiner {
 		FeatureDefiner fd = new FeatureDefiner();
 		features = fd.definer(packages, cgb.getG());
 		//List<Class> classList = fd.featureClasses(controller, m, cgb.getG());
-		for (Feature feature : features) {
-			System.out.println("FEATURE: " + feature.getName());
-			System.out.println("CLASSES: ");
-			for (Class c : feature.getClasses()) {
-				System.out.print("["+c.formatName()+"] ");
+		for(Feature feature : features){
+			for (FeatureClass featureClasse : feature.getFeatureClasses()) {
+				System.out.println(feature.getName() + ": " + featureClasse.getClass_().formatFullname());
 			}
-			System.out.println("\n---------------------------------------------------------------------------");
 		}
 	}
 }

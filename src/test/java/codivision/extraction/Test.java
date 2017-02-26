@@ -22,6 +22,7 @@ import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Feature;
+import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 
 public class Test {
@@ -79,15 +80,11 @@ public class Test {
 			System.out.println("");
 			}
 	
-		for(Feature aux: features){
-			System.out.println(aux.getName());
-			for(br.ufpi.codivision.feature.java.model.Class c: aux.getClasses()){
-				System.out.println(c.getFullname());
+		for(Feature feature : features){
+			for (FeatureClass featureClasse : feature.getFeatureClasses()) {
+				System.out.println(feature.getName() + ": " + featureClasse.getClass_().formatFullname());
 			}
 		}
-		
-				
-		
 		util.closeRepository();
 	}
 

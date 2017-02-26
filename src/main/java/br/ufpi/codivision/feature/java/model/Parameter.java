@@ -1,11 +1,19 @@
 package br.ufpi.codivision.feature.java.model;
 
+
 /**
  * @author Vanderson Moura
  *
  */
 public class Parameter extends Variable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private boolean optional;
+	
+	public Parameter() {
+	}
 	
 	/**
 	 * @param type

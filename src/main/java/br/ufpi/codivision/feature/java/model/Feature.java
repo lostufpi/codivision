@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
 
@@ -26,9 +25,6 @@ public class Feature implements PersistenceEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	
-	@Transient 
-	private List<Class> classes;
 	
 	@OneToMany(mappedBy = "feature")
 	private List<FeatureClass> featureClasses;
@@ -49,12 +45,12 @@ public class Feature implements PersistenceEntity {
 
 	/**
 	 * @param name
-	 * @param classes
+	 * @param featureClasses
 	 */
-	public Feature(String name, List<Class> classes) {
+	public Feature(String name, List<FeatureClass> featureClasses) {
 		super();
 		this.name = name;
-		this.classes = classes;
+		this.featureClasses = featureClasses;
 	}
 	
 	@Override
@@ -79,20 +75,6 @@ public class Feature implements PersistenceEntity {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	/**
-	 * @return the classes
-	 */
-	public List<Class> getClasses() {
-		return classes;
-	}
-
-	/**
-	 * @param classes the classes to set
-	 */
-	public void setClasses(List<Class> classes) {
-		this.classes = classes;
 	}
 
 	/**

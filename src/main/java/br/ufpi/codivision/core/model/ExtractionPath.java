@@ -100,4 +100,17 @@ public class ExtractionPath implements PersistenceEntity{
 		this.path = path;
 	}
 
+	/**
+	 * @return the features
+	 */
+	public List<Feature> getFeatures() {
+		return features;
+	}
+
+	/**
+	 * @param features the features to set
+	 */
+	public void setFeatures(List<Feature> features) {
+		this.features = features;
+	}
 }
