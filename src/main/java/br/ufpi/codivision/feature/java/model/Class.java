@@ -194,6 +194,20 @@ public class Class implements PersistenceEntity {
 		return this.fullname.substring(0, fullname.indexOf(Constants.DOT));
 	}
 	
+	/**
+	 * @return the featuresClasses
+	 */
+	public List<FeatureClass> getFeatureClasses() {
+		return featureClasses;
+	}
+
+	/**
+	 * @param featureClasses the featureClasses to set
+	 */
+	public void setFeatureClasses(List<FeatureClass> featureClasses) {
+		this.featureClasses = featureClasses;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
