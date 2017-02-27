@@ -8,11 +8,12 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import br.ufpi.codivision.core.util.Constants;
+import br.ufpi.codivision.feature.commom.identify.FeatureIdentify;
+import br.ufpi.codivision.feature.commom.model.Feature;
+import br.ufpi.codivision.feature.commom.model.FeatureElement;
 import br.ufpi.codivision.feature.java.algorithm.model.ClassMethodVisit;
 import br.ufpi.codivision.feature.java.model.Attribute;
 import br.ufpi.codivision.feature.java.model.Class;
-import br.ufpi.codivision.feature.java.model.Feature;
-import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.Method;
 import br.ufpi.codivision.feature.java.model.MethodInvocation;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
@@ -23,7 +24,10 @@ import br.ufpi.codivision.feature.java.model.Variable;
  * @author Vanderson Moura
  *
  */
-public class FeatureDefiner {
+public class FeatureDefiner implements FeatureIdentify{
+	
+	private List<Package> controllerPakages;
+	private Graph<NodeInfo, DefaultEdge> graph;
 	
 	/**
 	 * 
@@ -31,30 +35,48 @@ public class FeatureDefiner {
 	public FeatureDefiner() {
 	}
 	
+	
+	/**
+	 * @param controllerPakages
+	 * @param graph
+	 */
+	public FeatureDefiner(List<Package> controllerPakages,
+			Graph<NodeInfo, DefaultEdge> graph) {
+		super();
+		this.controllerPakages = controllerPakages;
+		this.graph = graph;
+	}
+
+	
+	@Override
+	public List<Feature> featureIndentify() {
+		return define();
+	}
+
 	/**
 	 * @param controllerPakages
 	 * @param graph
 	 * @return
 	 */
-	public List<Feature> definer(List<Package> controllerPakages, Graph<NodeInfo, DefaultEdge> graph){
+	private List<Feature> define(){
 		List<Feature> features = new ArrayList<>();
-		List<FeatureClass> featureClasses = new ArrayList<FeatureClass>();
+		List<FeatureElement> featureClasses = new ArrayList<FeatureElement>();
 		
-		for (Package controllerPackage : controllerPakages) {
+		for (Package controllerPackage : this.controllerPakages) {
 			for (Class controllerClass : controllerPackage.getClasses()) {
 				for (Method controllerMethod : controllerClass.getMethods()) {
-					if(isPrimaryMethod(controllerMethod, graph)){
+					if(isPrimaryMethod(controllerMethod, this.graph)){
 						String name = controllerClass.formatName().concat(Constants.DOT).concat(controllerMethod.getName());
-						List<Class> classes = defineClassesToFeature(controllerClass, controllerMethod, graph);
+						List<Class> classes = defineClassesToFeature(controllerClass, controllerMethod, this.graph);
 						Feature f = new Feature(name);
-						featureClasses = new ArrayList<FeatureClass>();
+						featureClasses = new ArrayList<FeatureElement>();
 						for (Class c : classes) {
-							FeatureClass fc = new FeatureClass();
+							FeatureElement fc = new FeatureElement();
 							fc.setFeature(f);
-							fc.setClass_(c);
+							fc.setElement(c);
 							featureClasses.add(fc);
 						}
-						f.setFeatureClasses(featureClasses);
+						f.setFeatureElements(featureClasses);
 						features.add(f);
 					}
 				}
@@ -120,7 +142,7 @@ public class FeatureDefiner {
 			Class sourceClass = cmvList.get(0).getC();
 			Method sourceMethod = cmvList.get(0).getMethod();
 			addSimpleName(referencesClass, sourceMethod, graph);
-			formatAndAddMultiTypesVariables(referencesClass, sourceMethod, graph);
+			formatAndAddMultiTypesVariables(referencesClass, sourceMethod);
 			
 			for (MethodInvocation mi : sourceMethod.getMethodInvocations()) {
 				if(!referencesClass.contains(sourceClass)){
@@ -171,13 +193,13 @@ public class FeatureDefiner {
 			}
 			
 			if(type == null){ //SE NÃO FOR UM ATRIBUTO DA CLASSE OU DO MÉTODO, A EXPRESSÃO PODE REPRESENTAR UMA CLASSE (ACESSANDO MÉTODO ESTÁTICO) 
-				Class expressionClass = findClassFromType(graph, sourceClass, expression);
+				Class expressionClass = findClassFromType(sourceClass, expression);
 				if(expressionClass != null){
 					type = expressionClass.formatName();
 				}
 			}
 		}
-		targetClass = type == null ? sourceClass : findClassFromType(graph, sourceClass, type);
+		targetClass = type == null ? sourceClass : findClassFromType(sourceClass, type);
 		
 		if(targetClass != null){
 			Method targetMethod = findTargetMethod(sourceClass, targetClass, sourceMethod, mi);
@@ -397,7 +419,7 @@ public class FeatureDefiner {
 	 */
 	private void addSimpleName(List<Class> referencesClass, Method method, Graph<NodeInfo, DefaultEdge> graph){
 		for (String simpleName : method.getSimpleNames()) {
-			Class c = findClassFromType(graph, method.getOwnerClass(), simpleName);
+			Class c = findClassFromType(method.getOwnerClass(), simpleName);
 			if(c != null){
 				if(!referencesClass.contains(c)){
 					referencesClass.add(c);
@@ -415,7 +437,7 @@ public class FeatureDefiner {
 	 * @param sourceMethod
 	 * @param graph
 	 */
-	private void formatAndAddMultiTypesVariables (List<Class> referencesClass, Method sourceMethod,  Graph<NodeInfo, DefaultEdge> graph){
+	private void formatAndAddMultiTypesVariables (List<Class> referencesClass, Method sourceMethod){
 		String type = null;
 		for (String simpleName : sourceMethod.getSimpleNames()) {
 			for (Variable variable : sourceMethod.getVariables()) {
@@ -435,7 +457,7 @@ public class FeatureDefiner {
 			String[] types = type != null ? formatType(type) : null;
 			if(types != null){
 				for (String t : types) {
-					Class c = findClassFromType(graph, sourceMethod.getOwnerClass(), t);
+					Class c = findClassFromType(sourceMethod.getOwnerClass(), t);
 					if(c != null){
 						if(!referencesClass.contains(c)){
 							referencesClass.add(c);
@@ -452,10 +474,10 @@ public class FeatureDefiner {
 	 * @param type
 	 * @return
 	 */
-	private Class findClassFromType (Graph<NodeInfo, DefaultEdge> graph, Class classSource, String type){
+	private Class findClassFromType (Class classSource, String type){
 		NodeInfo ni = new NodeInfo(new Class());
 	
-		for (Iterator<NodeInfo> iterator = graph.vertexSet().iterator(); iterator.hasNext();) {
+		for (Iterator<NodeInfo> iterator = this.graph.vertexSet().iterator(); iterator.hasNext();) {
 			NodeInfo node = iterator.next();
 			if(node.getC().equals(classSource)){
 				ni = node;
@@ -463,10 +485,10 @@ public class FeatureDefiner {
 		}
 		type = formatType(type)[0];
 		
-		for (Iterator<DefaultEdge> i =  graph.edgesOf(ni).iterator(); i.hasNext();) {
+		for (Iterator<DefaultEdge> i =  this.graph.edgesOf(ni).iterator(); i.hasNext();) {
 			DefaultEdge de = (DefaultEdge) i.next();
-			if(type.equals(graph.getEdgeTarget(de).getC().formatName())){
-				return graph.getEdgeTarget(de).getC();
+			if(type.equals(this.graph.getEdgeTarget(de).getC().formatName())){
+				return this.graph.getEdgeTarget(de).getC();
 			}
 		}
 		return null;

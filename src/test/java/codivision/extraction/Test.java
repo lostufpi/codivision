@@ -18,11 +18,11 @@ import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
+import br.ufpi.codivision.feature.commom.model.Feature;
+import br.ufpi.codivision.feature.commom.model.FeatureElement;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
-import br.ufpi.codivision.feature.java.model.Feature;
-import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 
 public class Test {
@@ -67,8 +67,8 @@ public class Test {
 		ClassGraphBuilder builder = new ClassGraphBuilder(util.getRepositoryJavaFiles());
 		ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
 		
-		FeatureDefiner definer = new FeatureDefiner();
-		List<Feature> features = definer.definer(controllerDefiner.controllersDefiner(), builder.getG());
+		FeatureDefiner definer = new FeatureDefiner(controllerDefiner.controllersDefiner(), builder.getG());
+		List<Feature> features = definer.featureIndentify();
 		
 		for (Iterator<NodeInfo> iterator = builder.getG().vertexSet().iterator(); iterator.hasNext();) {
 			NodeInfo c = iterator.next();
@@ -81,8 +81,8 @@ public class Test {
 			}
 	
 		for(Feature feature : features){
-			for (FeatureClass featureClasse : feature.getFeatureClasses()) {
-				System.out.println(feature.getName() + ": " + featureClasse.getClass_().formatFullname());
+			for (FeatureElement featureClasse : feature.getFeatureElements()) {
+				System.out.println(feature.getName() + ": " + featureClasse.getElement().formatFullname());
 			}
 		}
 		util.closeRepository();

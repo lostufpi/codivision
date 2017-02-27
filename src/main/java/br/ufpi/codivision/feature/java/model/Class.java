@@ -3,42 +3,30 @@ package br.ufpi.codivision.feature.java.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
-import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.core.util.Constants;
+import br.ufpi.codivision.feature.commom.model.Element;
 
 /**
  * @author Vanderson Moura
  *
  */
 @Entity
-public class Class implements PersistenceEntity {
+@DiscriminatorValue("JAVA")
+public class Class extends Element{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	private String name;
-	private String fullname;
-	
+
 	@Transient private String content;
 	@Transient private String packageName; 
 	@Transient private List<Method> methods;
 	@Transient private List<Attribute> attributes;
 	@Transient private Class superClass;
-	
-	@OneToMany(mappedBy = "class_")
-	private List<FeatureClass> featureClasses;
 	
 	/**
 	 * 
@@ -56,8 +44,8 @@ public class Class implements PersistenceEntity {
 	 */
 	public Class(String fullname, String content, String packageName) {
 		super();
-		this.fullname = fullname;
-		this.name = fullname.substring(fullname.lastIndexOf(Constants.FILE_SEPARATOR) + 1);
+		this.setFullname(fullname);
+		this.setName(fullname.substring(fullname.lastIndexOf(Constants.FILE_SEPARATOR) + 1));
 		this.content = content;
 		this.packageName = packageName;
 		this.methods = new ArrayList<Method>();
@@ -69,10 +57,10 @@ public class Class implements PersistenceEntity {
 	public Long getId() {
 		return this.id;
 	}
-	
+
 	@Override
 	public void setId(Long id) {
-		this.id = id;		
+		this.id = id;
 	}
 	
 	/**
@@ -94,34 +82,6 @@ public class Class implements PersistenceEntity {
 	 */
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	/**
-	 * @return the fullname
-	 */
-	public String getFullname() {
-		return fullname;
-	}
-
-	/**
-	 * @param fullname the fullname to set
-	 */
-	public void setFullname(String fullname) {
-		this.fullname = fullname;
 	}
 
 	/**
@@ -179,35 +139,7 @@ public class Class implements PersistenceEntity {
 	public void setSuperClass(Class superClass) {
 		this.superClass = superClass;
 	}
-
-	/**
-	 * @return the formated name
-	 */
-	public String formatName(){
-		return this.name.substring(0, name.indexOf(Constants.DOT));
-	}
 	
-	/**
-	 * @return the formated fullname
-	 */
-	public String formatFullname(){
-		return this.fullname.substring(0, fullname.indexOf(Constants.DOT));
-	}
-	
-	/**
-	 * @return the featuresClasses
-	 */
-	public List<FeatureClass> getFeatureClasses() {
-		return featureClasses;
-	}
-
-	/**
-	 * @param featureClasses the featureClasses to set
-	 */
-	public void setFeatureClasses(List<FeatureClass> featureClasses) {
-		this.featureClasses = featureClasses;
-	}
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

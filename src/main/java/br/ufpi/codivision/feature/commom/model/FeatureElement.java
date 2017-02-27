@@ -1,4 +1,4 @@
-package br.ufpi.codivision.feature.java.model;
+package br.ufpi.codivision.feature.commom.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -6,18 +6,24 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
 import br.ufpi.codivision.common.model.PersistenceEntity;
 
 /**
  * @author Vanderson Moura
  *
  */
+/**
+ * @author Vanderson Moura
+ *
+ */
 @Entity
-public class FeatureClass implements PersistenceEntity{
+public class FeatureElement implements PersistenceEntity{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -27,8 +33,11 @@ public class FeatureClass implements PersistenceEntity{
 	private Feature feature;
 	
 	@ManyToOne
-	@JoinColumn(name = "classId")
-	private Class class_;
+	@JoinColumn(name = "elementId")
+	private Element element;
+	
+	public FeatureElement() {
+	}
 
 	@Override
 	public Long getId() {
@@ -55,16 +64,16 @@ public class FeatureClass implements PersistenceEntity{
 	}
 
 	/**
-	 * @return the class_
+	 * @return the element
 	 */
-	public Class getClass_() {
-		return class_;
+	public Element getElement() {
+		return element;
 	}
 
 	/**
-	 * @param class_ the class_ to set
+	 * @param element the element to set
 	 */
-	public void setClass_(Class class_) {
-		this.class_ = class_;
+	public void setElement(Element element) {
+		this.element = element;
 	}
 }

@@ -1,4 +1,4 @@
-package br.ufpi.codivision.feature.java.model;
+package br.ufpi.codivision.feature.commom.model;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class Feature implements PersistenceEntity {
 	private String name;
 	
 	@OneToMany(mappedBy = "feature")
-	private List<FeatureClass> featureClasses;
+	private List<FeatureElement> featureElements;
 	
 	/**
 	 * 
@@ -45,12 +45,12 @@ public class Feature implements PersistenceEntity {
 
 	/**
 	 * @param name
-	 * @param featureClasses
+	 * @param featureElements
 	 */
-	public Feature(String name, List<FeatureClass> featureClasses) {
+	public Feature(String name, List<FeatureElement> featureElements) {
 		super();
 		this.name = name;
-		this.featureClasses = featureClasses;
+		this.featureElements = featureElements;
 	}
 	
 	@Override
@@ -78,16 +78,16 @@ public class Feature implements PersistenceEntity {
 	}
 
 	/**
-	 * @return the featuresClasses 
+	 * @return the featuresElements 
 	 */
-	public List<FeatureClass> getFeatureClasses() {
-		return featureClasses;
+	public List<FeatureElement> getFeatureElements() {
+		return featureElements;
 	}
 
 	/**
-	 * @param featureClasses the featureClasses to set
+	 * @param featureElements the featureElements to set
 	 */
-	public void setFeatureClasses(List<FeatureClass> featureClasses) {
-		this.featureClasses = featureClasses;
+	public void setFeatureElements(List<FeatureElement> featureElements) {
+		this.featureElements = featureElements;
 	}
 }

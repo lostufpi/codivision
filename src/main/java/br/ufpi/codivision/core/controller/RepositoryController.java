@@ -444,6 +444,7 @@ public class RepositoryController {
 				for(ExtractionPath path2:repositoryUpdate.getExtractionPaths()){
 					if(path.getPath().equals(path2.getPath())){
 						path.setDirTree(path2.getDirTree());
+						path.setFeatures(path2.getFeatures());
 					}
 				}
 			}

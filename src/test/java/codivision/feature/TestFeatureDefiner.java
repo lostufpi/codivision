@@ -6,12 +6,12 @@ import java.util.List;
 
 import org.jgrapht.graph.DefaultEdge;
 
+import br.ufpi.codivision.feature.commom.model.Feature;
+import br.ufpi.codivision.feature.commom.model.FeatureElement;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Class;
-import br.ufpi.codivision.feature.java.model.Feature;
-import br.ufpi.codivision.feature.java.model.FeatureClass;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Package;
 
@@ -87,12 +87,12 @@ public class TestFeatureDefiner {
 //		}
 		
 		List<Feature> features = new ArrayList<>();
-		FeatureDefiner fd = new FeatureDefiner();
-		features = fd.definer(packages, cgb.getG());
+		FeatureDefiner fd = new FeatureDefiner(packages, cgb.getG());
+		features = fd.featureIndentify();
 		//List<Class> classList = fd.featureClasses(controller, m, cgb.getG());
 		for(Feature feature : features){
-			for (FeatureClass featureClasse : feature.getFeatureClasses()) {
-				System.out.println(feature.getName() + ": " + featureClasse.getClass_().formatFullname());
+			for (FeatureElement featureClasse : feature.getFeatureElements()) {
+				System.out.println(feature.getName() + ": " + featureClasse.getElement().formatFullname());
 			}
 		}
 	}

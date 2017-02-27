@@ -17,7 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
-import br.ufpi.codivision.feature.java.model.Feature;
+import br.ufpi.codivision.feature.commom.model.Feature;
 
 /**
  * @author Werney Ayala
