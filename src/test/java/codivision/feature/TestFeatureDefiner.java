@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.jgrapht.graph.DefaultEdge;
 
-import br.ufpi.codivision.feature.commom.model.Feature;
-import br.ufpi.codivision.feature.commom.model.FeatureElement;
+import br.ufpi.codivision.feature.common.model.Feature;
+import br.ufpi.codivision.feature.common.model.FeatureElement;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;

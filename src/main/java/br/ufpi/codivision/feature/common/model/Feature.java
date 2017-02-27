@@ -1,4 +1,4 @@
-package br.ufpi.codivision.feature.commom.model;
+package br.ufpi.codivision.feature.common.model;
 
 import java.util.List;
 

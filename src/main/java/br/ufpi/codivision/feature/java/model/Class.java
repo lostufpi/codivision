@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import br.ufpi.codivision.core.util.Constants;
-import br.ufpi.codivision.feature.commom.model.Element;
+import br.ufpi.codivision.feature.common.model.Element;
 
 /**
  * @author Vanderson Moura

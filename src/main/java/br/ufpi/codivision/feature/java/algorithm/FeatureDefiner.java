@@ -8,9 +8,9 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import br.ufpi.codivision.core.util.Constants;
-import br.ufpi.codivision.feature.commom.identify.FeatureIdentify;
-import br.ufpi.codivision.feature.commom.model.Feature;
-import br.ufpi.codivision.feature.commom.model.FeatureElement;
+import br.ufpi.codivision.feature.common.identify.FeatureIdentify;
+import br.ufpi.codivision.feature.common.model.Feature;
+import br.ufpi.codivision.feature.common.model.FeatureElement;
 import br.ufpi.codivision.feature.java.algorithm.model.ClassMethodVisit;
 import br.ufpi.codivision.feature.java.model.Attribute;
 import br.ufpi.codivision.feature.java.model.Class;
