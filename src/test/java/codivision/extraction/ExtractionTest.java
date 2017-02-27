@@ -68,7 +68,7 @@ public class ExtractionTest {
 		ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
 		
 		FeatureDefiner definer = new FeatureDefiner(controllerDefiner.controllersDefiner(), builder.getG());
-		List<Feature> features = definer.featureIndentify();
+		List<Feature> features = definer.featureIdentify();
 		
 //		for (Iterator<NodeInfo> iterator = builder.getG().vertexSet().iterator(); iterator.hasNext();) {
 //			NodeInfo c = iterator.next();

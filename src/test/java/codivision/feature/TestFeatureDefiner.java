@@ -88,7 +88,7 @@ public class TestFeatureDefiner {
 		
 		List<Feature> features = new ArrayList<>();
 		FeatureDefiner fd = new FeatureDefiner(packages, cgb.getG());
-		features = fd.featureIndentify();
+		features = fd.featureIdentify();
 		//List<Class> classList = fd.featureClasses(controller, m, cgb.getG());
 		for(Feature feature : features){
 			for (FeatureElement featureClasse : feature.getFeatureElements()) {
