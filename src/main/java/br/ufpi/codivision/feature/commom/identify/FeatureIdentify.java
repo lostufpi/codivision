@@ -5,5 +5,5 @@ import java.util.List;
 import br.ufpi.codivision.feature.commom.model.Feature;
 
 public interface FeatureIdentify {
-	public List<Feature> featureIndentify();
+	public List<Feature> featureIdentify();
 }

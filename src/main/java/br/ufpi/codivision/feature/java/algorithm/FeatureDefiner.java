@@ -49,7 +49,7 @@ public class FeatureDefiner implements FeatureIdentify{
 
 	
 	@Override
-	public List<Feature> featureIndentify() {
+	public List<Feature> featureIdentify() {
 		return define();
 	}
 
