@@ -91,8 +91,8 @@ public class TestFeatureDefiner {
 		features = fd.featureIdentify();
 		//List<Class> classList = fd.featureClasses(controller, m, cgb.getG());
 		for(Feature feature : features){
-			for (FeatureElement featureClasse : feature.getFeatureElements()) {
-				System.out.println(feature.getName() + ": " + featureClasse.getElement().formatFullname());
+			for (FeatureElement featureElement : feature.getFeatureElements()) {
+				System.out.println(feature.getName() + ": " + featureElement.getElement().formatFullname());
 			}
 		}
 	}

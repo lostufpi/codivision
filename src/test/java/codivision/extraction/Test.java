@@ -81,8 +81,8 @@ public class Test {
 			}
 	
 		for(Feature feature : features){
-			for (FeatureElement featureClasse : feature.getFeatureElements()) {
-				System.out.println(feature.getName() + ": " + featureClasse.getElement().formatFullname());
+			for (FeatureElement featureElement : feature.getFeatureElements()) {
+				System.out.println(feature.getName() + ": " + featureElement.getElement().formatFullname());
 			}
 		}
 		util.closeRepository();
