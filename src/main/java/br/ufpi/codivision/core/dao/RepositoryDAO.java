@@ -4,12 +4,9 @@
 package br.ufpi.codivision.core.dao;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.NoResultException;
-import javax.persistence.TemporalType;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
 import br.ufpi.codivision.core.model.Configuration;
@@ -174,6 +171,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public LineChart getTestCommitsHistory(long repositoryId){
 		
 		Repository repository = findById(repositoryId);
@@ -207,7 +205,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				+ "ORDER BY revision.date";
 		//commits sem ser de testes
 		String query1 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -219,7 +217,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				+ "ORDER BY revision.date";
 		//commits de testes
 		String query2 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -233,6 +231,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		LineChart chart = new LineChart();
 		
 		
+		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		String[] categories = new String[list.size()];
 		
@@ -242,7 +241,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		}
 		List<Object[]> list1 = em.createQuery(query1).getResultList();
 		CommitHistory history = new CommitHistory();
-		history.setName("Commits Comuns");
+		history.setName("Contribuição");
 		
 		long[] vetor = new long[list.size()];
 		fodefora: for(int i = 0; i < list.size(); i++){
@@ -259,7 +258,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 		List<Object[]> list2 = em.createQuery(query2).getResultList();
 		CommitHistory history2 = new CommitHistory();
-		history2.setName("Commits de Teste");
+		history2.setName("Contribuição nos Testes");
 		
 		long[] vetor2 = new long[list.size()];
 		
@@ -288,6 +287,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<CommitHistory> getContribuitionAuthorTest(long repositoryId){
 		
 		Repository repository = findById(repositoryId);
@@ -311,7 +311,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		}
 		
 				String query = "SELECT revision.author as author, "
-						+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+						+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 						+ "FROM Repository AS repository "
 						+ "inner join repository.configuration as configuration, "
 						+ "IN(repository.revisions) as revision, "
@@ -338,8 +338,8 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				return lista;
 				
 	}
-	
-	public List<CommitHistory> getContribuitionQntLine(long repositoryId, String path){
+	@SuppressWarnings("unchecked")
+	public LineChart getContribuitionQntLine(long repositoryId, String path){
 	
 		Repository repository = findById(repositoryId);
 		String testPathNot = "";
@@ -362,7 +362,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		}
 		
 		String query = "SELECT revision.author as author, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -387,11 +387,83 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		}
 		
 		QuickSort.sort(lista);
-		return lista;
+		
+		List<CommitHistory> listaTest = getContribuitionQntLineTest(repositoryId, path);
+		
+		
+		
+		List<String> dev = new ArrayList<String>();
+		
+		for(int i = 0; i <lista.size(); i++){
+			dev.add(lista.get(i).getName());
+		}
+		
+		for(int i = 0; i< listaTest.size(); i++){
+			int qnt = 0;
+			for(String aux: dev){
+				if(aux.equals(listaTest.get(i).getName())){
+					qnt++;
+				}
+			}
+			if(qnt==0){
+				dev.add(listaTest.get(i).getName());
+			}
+		}
+		
+		long[] vetor = new long[dev.size()];
+		long[] vetor1 = new long[dev.size()];
+		
+		int j = 0;
+		
+		CommitHistory contri = new CommitHistory();
+		contri.setName("Contribuicao");
+		
+		CommitHistory contriTest = new CommitHistory();
+		contriTest.setName("Contribuicao nos Testes");
+		
+		for(String aux: dev){
+			
+			vetor[j] = 0;
+			for(int i = 0; i <lista.size(); i++){
+				if(aux.equals(lista.get(i).getName())){
+					vetor[j] = lista.get(i).getData()[0];
+				}
+			}
+			
+			vetor1[j] = 0;
+			for(int i = 0; i <listaTest.size(); i++){
+				if(aux.equals(listaTest.get(i).getName())){
+					vetor1[j] = listaTest.get(i).getData()[0];
+				}
+			}
+			j++;
+		}
+		
+		contri.setData(vetor);
+		
+		contriTest.setData(vetor1);
+		
+		List<CommitHistory> total = new ArrayList<CommitHistory>();
+		total.add(contri);
+		total.add(contriTest);
+		
+		
+		String[] desen = new String[dev.size()];
+		int k = 0;
+		for(String aux:dev){
+			desen[k] = aux;
+			k++;
+		}
+		
+		LineChart chart = new LineChart();
+		chart.setDataSeries(total);
+		chart.setDataCategories(desen);
+		
+		return chart;
 		
 		
 	}
-	
+	@SuppressWarnings("unchecked")
 	public List<CommitHistory> getContribuitionQntLineTest(long repositoryId, String path){
 		
 		Repository repository = findById(repositoryId);
@@ -414,7 +486,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 			testPath = testPath + ") ";
 		}
 		String query = "SELECT revision.author as author, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -442,28 +514,28 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		return lista;
 		
 	}
+	@SuppressWarnings("unchecked")
+	public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 	
-public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
-	
-	Repository repository = findById(repositoryId);
-	String testPathNot = "";
-	String testPath = "AND file.path LIKE '' ";
-	if(repository.getTestFiles().size()!=0){
-		testPath = "AND (";
-		testPathNot = "AND NOT(";
-	}
-	for(int i = 0; i < repository.getTestFiles().size(); i++){
-		testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
-		testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
-		if(i < repository.getTestFiles().size()-1){
-			testPathNot = testPathNot + " OR ";
-			testPath = testPath + " OR ";
+		Repository repository = findById(repositoryId);
+		String testPathNot = "";
+		String testPath = "AND file.path LIKE '' ";
+		if(repository.getTestFiles().size()!=0){
+			testPath = "AND (";
+			testPathNot = "AND NOT(";
 		}
-	}
-	if(repository.getTestFiles().size()!=0){
-		testPathNot = testPathNot + ") ";
-		testPath = testPath + ") ";
-	}
+		for(int i = 0; i < repository.getTestFiles().size(); i++){
+			testPathNot = testPathNot + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			testPath = testPath + "file.path LIKE '"+repository.getTestFiles().get(i).getPath()+"%'";
+			if(i < repository.getTestFiles().size()-1){
+				testPathNot = testPathNot + " OR ";
+				testPath = testPath + " OR ";
+			}
+		}
+		if(repository.getTestFiles().size()!=0){
+			testPathNot = testPathNot + ") ";
+			testPath = testPath + ") ";
+		}
 		
 		//todos os commits
 		String query = "SELECT DAY(revision.date) as day, MONTHNAME(revision.date) as month "
@@ -477,7 +549,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 				+ "ORDER BY revision.date";
 		//commits sem ser de testes
 		String query1 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -489,7 +561,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 				+ "ORDER BY revision.date";
 		//commits de testes
 		String query2 = "SELECT DAY(revision.date) as dia, MONTHNAME(revision.date) as mes, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
@@ -512,7 +584,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		}
 		List<Object[]> list1 = em.createQuery(query1).getResultList();
 		CommitHistory history = new CommitHistory();
-		history.setName("Commits");
+		history.setName("Contribuição");
 		
 		long[] vetor = new long[list.size()];
 		fodefora: for(int i = 0; i < list.size(); i++){
@@ -529,7 +601,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		
 		List<Object[]> list2 = em.createQuery(query2).getResultList();
 		CommitHistory history2 = new CommitHistory();
-		history2.setName("Commits de Teste");
+		history2.setName("Contribuição nos Testes");
 		
 		long[] vetor2 = new long[list.size()];
 		
@@ -557,7 +629,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		
 		
 	}
-
+	@SuppressWarnings("unchecked")
 	public List<String> getAuthors(long repositoryId){
 		String query = "SELECT revision.author as author "
 				+ "FROM Repository AS repository "
@@ -570,7 +642,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		List<String> list = em.createQuery(query).getResultList();
 		return list;
 	}
-	
+	@SuppressWarnings("unchecked")
 	public List<CommitHistory> getContribuitionQntLine(long repositoryId){
 		String path = "/";
 		Repository repository = findById(repositoryId);
@@ -593,24 +665,20 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 			testPath = testPath + ") ";
 		}
 		
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.MONTH, -2);
-		Date initDate = c.getTime();
-		
 		
 		String query = "SELECT revision.author as author, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
 				+ "IN(revision.files) as file "
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPathNot
-				+ "and revision.date >= :data and "
-				+ "revision.date <= current_date() "
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
 				+ "GROUP BY revision.author "
 				+ "ORDER BY revision.author";
 		
-		List<Object[]> list = em.createQuery(query).setParameter("data", initDate, TemporalType.TIMESTAMP).getResultList();
+		List<Object[]> list = em.createQuery(query).getResultList();
 		
 		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
 		for(int i = 0; i<list.size(); i++){
@@ -628,7 +696,7 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		
 		
 	}
-	
+	@SuppressWarnings("unchecked")
 	public List<CommitHistory> getContribuitionQntLineTest(long repositoryId){
 		String path = "/";
 		Repository repository = findById(repositoryId);
@@ -651,24 +719,21 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 			testPath = testPath + ") ";
 		}
 		
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.MONTH, -2);
-		Date initDate = c.getTime();
 		
 		
 		String query = "SELECT revision.author as author, "
-				+ "SUM(file.lineAdd + file.lineMod + file.lineDel + file.lineCondition) as soma "
+				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
 				+ "IN(revision.files) as file "
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPath
-				+ "and revision.date >= :data and "
-				+ "revision.date <= current_date() "
+				+ "and revision.date >= configuration.initDate and "
+				+ "revision.date <= configuration.endDate "
 				+ "GROUP BY revision.author "
 				+ "ORDER BY revision.author";
 		
-		List<Object[]> list = em.createQuery(query).setParameter("data", initDate, TemporalType.TIMESTAMP).getResultList();
+		List<Object[]> list = em.createQuery(query).getResultList();
 		
 		ArrayList<CommitHistory> lista = new ArrayList<CommitHistory>();
 		for(int i = 0; i<list.size(); i++){
@@ -683,6 +748,29 @@ public LineChart getTestCommitsHistoryAuthor(long repositoryId, String author){
 		
 		QuickSort.sort(lista);
 		return lista;
+		
+	}
+	
+	public List<AuthorPercentage> getPercentageContribuition(Long repositoryId){
+		
+		List<CommitHistory> contri = getContribuitionQntLine(repositoryId);
+		List<CommitHistory> contriTest = getContribuitionQntLineTest(repositoryId);
+		
+		long sumContri = 0;
+		for(CommitHistory aux: contri){
+			sumContri = sumContri + aux.getData()[0];
+		}
+		
+		long sumContriTest = 0;
+		for(CommitHistory aux: contriTest){
+			sumContriTest = sumContriTest + aux.getData()[0];
+		}
+		
+		List<AuthorPercentage> list = new ArrayList<AuthorPercentage>();
+		list.add(new AuthorPercentage("Contribuição", (double) sumContri, sumContri+sumContriTest));
+		list.add(new AuthorPercentage("Contribuição nos Testes", (double) sumContriTest, sumContri+sumContriTest));
+		
+		return list;
 		
 	}
 }

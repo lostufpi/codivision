@@ -10,39 +10,39 @@
 	<div class="row">
 	
 		<!-- Panel repository list -->	
-		<div class="col-lg-3">
-			<div class="panel panel-default text-center">
-				<div class="panel-heading">
-					<b>Locais críticos</b>
-				</div>
-				<!-- /.panel-heading -->
-				<div id="panel_wp" class="panel-body" style="overflow:auto; height:233px;">
-					<div class="list-group" id="warningPaths"></div>
-				</div>
-			</div>
+<!-- 		<div class="col-lg-3"> -->
+<!-- 			<div class="panel panel-default text-center"> -->
+<!-- 				<div class="panel-heading"> -->
+<!-- 					<b>Locais críticos</b> -->
+<!-- 				</div> -->
+<!-- 				/.panel-heading -->
+<!-- 				<div id="panel_wp" class="panel-body" style="overflow:auto; height:233px;"> -->
+<!-- 					<div class="list-group" id="warningPaths"></div> -->
+<!-- 				</div> -->
+<!-- 			</div> -->
 		
-			<div class="panel panel-default text-center">
-				<div class="panel-heading">
-					<b><fmt:message key="repository.paths" /></b>
-				</div>
-				<!-- /.panel-heading -->
-				<div class="panel-body" style="overflow:auto; height:233px;">
-					<div class="list-group text-center">
-							<c:forEach var="paths" items="${extractionPaths}">
-								<a class="list-group-item" href="${linkTo[RepositoryController].chart(repository.id, paths.id)}">${paths.path}</a>
-							</c:forEach>
-					</div>
+<!-- 			<div class="panel panel-default text-center"> -->
+<!-- 				<div class="panel-heading"> -->
+<%-- 					<b><fmt:message key="repository.paths" /></b> --%>
+<!-- 				</div> -->
+<!-- 				/.panel-heading -->
+<!-- 				<div class="panel-body" style="overflow:auto; height:233px;"> -->
+<!-- 					<div class="list-group text-center"> -->
+<%-- 							<c:forEach var="paths" items="${extractionPaths}"> --%>
+<%-- 								<a class="list-group-item" href="${linkTo[RepositoryController].chart(repository.id, paths.id)}">${paths.path}</a> --%>
+<%-- 							</c:forEach> --%>
+<!-- 					</div> -->
 					
-				</div>
-			</div>
-		</div>
+<!-- 				</div> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
 		
 		<!-- Panel repository chart -->
-		<div class="col-lg-9">
+		<div class="col-lg-12">
 			<div class="panel panel-default">
 				<div class="panel-body">
 				
-					<h3 style="display:inline-block">Porcentagem de alterações no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Porcentagem da Familiaridade no repositório ${repository.name}</h3>
 					<button style="margin-top: 15px" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
 					<jsp:include page="chart-config-modal.jsp" />
 					

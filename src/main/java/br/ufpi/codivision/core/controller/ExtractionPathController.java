@@ -65,6 +65,7 @@ public class ExtractionPathController {
 		ExtractionPath path= dao.findById(repositoryId,extractionPathId);
 		
 		if(path.getDirTreeJson()!=null && !path.getDirTreeJson().equals("")){
+			System.out.println("Retorno via json");
 			result.use(Results.json()).withoutRoot().from(path.getDirTreeJson()).recursive().serialize();
 			return;
 		}

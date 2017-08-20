@@ -3,7 +3,7 @@
 
 <body>
 
-
+	
 	<div class="col-lg-3">
 		<div class="panel panel-default" style="height: 401px;">
 			<div class="panel-body">
@@ -41,9 +41,8 @@
 					<h3>
 						<fmt:message key="repository.add" />
 					</h3>
-					<hr>
-					<form id="addForm" action="${linkTo[RepositoryController].add}"
-						method="post">
+					
+					
 						<div class="row">
 							<div class="col-lg-4">
 								<label for=""><fmt:message key="vcs" />:</label> <select
@@ -70,22 +69,22 @@
 							</div>
 						</div>
 
-						<div class="form-group" style="margin-top: 15px">
-							<label for="name"><fmt:message key="repository.name" />:</label>
-							<input type="text" class="form-control" id="name"
-								name="repository.name" required>
-						</div>
+<!-- 						<div class="form-group" style="margin-top: 15px"> -->
+<%-- 							<label for="name"><fmt:message key="repository.name" />:</label> --%>
+<!-- 							<input type="text" class="form-control" id="name" -->
+<!-- 								name="repository.name" required> -->
+<!-- 						</div> -->
 
-						<div id="div-url" class="form-group">
+						<div id="div-url" style="margin-top: 15px" >
 							<label for="url"><fmt:message key="repository.url" />:</label> <input
 								type="text" class="form-control" id="url" name="repository.url" required>
 						</div>
 
 						<hr>
-						<button type="submit" class="btn btn-primary pull-right">
+						<button id="btn_add" class="btn btn-primary pull-right">
 							<fmt:message key="add" />
 						</button>
-					</form>
+					
 				</div>
 			</div>
 		</div>
@@ -154,35 +153,99 @@
 		</div>
 
 	</div>
+	
+	<jsp:include page="list-credential-modal.jsp" />
+	<jsp:include page="loading-modal.jsp" />
+	<jsp:include page="error-modal.jsp" />
+					
 
 	<script>
 		$(document).ready(function() {
+			
+			
+			$('#path').val("/master");
+			$('#name').val(" ");
+			$('#name').attr('disabled', 'disabled');
 
 			$('#type').change(showdata);
-			showdata();
+			
 
 			function showdata() {
+				alert("show");
 				if ($('#type option:selected').attr('id') == 'SVN') {
+					alert("show svn");
+					document.getElementById('div_form').innerHTML = '<form id="addForm" action="/codivision/repository/add" method="POST">';
+					
+					
+					$('#btn_add').attr('type','submit');
 					$('#local').removeAttr('disabled');
 					$('#path').removeAttr('readonly');
 					$('#path').val("/trunk");
 					$('#name').removeAttr('disabled');
-				} if($('#type option:selected').attr('id') == 'GITHUB') {
-					$('#local').val("false").attr('selected', 'selected');
-					$('#local').attr('disabled', 'disabled');
-					$('#path').val("/master");
-					$('#path').attr('readonly', 'readonly');
-					$('#name').val(" ");
-					$('#name').attr('disabled', 'disabled');
-				} if($('#type option:selected').attr('id') == 'GIT') {
-					$('#local').attr('disabled', 'disabled');
-					$('#local').val("true").attr('selected', 'selected');
+				}  if($('#type option:selected').attr('id') == 'GIT') {
+					alert("show git");
+					document.getElementById('addForm').remove();
+					
+					
+					
+					$('#local').removeAttr('disabled');
 					$('#path').removeAttr('readonly');
 					$('#path').val("/master");
-					$('#name').removeAttr('disabled');
+					$('#name').val(" ");
+					$('#name').attr('disabled', 'disabled');
 				}
 				
 			}
+			
+			$('#btn_save').click(function(){
+				var login = $('#login').val();
+				var password = $('#password').val()
+				$('#loading').modal('show'); 
+				$.ajax({
+					type : 'POST',
+					url : '/codivision/repository/addRepository',
+					data : {'url' : $('#url').val(), 'branch' : $('#path').val(), 'local' : $('#local').val(), 'login' : login, 'password' : password},
+					success : function(data){
+						if(data==''){
+					 		document.location.reload(true);
+					 	}else{
+					 		document.getElementById('text').innerHTML = data;
+					 		$('#error').modal('show');
+					 		$('#loading').modal('hide');
+					 	}
+					}
+				});
+			});
+			
+			$('#btn_add').click(function(){
+				if($('#type option:selected').attr('id') == 'GIT'){
+				
+			    var url = $('#url').val();
+					
+				if(($('#url').val().includes('bitbucket') || $('#url').val().includes('gitlab') )){
+					$('#credential').modal('show'); 
+				
+				}else{
+					
+				$('#loading').modal('show'); 
+				$.ajax({
+					type : 'POST',
+					url : '/codivision/repository/addRepository',
+					data : {'url' : $('#url').val(), 'branch' : $('#path').val(), 'local' : $('#local').val(), 'login' : null, 'password' : null},
+					success : function(data){
+					 	if(data==''){
+					 		document.location.reload(true);
+					 	}else{
+					 		document.getElementById('text').innerHTML = data;
+					 		$('#error').modal('show');
+					 		$('#loading').modal('hide');
+					 	}
+					}
+				});
+				
+				}
+				}
+			});
 		});
 	</script>
 

@@ -5,18 +5,16 @@ package br.ufpi.codivision.core.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.errors.AmbiguousObjectException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,12 +56,14 @@ import br.ufpi.codivision.core.model.validator.ConfigurationValidator;
 import br.ufpi.codivision.core.model.validator.ExtractionPathValidator;
 import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
-import br.ufpi.codivision.core.model.vo.CommitHistory;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.BinaryFile;
 import br.ufpi.codivision.core.util.DeleteDir;
+import br.ufpi.codivision.core.util.GenerateHashPasswordUtil;
+import br.ufpi.codivision.core.util.Outliers;
+import br.ufpi.codivision.core.util.QuickSort;
 
 /**
  * @author Werney Ayala
@@ -110,20 +110,33 @@ public class RepositoryController {
 	public void list(){
 		List<RepositoryVO> repositoryList = dao.listMyRepositories(userSession.getUser().getId());
 		String urlImage = userSession.getUser().getGravatarImageUrl() + "?s=217";
-		List<RepositoryType> types = new ArrayList<RepositoryType>(Arrays.asList(RepositoryType.values()));
+		//List<RepositoryType> types = new ArrayList<RepositoryType>(Arrays.asList(RepositoryType.values()));
+		List<RepositoryType> types = new ArrayList<RepositoryType>();
+		types.add(RepositoryType.GIT);
 		result.include("urlImage", urlImage);
 		result.include("types", types);
 		result.include("repositoryList", repositoryList);
 	}
 	
 	@Post("/repository/addRepository")
-	public void addRepository(String url){
-		boolean success = DeleteDir.deleteDir(new File("metadata-codivision"));
-	    if (!success) {
-	        System.out.println("arquivo nao existe"); 
-	    }else{
-	    	System.out.println("arquivo removido");
-	    }
+	public void addRepository(String url, String branch,
+			boolean local, String login, String password){
+		
+		System.out.println(url+" - "+branch+" - "+local+" - "+login+" - "+password);
+		
+		String hash = url;
+		try {
+			hash = GenerateHashPasswordUtil.generateHash(url);
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		System.out.println(hash);
+		System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(hash))));
 	    
 	    Configuration configuration = new Configuration();
 		configuration.setAddWeight(1.0);
@@ -131,11 +144,11 @@ public class RepositoryController {
 		configuration.setDelWeight(0.5);
 		configuration.setConditionWeight(1.0);
 		configuration.setChangeDegradation(5);
-		configuration.setMonthlyDegradation(10);
+		configuration.setMonthlyDegradation(0);
 		configuration.setAlertThreshold(60);
 		configuration.setExistenceThreshold(80);
 		configuration.setTruckFactorThreshold(50);
-		configuration.setTimeWindow(TimeWindow.LAST_SIX_MONTHS);
+		configuration.setTimeWindow(TimeWindow.EVER);
 		
 		Repository repository = new Repository();
 		
@@ -143,30 +156,63 @@ public class RepositoryController {
 		repository.setName(url.split("/")[url.split("/").length-1]);
 		repository.setUrl(url);
 		repository.setConfiguration(configuration);
+		repository.setType(RepositoryType.GIT);
 		
 		System.out.println("Iniciando a extracao do repositorio "+repository.getUrl());
+		
 		ExtractionPath path = new ExtractionPath();
-		path.setPath("/master");
+		if(branch.startsWith("/"))
+			path.setPath(branch);
+		else
+			path.setPath("/"+branch);
+		
 		repository.getExtractionPaths().add(path);
 		
+		System.out.println(path.getPath().substring(1));
 
-		
-		
 		GitUtil util;
 		try {
-			util = new GitUtil(repository.getUrl());
+			if(login == null && password == null)
+				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), hash);
+			else
+				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), login, password, hash);	
+			
 			repository.setRepositoryRoot(repository.getUrl());
 			repository.setRevisions(util.getRevisions());
 			repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 			repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
 			
+			/* Calcula as revisoes que possuem mais arquivos que o normal */
+			List<Integer> qntFileRevision = new ArrayList<Integer>();
+			for(Revision revision: repository.getRevisions()) {
+				qntFileRevision.add(revision.getTotalFiles());
+			}
+			
+			Collections.sort(qntFileRevision);
+			
+			int limiar = (int) Outliers.indentify(qntFileRevision);
+			
+			
+			List<Revision> revisions = new ArrayList<Revision>();
+			for(Revision revision: repository.getRevisions()) {
+				if(revision.getTotalFiles() <= limiar) {
+					revisions.add(revision);
+				}
+			}
+			
+			repository.setRevisions(revisions);
+			
 			DirTree tree = new DirTree();
-			tree.setText("master");
+			tree.setText(path.getPath().substring(1));
 			tree.setType(NodeType.FOLDER);
 			tree.setChildren(util.getDirTree());
 			
 			repository.getExtractionPaths().get(0).setDirTree(tree);
 			
+//			Gson json = new Gson();
+//			
+//			repository.getExtractionPaths().get(0).setDirTreeJson(json.toJson(tree));
+//			
 			repository = dao.save(repository);
 
 			User user = userDAO.findById(userSession.getUser().getId());
@@ -177,42 +223,17 @@ public class RepositoryController {
 			permission.setUser(user);
 			userRepositoryDAO.save(permission);
 			
-			
 			util.closeRepository();
-		
-		} catch (InvalidRemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransportException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (GitAPIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AmbiguousObjectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IncorrectObjectTypeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Extracao concluida do repositorio "+repository.getUrl());
+			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+			
+		} catch (Exception e) {
+			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
 			e.printStackTrace();
 		}
 
-		
-		
-		success = DeleteDir.deleteDir(new File("metadata-codivision"));
-	    if (!success) {
-	        System.out.println("arquivo nao existe"); 
-	    }else{
-	    	System.out.println("arquivo removido");
-	    }
+		System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(hash))));
 	    
-	    System.out.println("Extracao concluida do repositorio "+repository.getUrl());
 	}
 	
 	@Post
@@ -400,14 +421,11 @@ public class RepositoryController {
 		}
 		//referente ao /master
 		if(repository.getType()==RepositoryType.GITHUB || repository.getType()==RepositoryType.GIT){
-			if(!newPath.equals("/"))
+			if(!newPath.equals("/")) 
 				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
 		}
-			
 		List<AuthorPercentage> percentage = dao.getPercentage(repositoryId,repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
 		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
-		
-		
 	}
 	
 	@Permission(PermissionType.MEMBER)
@@ -548,7 +566,7 @@ public class RepositoryController {
 //		List<String> revisionOutliers = revisionDAO.getRevisionOutliers(repository.getId(), limiar);
 //		repository.setDeletedRevisions(revisionOutliers);
 //
-//		/* Exclui as revisões com mais arquivos que o normal */
+//		/* Exclui as revisoes com mais arquivos que o normal */
 //		if(!revisionOutliers.isEmpty()){
 //			for(Long temp : revisionDAO.getIdFromRevisionOutliers(repository.getId(), revisionOutliers)) {
 //				Revision revision = revisionDAO.findById(temp);
@@ -594,8 +612,25 @@ public class RepositoryController {
 	}
 	
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/historyAuthor")
-	public void getAuthorHistory(Long repositoryId, String author) {
+	@Post("/repository/{repositoryId}/rankingDevelops")
+	public void getRankingDevelops(Long repositoryId) {
+		
+		LineChart chart = dao.getContribuitionQntLine(repositoryId, "/");
+		
+		List<AuthorPercentage> list = new ArrayList<AuthorPercentage>();
+		for(int i = 0; i<chart.getDataCategories().length; i++){
+			AuthorPercentage author = new AuthorPercentage(chart.getDataCategories()[i], (double) chart.getDataSeries().get(0).getData()[i], chart.getDataSeries().get(1).getData()[i]);
+			list.add(author);
+		}
+		
+		QuickSort.sort2(list);
+		
+		result.use(Results.json()).withoutRoot().from(list).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/authorHistoric")
+	public void getAuthorHistoric(Long repositoryId, String author) {
 		
 		LineChart chart = new LineChart();
 		chart = dao.getTestCommitsHistoryAuthor(repositoryId, author);
@@ -603,8 +638,8 @@ public class RepositoryController {
 	}
 	
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/testInformation")
-	public void getTestInformation(Long repositoryId) {
+	@Post("/repository/{repositoryId}/projectHistoric")
+	public void getProjectHistoric(Long repositoryId) {
 		
 		LineChart chart = new LineChart();
 		chart = dao.getTestCommitsHistory(repositoryId);
@@ -625,32 +660,20 @@ public class RepositoryController {
 			if(!newPath.equals("/"))
 				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
 		}
-		List<CommitHistory> percentage = dao.getContribuitionQntLine(repositoryId, repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
+		LineChart percentage = dao.getContribuitionQntLine(repositoryId, repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
 		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
 		
 		
 	}
 	
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/path/{extractionPathId}/alterationsQntLineTest")
-	public void getAlterationQntLineTest(Long repositoryId,Long extractionPathId, String newPath){
-
-		Repository repository = dao.findById(repositoryId);
+	@Post("/repository/{repositoryId}/percentageContribuition")
+	public void getAlterationsQntLine(Long repositoryId){
 		
-		if(repository.getType()==RepositoryType.SVN && newPath.equals("/")){
-			newPath = extractionPathDAO.findById(repositoryId, extractionPathId).getPath();
-		}
-		//referente ao /master
-		if(repository.getType()==RepositoryType.GITHUB || repository.getType()==RepositoryType.GIT){
-			if(!newPath.equals("/"))
-				newPath = newPath.substring(extractionPathDAO.findById(repositoryId, extractionPathId).getPath().length());
-		}
-		List<CommitHistory> percentage = dao.getContribuitionQntLineTest(repositoryId, repository.getUrl().substring(repository.getRepositoryRoot().length())+newPath);
-		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
-		
-		
+		result.use(Results.json()).withoutRoot().from(dao.getPercentageContribuition(repositoryId)).recursive().serialize();
+			
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/testFile")
 	public void getTestFiles(Long repositoryId) {

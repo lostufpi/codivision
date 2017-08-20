@@ -87,110 +87,48 @@
 						</button>
 						<jsp:include page="show-edit-modal.jsp" />
 					</div>
-
-					<c:choose>
-						<c:when test="${repository.local==false}">
-							<div>
-								<form method="post"
-									action="${linkTo[RepositoryController].update(repository.id)}">
-									<button class="btn btn-primary pull-right" data-toggle="modal"
-										data-target="" style="margin-right: 5px">
-										<fmt:message key="update" />
-									</button>
-								</form>
-							</div>
-						</c:when>
-						<c:otherwise>
-							<div>
-								<button class="btn btn-primary pull-right" data-toggle="modal"
-									data-target="#upload" style="margin-right: 5px">
-									<fmt:message key="update" />
-								</button>
-								<jsp:include page="show-upload-modal.jsp" />
-							</div>
+					<form method="get" action="${linkTo[RepositoryController].chart(repository.id, repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px">Familiaridade</button>
+					</form>
+					<form method="get" action="${linkTo[RepositoryController].testInformation(repository.id, repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Contribuição</button>
+					</form>
+<%-- 					<c:choose> --%>
+<%-- 						<c:when test="${repository.local==false}"> --%>
+<!-- 							<div> -->
+<!-- 								<form method="post" -->
+<%-- 									action="${linkTo[RepositoryController].update(repository.id)}"> --%>
+<!-- 									<button class="btn btn-primary pull-right" data-toggle="modal" -->
+<!-- 										data-target="" style="margin-right: 5px"> -->
+<%-- 										<fmt:message key="update" /> --%>
+<!-- 									</button> -->
+<!-- 								</form> -->
+<!-- 							</div> -->
+<%-- 						</c:when> --%>
+<%-- 						<c:otherwise> --%>
+<!-- 							<div> -->
+<!-- 								<button class="btn btn-primary pull-right" data-toggle="modal" -->
+<!-- 									data-target="#upload" style="margin-right: 5px"> -->
+<%-- 									<fmt:message key="update" /> --%>
+<!-- 								</button> -->
+<%-- 								<jsp:include page="show-upload-modal.jsp" /> --%>
+<!-- 							</div> -->
 							
-							<div>
-							<!--<form method="post"
-									action="${linkTo[RepositoryController].download(repository.id)}">
-								<button class="btn btn-primary pull-right" data-toggle="modal"
-									data-target="" style="margin-right: 5px">
-									Download
-								</button>
-								</form>-->
-							</div>
-						</c:otherwise>
-					</c:choose>
+<!-- 							<div> -->
+<!-- 							<form method="post"
+<!-- 									action="${linkTo[RepositoryController].download(repository.id)}"> -->
+<!-- 								<button class="btn btn-primary pull-right" data-toggle="modal" -->
+<!-- 									data-target="" style="margin-right: 5px"> -->
+<!-- 									Download -->
+<!-- 								</button> -->
+<!-- 								</form>--> 
+<!-- 							</div> -->
+<%-- 						</c:otherwise> --%>
+<%-- 					</c:choose> --%>
 
 				</div>
 			</div>
 			
-			<!-- Panel extraction paths -->
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<div>
-						<b><fmt:message key="repository.paths" /></b>
-					</div>
-				</div>
-				<div class="panel-body">
-					
-					<!-- Form add extraction path -->
-					<div>
-						<form class="form-inline"
-							action="${linkTo[ExtractionPathController].add(repository.id, path)}"
-							method="POST">
-							<div class="form-group">
-								<label for="path"><fmt:message
-										key="repository.path.add" />:</label> <input type="text"
-									class="form-control" id="path" placeholder="Extrair a partir de..."
-									name="path" required>
-							</div>
-							<div class="form-group">
-								<label for="repositoryId" class="sr-only"><fmt:message
-										key="member.add" />:</label> <input type="hidden"
-									class="form-control" id="repositoryId" name="repositoryId"
-									value="${repository.id}">
-							</div>
-							<button type="submit" class="btn btn-primary">
-								<fmt:message key="add" />
-							</button>
-						</form>
-					</div>
-					
-					<!-- Table repository members -->
-					<div style="margin-top: 10px">
-						<table class="table table-bordered">
-							<thead>
-								<tr>
-									<th>#</th>
-									<th><fmt:message key="repository.path" /></th>
-									<th><fmt:message key="options" /></th>
-								</tr>
-							</thead>
-							<tbody>
-								<c:forEach items="${extractionPathList}" var="extraction" varStatus="s">
-									<tr>
-										<td>${s.index + 1}</td>
-										<td>${extraction.path}</td>
-										<td class="text-center">
-											<a class="btn btn-primary" 
-											href="${linkTo[RepositoryController].chart(repository.id, extraction.id)}">
-											Familiaridade</a>
-											<a class="btn btn-primary" 
-											href="${linkTo[RepositoryController].testInformation(repository.id, extraction.id)}">
-											Relatório dos Commits</a>
-											<a class="btn btn-danger" 
-											href="${linkTo[ExtractionPathController].remove(repository.id, extraction.id)}">
-											<fmt:message key="remove" /></a>
-										</td>
-									</tr>
-								</c:forEach>
-							</tbody>
-						</table>
-					</div>
-					
-				</div>
-			</div>
-
 			<!-- Panel repository members -->
 			<div class="panel panel-default">
 				<div class="panel-heading">

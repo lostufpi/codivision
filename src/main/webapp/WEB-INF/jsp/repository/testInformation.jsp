@@ -128,26 +128,43 @@
 </div>
 						
 						<hr>
-						<div class="col-md-4 text-center">
+						<div class="col-md-8 text-center">
 							<div id="chartColumn"></div>
 							
 						</div>
-						<div class="col-md-4 text-center">
-							<div id="chartColumnTest"></div>
-							
-						</div>
+						
 					</div>
 					<hr>
+					<div class="row">
+				<div class="col-md-5 text-center">
+							<div id="pie"></div>
+							
+				</div>	
+				<div class="col-md-7 text-center">
+				<h4>Ranking dos Desenvolvedores na Realização de Testes</h4>
+							<div id="table" class="table-overflow" style="height:350px;overflow-y:auto;"></div>
+							
+				</div>
+				</div>
+					<hr>
+					<div class="col-lg-9"></div>
+					<div id="input" class="col-lg-3"
+												>
+
+												<h6 id="name_input1" style="text-align: center"></h6>
+												<select id="select1" class="form-control">
+												</select>
+
+
+											</div>
+											<hr>
 				<div class="col-md-12 text-center">
 							<div id="chart"></div>
 							
 				</div>
 				<hr>
-				<div id=corpo  class="col-md-12 text-center">
-							
-							
-							
-				</div>
+				
+				
 				
 				
 			</div>
@@ -161,6 +178,7 @@
 	
 	<script src="https://code.highcharts.com/highcharts.js"></script>
 	<script src="https://code.highcharts.com/modules/exporting.js"></script>
+	
 	
 
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
@@ -275,6 +293,37 @@
 					});
 					
 					
+					
+					
+					$.ajax({
+						type : 'POST',
+						url : '/codivision/repository/'+repository+'/percentageContribuition',
+						success : function(data) {
+							Highcharts.chart('pie', {
+								colors: ['#00FF00', '#FF0000'],
+							    chart: {
+							        plotBackgroundColor: null,
+							        plotBorderWidth: null,
+							        plotShadow: false,
+							        type: 'pie'
+							    },
+							    title: {
+							        text: 'Porcentagem da Contribuição'
+							    },
+							    tooltip: {
+							        pointFormat: '{series.name}: <b>{point.percentage:.0f} %</b>'
+							    },
+							    
+							    series: [{
+							        name: 'Contribuição',
+							        colorByPoint: true,
+							        data: data
+							    }]
+							});
+						}
+					});
+					
+					
 					$.ajax({
 						type : 'POST',
 						url : '/codivision/repository/'+repository+'/testFile',
@@ -303,38 +352,102 @@
 						url : '/codivision/repository/' + repository + '/authors',
 						success : function(dataAuthor) {
 							
-							for(i = 0; i< dataAuthor.length; i++){
-								var nome = dataAuthor[i];
-								//onde o elemento será adicionado
-						        pai = document.getElementById("corpo");
-						        //definimos qual elemento queremos criar
-						        elem = document.createElement("div");
-						        //Definimos o texto do elemento.
-						       	elem.setAttribute( "id","chartAuthor"+nome );
-						        //adicionamos o elemento com o texto na div corpo
-						        pai.appendChild(elem);
-							}
-							for(i = 0; i< dataAuthor.length; i++){
-								
-								var nome = dataAuthor[i];
-								chartsPlot(nome);
-								
-							}
+							var element = document.getElementById('name_input1');
+							element.innerHTML = '<b>Desenvolvedor</b>';
+							
+							var x1 = document.createElement('option');
+							x1.setAttribute('value','Todos');
+							var t1 = document.createTextNode('Todos');
+							x1.appendChild(t1);
+							document.getElementById('select1').appendChild(x1);
+							
+					for (i = 0; i < dataAuthor.length; i++) {
+						var x = document.createElement('option');
+						x.setAttribute('value',dataAuthor[i]);
+						var t = document.createTextNode(dataAuthor[i]);
+						x.appendChild(t);
+						document.getElementById('select1').appendChild(x);
+					}
+							
+							
+							
 						}
 					});
 					
+					$('#select1').change(show);
 					
+					
+					project();
+					
+					function show() {
+						if($('#select1 option:selected').val() == 'Todos'){
+							project();
+						}else{
+							chartsPlot($('#select1 option:selected').val());
+						}
+						
+						
+						
+					}
+					
+					function project(){
+						
+						$.ajax({
+							type : 'POST',
+							url : '/codivision/repository/' + repository + '/projectHistoric',
+							success : function(data) {
+							
+						Highcharts.chart('chart', {
+							colors: ['#00FF00', '#FF0000'],
+							title: {
+					            text: 'Histórico de Commits do Projeto '+repositoryName,
+					            x: -20 //center
+					        },
+					        subtitle: {
+					            text: 'Relação entre os commits comuns e commits de teste',
+					            x: -20
+					        },
+					        xAxis: {
+					            categories: data.dataCategories
+					        },
+					        yAxis: {
+					            title: {
+					                text: 'Quantidade de Linhas Alteradas'
+					            },
+					            plotLines: [{
+					                value: 0,
+					                width: 1,
+					                color: '#808080'
+					            }]
+					        },
+					        tooltip: {
+					            valueSuffix: ''
+					        },
+					        legend: {
+					       
+					        },
+					        series: data.dataSeries
+					    });
+						
+							}
+						});
+						
+						}
 
 					
 					function chartsPlot(nome){
 						
+						
+						
 						$.ajax({
 							type : 'POST',
-							url : '/codivision/repository/' + repository + '/historyAuthor',
+							url : '/codivision/repository/' + repository + '/authorHistoric',
 							data : {'author' : nome},
 							success : function(datas) {
 								
-								Highcharts.chart('chartAuthor'+nome, {
+								Highcharts.chart('chart', {
+									colors: ['#00FF00', '#FF0000'],
+								
 					        title: {
 					            text: 'Histórico de Commits do Desenvolvedor '+nome,
 					            x: -20 //center
@@ -433,96 +546,58 @@
 					
 					function request(newPath){
 						
-						$.ajax({
-							type : 'POST',
-							url : '/codivision/repository/'+repository+'/path/'+path+'/alterationsQntLineTest',
-							data : {'newPath' : newPath},
-							success : function(data) {
-								 Highcharts.chart('chartColumnTest', {
-								        chart: {
-								            type: 'column'
-								        },
-								        title: {
-								            text: ''
-								        },
-								        subtitle: {
-								            text: 'Contribuição dos desenvolvedores nos testes'
-								        },
-								        xAxis: {
-								            categories: [
-								                'Contribuição'
-								            ],
-								            crosshair: true
-								        },
-								        yAxis: {
-								            min: 0,
-								            title: {
-								                text: 'Quantidade de Linhas'
-								            }
-								        },
-								        tooltip: {
-								            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-								            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-								                '<td style="padding:0"><b>{point.y:.0f} </b></td></tr>',
-								            footerFormat: '</table>',
-								            shared: true,
-								            useHTML: true
-								        },
-								        plotOptions: {
-								            column: {
-								                pointPadding: 0.2,
-								                borderWidth: 0
-								            }
-								        },
-								        series: data
-								    });
-							}
-						});
-						
 						
 						$.ajax({
 							type : 'POST',
 							url : '/codivision/repository/'+repository+'/path/'+path+'/alterationsQntLine',
 							data : {'newPath' : newPath},
 							success : function(data) {
-								 Highcharts.chart('chartColumn', {
-								        chart: {
-								            type: 'column'
-								        },
+								Highcharts.chart('chartColumn', {
+									colors: ['#00FF00', '#FF0000'],
+									chart: {
+								        type: 'bar'
+								    },
+								    title: {
+								        text: null
+								    },
+								
+								    xAxis: {
+								        categories: data.dataCategories,
 								        title: {
-								            text: ''
+								            text: null
+								        }
+								    },
+								    yAxis: {
+								        min: 0,
+								        title: {
+								            text: 'Quantidade de Linhas Alteradas',
+								            align: 'high'
 								        },
-								        subtitle: {
-								            text: 'Contribuição dos desenvolvedores'
-								        },
-								        xAxis: {
-								            categories: [
-								                'Contribuição'
-								            ],
-								            crosshair: true
-								        },
-								        yAxis: {
-								            min: 0,
-								            title: {
-								                text: 'Quantidade de Linhas'
+								        labels: {
+								            overflow: 'justify'
+								        }
+								    },
+								    tooltip: {
+								        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+								        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+								            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+								        footerFormat: '</table>',
+								        shared: true,
+								        useHTML: true
+								    },
+								    plotOptions: {
+								        bar: {
+								            dataLabels: {
+								                enabled: false
 								            }
-								        },
-								        tooltip: {
-								            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-								            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-								                '<td style="padding:0"><b>{point.y:.0f} </b></td></tr>',
-								            footerFormat: '</table>',
-								            shared: true,
-								            useHTML: true
-								        },
-								        plotOptions: {
-								            column: {
-								                pointPadding: 0.2,
-								                borderWidth: 0
-								            }
-								        },
-								        series: data
-								    });
+								        }
+								    },
+								   
+								    credits: {
+								        enabled: false
+								    },
+								    series: data.dataSeries
+								});
 							}
 						});
 						
@@ -538,45 +613,32 @@
 					    }, 250);
 					});
 					
-					
 					$.ajax({
 						type : 'POST',
-						url : '/codivision/repository/' + repository + '/testInformation',
+						url : '/codivision/repository/' + repository + '/rankingDevelops',
 						success : function(data) {
-					
-					Highcharts.chart('chart', {
-				        title: {
-				            text: 'Histórico de Commits do Projeto '+repositoryName,
-				            x: -20 //center
-				        },
-				        subtitle: {
-				            text: 'Relação entre os commits comuns e commits de teste',
-				            x: -20
-				        },
-				        xAxis: {
-				            categories: data.dataCategories
-				        },
-				        yAxis: {
-				            title: {
-				                text: 'Quantidade de Linhas Alteradas'
-				            },
-				            plotLines: [{
-				                value: 0,
-				                width: 1,
-				                color: '#808080'
-				            }]
-				        },
-				        tooltip: {
-				            valueSuffix: ''
-				        },
-				        legend: {
-				       
-				        },
-				        series: data.dataSeries
-				    });
-					
+							var i;
+							var text = "<table class='table'><thead><tr><th>#</th><th><center>Desenvolvedor</center></th><th>Porcentagem</th><th>Contribuição</th><th><center>Contribuição nos Testes</center></th></tr></thead><tbody>";
+							var k = 1;
+							var sum = 0;
+							var sumTest = 0;
+							for(i = 0; i < data.length; i++ ){
+								sum = sum + data[i].y;
+								sumTest = sumTest + data[i].absolute;
+								if(data[i].absolute > 0){
+								text += "<tr class='info'><td>"+k+"</td><td>"+data[i].name+"</td><td>"+ Number(((data[i].absolute * 100)/(data[i].y + data[i].absolute))).toFixed(2) +"%</td><td>"+data[i].y+"</td><td>"+data[i].absolute+"</td></tr>";
+								}else{
+									text += "<tr class='danger'><td>"+k+"</td><td>"+data[i].name+"</td><td>"+ Number(((data[i].absolute * 100)/(data[i].y + data[i].absolute))).toFixed(2) +"%</td><td>"+data[i].y+"</td><td>"+data[i].absolute+"</td></tr>";
+									
+								}
+								k = k + 1;
+							}
+							text += "<tr class='success'><td>-</td><td>Total</td><td>"+ Number(((sumTest * 100)/(sum + sumTest))).toFixed(2) +"%</td><td>"+sum+"</td><td>"+sumTest+"</td></tr>";
+							
+							text += "</tbody></table>";
+							document.getElementById("table").innerHTML = text;
 						}
-					});
+						});
 					
 					
 					

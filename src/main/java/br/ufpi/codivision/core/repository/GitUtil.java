@@ -69,7 +69,7 @@ public class GitUtil {
 		 this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(this.getDirectoryToSave()))
+				.setDirectory(new File(getDirectoryToSave()))
 				.setBranch(Constants.MASTER) //DEFINE QUAL BRANCH (OU TAG) SERÁ EXTRAÍDO
 				.call();
 
@@ -84,11 +84,11 @@ public class GitUtil {
 	 * @throws IllegalStateException
 	 * @throws GitAPIException
 	 */
-	public GitUtil(String url, String branch) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
+	public GitUtil(String url, String branch, String hash) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
 		 this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(this.getDirectoryToSave()))
+				.setDirectory(new File(getDirectoryToSave().concat(hash)))
 				.setBranch(branch)
 				.call();
 
@@ -104,11 +104,11 @@ public class GitUtil {
 	 * @throws IllegalStateException
 	 * @throws GitAPIException
 	 */
-	public GitUtil(String url, String login, String password) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
+	public GitUtil(String url, String login, String password, String hash) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
 		 this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(this.getDirectoryToSave()))
+				.setDirectory(new File(getDirectoryToSave().concat(hash)))
 				.setBranch(Constants.MASTER)
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
@@ -126,11 +126,11 @@ public class GitUtil {
 	 * @throws IllegalStateException
 	 * @throws GitAPIException
 	 */
-	public GitUtil(String url, String branch, String login, String password) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
+	public GitUtil(String url, String branch, String login, String password, String hash) throws InvalidRemoteException, TransportException, IllegalStateException, GitAPIException{
 		this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(this.getDirectoryToSave()))
+				.setDirectory(new File(getDirectoryToSave().concat(hash)))
 				.setBranch(branch)
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
@@ -383,7 +383,7 @@ public class GitUtil {
 	/**
 	 * @return directory to save the repository clone 
 	 */
-	private String getDirectoryToSave(){
+	public static String getDirectoryToSave(){
 		return System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(Constants.METADATA_FOLDER_NAME);
 	}
 }
