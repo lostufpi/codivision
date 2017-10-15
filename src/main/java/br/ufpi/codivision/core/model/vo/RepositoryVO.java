@@ -27,6 +27,8 @@ public class RepositoryVO implements Serializable{
 	
 	private Date lastUpdate;
 	
+	private String branchName;
+	
 	private boolean local;
 	
 	public RepositoryVO(){
@@ -39,6 +41,7 @@ public class RepositoryVO implements Serializable{
 		this.url = repository.getUrl();
 		this.lastUpdate = repository.getLastUpdate();
 		this.local = repository.isLocal();
+		this.branchName = repository.getExtractionPath().getPath();
 	}
 
 	/**
@@ -103,6 +106,14 @@ public class RepositoryVO implements Serializable{
 
 	public void setLocal(boolean local) {
 		this.local = local;
+	}
+
+	public String getBranchName() {
+		return branchName;
+	}
+
+	public void setBranchName(String branchName) {
+		this.branchName = branchName;
 	}
 	
 }

@@ -8,41 +8,13 @@
 <body>
 
 	<div class="row">
-	
-		<!-- Panel repository list -->	
-<!-- 		<div class="col-lg-3"> -->
-<!-- 			<div class="panel panel-default text-center"> -->
-<!-- 				<div class="panel-heading"> -->
-<!-- 					<b>Locais críticos</b> -->
-<!-- 				</div> -->
-<!-- 				/.panel-heading -->
-<!-- 				<div id="panel_wp" class="panel-body" style="overflow:auto; height:233px;"> -->
-<!-- 					<div class="list-group" id="warningPaths"></div> -->
-<!-- 				</div> -->
-<!-- 			</div> -->
-		
-<!-- 			<div class="panel panel-default text-center"> -->
-<!-- 				<div class="panel-heading"> -->
-<%-- 					<b><fmt:message key="repository.paths" /></b> --%>
-<!-- 				</div> -->
-<!-- 				/.panel-heading -->
-<!-- 				<div class="panel-body" style="overflow:auto; height:233px;"> -->
-<!-- 					<div class="list-group text-center"> -->
-<%-- 							<c:forEach var="paths" items="${extractionPaths}"> --%>
-<%-- 								<a class="list-group-item" href="${linkTo[RepositoryController].chart(repository.id, paths.id)}">${paths.path}</a> --%>
-<%-- 							</c:forEach> --%>
-<!-- 					</div> -->
-					
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 		</div> -->
 		
 		<!-- Panel repository chart -->
 		<div class="col-lg-12">
 			<div class="panel panel-default">
 				<div class="panel-body">
 				
-					<h3 style="display:inline-block">Porcentagem da Familiaridade no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Porcentagem da Familiaridade no Repositório ${repository.name}</h3>
 					<button style="margin-top: 15px" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
 					<jsp:include page="chart-config-modal.jsp" />
 					
@@ -71,7 +43,6 @@
 	
 
 	<input type="hidden" id="repository" value="${repository.id}" />
-	<input type="hidden" id="extractionPath" value="${extractionPath.id}" />
 	
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
 	<script src="<c:url value="/vendor/highcharts/highcharts.js" />"></script>
@@ -86,7 +57,6 @@
 			Highcharts.setOptions({lang: {noData: "Não houveram alterações neste diretório/arquivo no período especificado"}});
 			
 			var repository = $('#repository').val();
-			var path = $('#extractionPath').val();
 			var alert = $('#alert').val();
 			var existence = $('#existence').val();
 			var truckFactor = $('#truckfactor').val();
@@ -98,7 +68,7 @@
 			
 			$.ajax({
 				type:'GET',
-				url : '/codivision/repository/'+repository+'/path/'+path+'/warningpaths',
+				url : '/codivision/repository/'+repository+'/warningpaths',
 				success: function(data){
 					
 					if (typeof data != 'undefined' && data === 0) {
@@ -126,7 +96,7 @@
 			
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/repository/'+repository+'/path/'+path+'/tree',
+				url : '/codivision/repository/'+repository+'/tree',
 				success : function(treeData){
 
 					$('#jstree').jstree({
@@ -164,7 +134,7 @@
 				$('#truckfactor-label').text('');
 				$.ajax({
 					type : 'POST',
-					url : '/codivision/repository/'+repository+'/path/'+path+'/alterations',
+					url : '/codivision/repository/'+repository+'/alterations',
 					data : {'newPath' : newPath},
 					success : function(chartData){
 						

@@ -63,7 +63,7 @@
 								</select>
 							</div>
 							<div class="col-lg-4">
-								<label for="path">Extrair a partir de:</label> <input
+								<label for="path">Nome do Branch:</label> <input
 									type="text" class="form-control" id="path"
 									name="extractionPath.path" required>
 							</div>
@@ -203,7 +203,7 @@
 				$('#loading').modal('show'); 
 				$.ajax({
 					type : 'POST',
-					url : '/codivision/repository/addRepository',
+					url : '/codivision/repository/add',
 					data : {'url' : $('#url').val(), 'branch' : $('#path').val(), 'local' : $('#local').val(), 'login' : login, 'password' : password},
 					success : function(data){
 						if(data==''){
@@ -230,7 +230,7 @@
 				$('#loading').modal('show'); 
 				$.ajax({
 					type : 'POST',
-					url : '/codivision/repository/addRepository',
+					url : '/codivision/repository/add',
 					data : {'url' : $('#url').val(), 'branch' : $('#path').val(), 'local' : $('#local').val(), 'login' : null, 'password' : null},
 					success : function(data){
 					 	if(data==''){

@@ -60,9 +60,8 @@ public class Repository implements PersistenceEntity{
 	@JoinColumn(name="repositoryId")
 	private List<Revision> revisions;
 	
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name="repositoryId")
-	private List<ExtractionPath> extractionPaths;
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private ExtractionPath extractionPath;
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="repositoryId")
@@ -84,7 +83,7 @@ public class Repository implements PersistenceEntity{
 	public Repository(){
 		this.revisions = new ArrayList<Revision>();
 		this.deletedRevisions = new ArrayList<String>();
-		this.extractionPaths = new ArrayList<ExtractionPath>();
+		this.extractionPath = new ExtractionPath();
 		this.testFiles = new ArrayList<TestFile>();
 	}
 	
@@ -261,15 +260,15 @@ public class Repository implements PersistenceEntity{
 	/**
 	 * @return the extractionPath
 	 */
-	public List<ExtractionPath> getExtractionPaths() {
-		return extractionPaths;
+	public ExtractionPath getExtractionPath() {
+		return extractionPath;
 	}
 
 	/**
 	 * @param extractionPath the extractionPath to set
 	 */
-	public void setExtractionPaths(List<ExtractionPath> extractionPaths) {
-		this.extractionPaths = extractionPaths;
+	public void setExtractionPath(ExtractionPath extractionPath) {
+		this.extractionPath = extractionPath;
 	}
 
 	/**

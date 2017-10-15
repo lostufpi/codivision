@@ -3,8 +3,6 @@
  */
 package br.ufpi.codivision.core.model.validator;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 
 import org.tmatesoft.svn.core.SVNException;
@@ -12,12 +10,10 @@ import org.tmatesoft.svn.core.SVNException;
 import br.com.caelum.vraptor.validator.SimpleMessage;
 import br.ufpi.codivision.common.validator.BaseValidator;
 import br.ufpi.codivision.core.dao.UserRepositoryDAO;
-import br.ufpi.codivision.core.extractor.service.TaskService;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.UserRepository;
 import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
-import br.ufpi.codivision.core.repository.GitHubUtil;
 import br.ufpi.codivision.core.repository.SvnUtil;
 
 /**
@@ -28,7 +24,6 @@ public class RepositoryValidator extends BaseValidator{
 	
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	
-	@Inject private TaskService taskService;
 	
 	public Repository validateRepository(Repository repository){
 		
@@ -52,12 +47,12 @@ public class RepositoryValidator extends BaseValidator{
 				}
 			} else {
 				repository.setUrl("https://github.com/" + repository.getOwner() + "/" + repository.getName());
-				try {
-					GitHubUtil gitHubUtil = new GitHubUtil(repository.getOwner(), repository.getName());
-					gitHubUtil.testConnection();
-				} catch (IOException e) {
-					validator.add(new SimpleMessage("error", "repository.git.credentials.error"));
-				}
+//				try {
+////					GitHubUtil gitHubUtil = new GitHubUtil(repository.getOwner(), repository.getName());
+////					gitHubUtil.testConnection();
+//				} catch (IOException e) {
+//					validator.add(new SimpleMessage("error", "repository.git.credentials.error"));
+//				}
 			}
 			
 		}
@@ -79,7 +74,7 @@ public class RepositoryValidator extends BaseValidator{
 	}
 	
 	public void canUpdate(Long repositoryId){
-		validator.check(!taskService.getToUpdateQueue().contains(repositoryId), new SimpleMessage("error", "repository.update.error"));
+		//validator.check(!taskService.getToUpdateQueue().contains(repositoryId), new SimpleMessage("error", "repository.update.error"));
 	}
 
 	public void validateUpload(Repository repository, Repository rUpdate) {

@@ -40,6 +40,7 @@
 							<p class="text-right"><strong><fmt:message key="user.name" />: </strong></p>
 							<p class="text-right"><strong><fmt:message key="repository.url" />: </strong></p>
 							<p class="text-right"><strong><fmt:message key="repository.type" />: </strong></p>
+							<p class="text-right"><strong>Branch: </strong></p>
 							<p class="text-right"><strong>
 							
 							<c:choose>
@@ -52,6 +53,7 @@
 						<div class="col-lg-6">
 							<p>${repository.name}</p>
 							<p>${repository.url}</p>
+							<p>${repository.branchName}</p>
 							<c:choose>
 								<c:when test="${repository.local==true}">
 									<p><fmt:message key="repository.local" /></p>
@@ -87,44 +89,12 @@
 						</button>
 						<jsp:include page="show-edit-modal.jsp" />
 					</div>
-					<form method="get" action="${linkTo[RepositoryController].chart(repository.id, repository.id)}">
+					<form method="get" action="${linkTo[RepositoryController].chart(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px">Familiaridade</button>
 					</form>
-					<form method="get" action="${linkTo[RepositoryController].testInformation(repository.id, repository.id)}">
+					<form method="get" action="${linkTo[RepositoryController].testInformation(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Contribuição</button>
 					</form>
-<%-- 					<c:choose> --%>
-<%-- 						<c:when test="${repository.local==false}"> --%>
-<!-- 							<div> -->
-<!-- 								<form method="post" -->
-<%-- 									action="${linkTo[RepositoryController].update(repository.id)}"> --%>
-<!-- 									<button class="btn btn-primary pull-right" data-toggle="modal" -->
-<!-- 										data-target="" style="margin-right: 5px"> -->
-<%-- 										<fmt:message key="update" /> --%>
-<!-- 									</button> -->
-<!-- 								</form> -->
-<!-- 							</div> -->
-<%-- 						</c:when> --%>
-<%-- 						<c:otherwise> --%>
-<!-- 							<div> -->
-<!-- 								<button class="btn btn-primary pull-right" data-toggle="modal" -->
-<!-- 									data-target="#upload" style="margin-right: 5px"> -->
-<%-- 									<fmt:message key="update" /> --%>
-<!-- 								</button> -->
-<%-- 								<jsp:include page="show-upload-modal.jsp" /> --%>
-<!-- 							</div> -->
-							
-<!-- 							<div> -->
-<!-- 							<form method="post"
-<!-- 									action="${linkTo[RepositoryController].download(repository.id)}"> -->
-<!-- 								<button class="btn btn-primary pull-right" data-toggle="modal" -->
-<!-- 									data-target="" style="margin-right: 5px"> -->
-<!-- 									Download -->
-<!-- 								</button> -->
-<!-- 								</form>--> 
-<!-- 							</div> -->
-<%-- 						</c:otherwise> --%>
-<%-- 					</c:choose> --%>
 
 				</div>
 			</div>

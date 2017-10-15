@@ -40,14 +40,7 @@ public class ExtractionPath implements PersistenceEntity{
 	@Lob
 	private String dirTreeJson;
 	
-	public String getDirTreeJson() {
-		return dirTreeJson;
-	}
-
-	public void setDirTreeJson(String dirTreeJson) {
-		this.dirTreeJson = dirTreeJson;
-	}
-
+	
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private DirTree dirTree;
 	
@@ -113,4 +106,13 @@ public class ExtractionPath implements PersistenceEntity{
 	public void setFeatures(List<Feature> features) {
 		this.features = features;
 	}
+	
+	public String getDirTreeJson() {
+		return dirTreeJson;
+	}
+
+	public void setDirTreeJson(String dirTreeJson) {
+		this.dirTreeJson = dirTreeJson;
+	}
+
 }
