@@ -108,20 +108,9 @@ public class RepositoryController {
 	}
 
 	@Post("/repository/add")
-	public void add(String url, String branch,
-			boolean local, String login, String password){
+	public void add(String url, String branch, boolean local, String login, String password){
 
-		String hash = null;
-
-		try {
-			hash = GenerateHashPasswordUtil.generateHash(url);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-
-		System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(hash))));
+		System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(url))));
 
 		Configuration configuration = new Configuration();
 		configuration.setAddWeight(1.0);
@@ -137,9 +126,10 @@ public class RepositoryController {
 
 		Repository repository = new Repository();
 
-		//para repositorios do git lab, deve ser adicionado o .git no final. PAra git hub nao eh necessario
+		//para repositorios do git lab, deve ser adicionado o .git no final.
 		repository.setName(url.split("/")[url.split("/").length-1]);
 		repository.setUrl(url);
+		repository.setRepositoryRoot(url);
 		repository.setConfiguration(configuration);
 		repository.setType(RepositoryType.GIT);
 
@@ -158,9 +148,9 @@ public class RepositoryController {
 		GitUtil util = null;
 		try {
 			if(login == null && password == null)
-				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), hash);
+				util = new GitUtil(repository.getUrl(), path.getPath().substring(1));
 			else
-				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), login, password, hash);	
+				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), login, password);	
 
 			util.testConnection();
 
@@ -181,13 +171,9 @@ public class RepositoryController {
 			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
 
 		} catch (Exception e) {
-
 			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
 			e.printStackTrace();
 		}
-
-
-
 	}
 
 	/**
@@ -299,8 +285,8 @@ public class RepositoryController {
 
 
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/path/{extractionPathId}/testConfiguration")
-	public void testConfig(Long repositoryId, Long extractionPathId, Configuration configuration) {
+	@Post("/repository/{repositoryId}/testConfiguration")
+	public void testConfig(Long repositoryId, Configuration configuration) {
 
 		Configuration config = dao.getConfiguration(repositoryId);
 

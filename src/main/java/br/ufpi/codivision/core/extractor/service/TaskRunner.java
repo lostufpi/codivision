@@ -3,8 +3,6 @@ package br.ufpi.codivision.core.extractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +37,6 @@ import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
-import br.ufpi.codivision.core.util.GenerateHashPasswordUtil;
 import br.ufpi.codivision.core.util.Outliers;
 
 
@@ -66,14 +63,12 @@ public class TaskRunner implements Task{
 			dao = new RepositoryDAO();
 			dao.setEntityManager(em);
 
-			String url = null;
+			Repository repository = dao.findById(task.getTarget());
 			try {
 
 				GitUtil util = task.getUtil();
 
-				Repository repository = dao.findById(task.getTarget());
 
-				url = repository.getUrl();
 				repository.setRevisions(util.getRevisions());
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 				repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
@@ -97,7 +92,6 @@ public class TaskRunner implements Task{
 				}
 
 				repository.setRevisions(revisions);
-				repository.setRepositoryRoot(repository.getUrl());
 				repository.setTestFiles(util.getTestFiles());
 				repository.setCodeSmallsFile(util.getCodeSmellFiles());
 
@@ -121,20 +115,13 @@ public class TaskRunner implements Task{
 				
 
 			} catch (Exception e) {
-
-			}
-			try {
-				String hash = GenerateHashPasswordUtil.generateHash(url);
-				System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(hash))));
-			} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl()))));
 
 			transaction.commit();
 			em.close();
-
-
 		}
 	}
 
