@@ -1,8 +1,6 @@
 package br.ufpi.codivision.debit.mining;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import br.ufpi.codivision.debit.codesmell.ICodeSmell;
 import br.ufpi.codivision.debit.metric.IMetric;
@@ -19,7 +17,6 @@ public class RepositoryMiner {
 	private List<IParser> parsers;
 	private List<IMetric> metrics;
 	private List<ICodeSmell> codeSmells;
-	private Set<ReferenceEntry> references;
 	
 	public RepositoryMiner() {
 		
@@ -37,9 +34,7 @@ public class RepositoryMiner {
 		return codeSmells != null && codeSmells.size() > 0;
 	}
 	
-	public boolean hasReferences() {
-		return references != null && references.size() > 0;
-	}
+	
 	
 	/*** Getters and Setters ***/
 	
@@ -99,12 +94,5 @@ public class RepositoryMiner {
 		this.codeSmells = codeSmells;
 	}
 
-	public Set<ReferenceEntry> getReferences() {
-		return references;
-	}
-
-	public void setReferences(Set<ReferenceEntry> references) {
-		this.references = references;
-	}
-
+	
 }

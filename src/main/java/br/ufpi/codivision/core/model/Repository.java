@@ -23,6 +23,7 @@ import javax.persistence.TemporalType;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
+import br.ufpi.codivision.debit.model.File;
 
 /**
  * @author Werney Ayala
@@ -67,6 +68,10 @@ public class Repository implements PersistenceEntity{
 	@JoinColumn(name="repositoryId")
 	private List<TestFile> testFiles;
 	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="repositoryId")
+	private List<File> codeSmallsFile;
+	
 	@ElementCollection
 	@CollectionTable(name="DeletedRevision")
 	private List<String> deletedRevisions;
@@ -85,6 +90,7 @@ public class Repository implements PersistenceEntity{
 		this.deletedRevisions = new ArrayList<String>();
 		this.extractionPath = new ExtractionPath();
 		this.testFiles = new ArrayList<TestFile>();
+		this.codeSmallsFile = new ArrayList<>();
 	}
 	
 	public List<TestFile> getTestFiles() {
@@ -291,5 +297,13 @@ public class Repository implements PersistenceEntity{
 
 	public void setRepositoryRoot(String repositoryRoot) {
 		this.repositoryRoot = repositoryRoot;
+	}
+
+	public List<File> getCodeSmallsFile() {
+		return codeSmallsFile;
+	}
+
+	public void setCodeSmallsFile(List<File> codeSmallsFile) {
+		this.codeSmallsFile = codeSmallsFile;
 	}
 }

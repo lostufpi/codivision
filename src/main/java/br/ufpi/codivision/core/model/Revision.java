@@ -17,6 +17,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
+import br.ufpi.codivision.debit.model.File;
 
 /**
  * @author Werney Ayala
@@ -48,6 +49,10 @@ public class Revision implements PersistenceEntity{
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name="revisionId")
 	private List<OperationFile> files;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name="revisionId")
+	private List<File> codeSmellsFileAlteration;
 	
 	public Revision() { }
 	
@@ -147,6 +152,14 @@ public class Revision implements PersistenceEntity{
 	 */
 	public void setExtracted(boolean extracted) {
 		this.extracted = extracted;
+	}
+
+	public List<File> getCodeSmellsFileAlteration() {
+		return codeSmellsFileAlteration;
+	}
+
+	public void setCodeSmellsFileAlteration(List<File> codeSmellsFileAlteration) {
+		this.codeSmellsFileAlteration = codeSmellsFileAlteration;
 	}
 
 }

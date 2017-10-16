@@ -97,10 +97,9 @@ public class TaskRunner implements Task{
 				}
 
 				repository.setRevisions(revisions);
-
 				repository.setRepositoryRoot(repository.getUrl());
-
-
+				repository.setTestFiles(util.getTestFiles());
+				repository.setCodeSmallsFile(util.getCodeSmellFiles());
 
 				DirTree tree = new DirTree();
 				tree.setText(repository.getExtractionPath().getPath().substring(1));
@@ -167,7 +166,6 @@ public class TaskRunner implements Task{
 			mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(user.getEmail()));
 			mimeMessage.setContent(message, "text/html");
 			mimeMessage.setSubject("Repositório atualizado");
-			//message.setText(MENSSAGE);
 
 			new Thread(new Runnable() {
 				@Override

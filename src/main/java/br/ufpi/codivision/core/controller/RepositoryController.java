@@ -219,7 +219,6 @@ public class RepositoryController {
 
 		if(ur.getPermission() == PermissionType.OWNER){
 			repository.setDeleted(true);
-
 			dao.save(repository);
 
 		} else {
@@ -346,29 +345,6 @@ public class RepositoryController {
 	public void testInformation(Long repositoryId) {
 
 		Repository repository = dao.findById(repositoryId);
-
-		//		/* Calcula as revisoes que possuem mais arquivos que o normal */
-		//		int limiar = (int) Outliers.indentify(revisionDAO.getTotalFilesOfRevisions(repository.getId()));
-		//		List<String> revisionOutliers = revisionDAO.getRevisionOutliers(repository.getId(), limiar);
-		//		repository.setDeletedRevisions(revisionOutliers);
-		//
-		//		/* Exclui as revisoes com mais arquivos que o normal */
-		//		if(!revisionOutliers.isEmpty()){
-		//			for(Long temp : revisionDAO.getIdFromRevisionOutliers(repository.getId(), revisionOutliers)) {
-		//				Revision revision = revisionDAO.findById(temp);
-		//				for(OperationFile aux: revision.getFiles()){
-		//					aux.setLineAdd(0);
-		//					aux.setLineCondition(0);
-		//					aux.setLineDel(0);
-		//					aux.setLineMod(0);
-		//					aux.setPath("");
-		//					fileDAO.save(aux);
-		//				}
-		//					
-		//				
-		//				
-		//			}
-		//		}
 
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 
