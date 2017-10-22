@@ -35,7 +35,7 @@ public class Metric implements PersistenceEntity {
 	}
 	@Override
 	public String toString() {
-		return "Metric [metricType=" + metricType + ", qnt=" + qnt + "]";
+		return "<br>" + metricType + "=" + qnt;
 	}
 	public String getQnt() {
 		return qnt;

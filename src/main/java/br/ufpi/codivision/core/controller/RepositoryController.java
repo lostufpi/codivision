@@ -3,9 +3,6 @@
  */
 package br.ufpi.codivision.core.controller;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,6 +31,7 @@ import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.dao.UserRepositoryDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.ExtractionType;
+import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.extractor.service.TaskService;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.ExtractionPath;
@@ -46,15 +44,14 @@ import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
 import br.ufpi.codivision.core.model.enums.TimeWindow;
 import br.ufpi.codivision.core.model.validator.ConfigurationValidator;
-import br.ufpi.codivision.core.model.validator.ExtractionPathValidator;
 import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.model.vo.TDChart;
 import br.ufpi.codivision.core.repository.GitUtil;
-import br.ufpi.codivision.core.util.DeleteDir;
-import br.ufpi.codivision.core.util.GenerateHashPasswordUtil;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.debit.model.Method;
 
 /**
  * @author Werney Ayala
@@ -73,7 +70,6 @@ public class RepositoryController {
 
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
-	@Inject private ExtractionPathValidator extractionPathValidator;
 
 	@Inject private TaskService taskService;
 
@@ -110,8 +106,6 @@ public class RepositoryController {
 	@Post("/repository/add")
 	public void add(String url, String branch, boolean local, String login, String password){
 
-		System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(url))));
-
 		Configuration configuration = new Configuration();
 		configuration.setAddWeight(1.0);
 		configuration.setModWeight(1.0);
@@ -127,32 +121,26 @@ public class RepositoryController {
 		Repository repository = new Repository();
 
 		//para repositorios do git lab, deve ser adicionado o .git no final.
-		repository.setName(url.split("/")[url.split("/").length-1]);
+		if(url.contains(".git")) {
+			repository.setName(url.split("/")[url.split("/").length - 1].split("[.]")[0]);
+		}else {
+			repository.setName(url.split("/")[url.split("/").length-1]);
+		}
 		repository.setUrl(url);
 		repository.setRepositoryRoot(url);
 		repository.setConfiguration(configuration);
 		repository.setType(RepositoryType.GIT);
 
-		System.out.println("Iniciando a extracao do repositorio "+repository.getUrl());
-
 		ExtractionPath path = new ExtractionPath();
-		if(branch.startsWith("/"))
-			path.setPath(branch);
-		else
-			path.setPath("/"+branch);
+		path.setPath("/"+branch);
 
 		repository.setExtractionPath(path);
 
-		System.out.println(path.getPath().substring(1));
-
-		GitUtil util = null;
 		try {
-			if(login == null && password == null)
-				util = new GitUtil(repository.getUrl(), path.getPath().substring(1));
-			else
-				util = new GitUtil(repository.getUrl(), path.getPath().substring(1), login, password);	
-
-			util.testConnection();
+			if(login == null && password == null) {
+				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1));
+			} else
+				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
 
 			repository = dao.save(repository);
 
@@ -164,18 +152,19 @@ public class RepositoryController {
 			permission.setUser(user);
 			userRepositoryDAO.save(permission);
 
-			Extraction extraction = new Extraction(repository.getId(), ExtractionType.REPOSITORY, util);
+			Extraction extraction = new Extraction(repository.getId(),
+					ExtractionType.REPOSITORY,
+					new RepositoryCredentials(login, password));
+
 			taskService.addTask(extraction);
 
-			System.out.println("Extracao concluida do repositorio "+repository.getUrl());
-			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+			result.use(Results.json()).withoutRoot().from("Voce receberá um email<br>quando finalizar sua extração").recursive().serialize();
 
 		} catch (Exception e) {
 			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
-			e.printStackTrace();
 		}
+	
 	}
-
 	/**
 	 * This method modifies the name of a repository
 	 * @param repositoryId - Id repository to be modified
@@ -504,6 +493,53 @@ public class RepositoryController {
 
 			result.use(Results.json()).withoutRoot().from("Repositorio atualizado").recursive().serialize();
 		}
+
+	}
+
+	@Permission(PermissionType.MEMBER)
+	@Get("/repository/{repositoryId}/technicalDebit")
+	public void infoTD(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		RepositoryVO repositoryVO = new RepositoryVO(repository);
+
+		Configuration configuration = repository.getConfiguration();
+		configuration.refreshTime();
+
+		List<TimeWindow> windows = new ArrayList<TimeWindow>(Arrays.asList(TimeWindow.values()));
+
+		result.include("windows", windows);
+		result.include("configuration", configuration);
+		result.include("repository", repositoryVO);
+
+	}
+
+
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/td")
+	public void getTD(Long repositoryId, String newPath){
+
+		Repository repository = dao.findById(repositoryId);
+
+		List<TDChart> tdCharts = new ArrayList<>();
+
+		for(br.ufpi.codivision.debit.model.File file: repository.getCodeSmallsFile()) {
+			TDChart pai = new TDChart();
+			pai.setName(file.getPath());
+			pai.setId(file.getPath());
+			pai.value = null;
+			tdCharts.add(pai);
+
+			for(Method method: file.getMethods()) {
+				TDChart filho = new TDChart();
+				filho.setName(method.getName());
+				filho.setParent(pai.getName());
+				//filho.setValue((method.getCodeSmells().size() +2));
+				tdCharts.add(filho);
+			}
+
+		}
+
+		result.use(Results.json()).withoutRoot().from(tdCharts).recursive().serialize();
 
 	}
 

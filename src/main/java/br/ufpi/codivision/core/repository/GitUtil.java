@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,9 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import br.ufpi.codivision.core.exception.InvalidCredentialException;
+import br.ufpi.codivision.core.exception.InvalidExtractionPathException;
+import br.ufpi.codivision.core.exception.InvalidRepositoryUrlException;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.OperationFile;
 import br.ufpi.codivision.core.model.Revision;
@@ -47,6 +51,7 @@ import br.ufpi.codivision.feature.java.model.Class;
 
 
 public class GitUtil {
+
 	private Repository repository;
 	private Git git;
 
@@ -72,14 +77,69 @@ public class GitUtil {
 		this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(getDirectoryToSave().concat(url)))
+				.setDirectory(new File(getDirectoryToSave().concat(url.replace(":", "-"))))
 				.setBranch(branch)
 				.call();
 
 		this.repository = this.git.getRepository();
 	}
 
-	
+	public static void testInfoRepository(String url, String branch) throws InvalidRepositoryUrlException, InvalidExtractionPathException {
+
+		Collection<Ref> call;
+		try {
+			call = Git.lsRemoteRepository()
+					.setRemote(url)
+					.call();
+
+			Object[] array = call.toArray();
+			//busca os branchs para verificar se o informado existe
+			for(int i = 0; i < array.length; i++) {
+				String[] split = ((Ref) array[i]).getName().split("/");
+				String string = split[split.length-1];
+				if(string.equals(branch)) {
+					return;
+				}
+
+			}
+			throw new InvalidExtractionPathException("Branch "+branch+" inválido");
+
+		} catch (GitAPIException e) {
+			throw new InvalidRepositoryUrlException("Url "+url+" inválida");
+		}
+
+
+	}
+
+	public static void testInfoRepository(String url, String branch, String login, String password) throws InvalidExtractionPathException, InvalidRepositoryUrlException, InvalidCredentialException {
+		try {
+			Collection<Ref> call = Git.lsRemoteRepository()
+					.setRemote(url)
+					.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
+					.call();
+
+			Object[] array = call.toArray();
+			//busca os branchs para verificar se o informado existe
+			for(int i = 0; i < array.length; i++) {
+				String[] split = ((Ref) array[i]).getName().split("/");
+				String string = split[split.length-1];
+				if(string.equals(branch)) {
+					return;
+				}
+
+			}
+			throw new InvalidExtractionPathException("Branch "+branch+" inválido");
+
+		} catch (GitAPIException e) {
+			if(e.getMessage().contains("not authorized")) {
+				throw new InvalidCredentialException("Usuário ou senha inválida");
+			}else
+				throw new InvalidRepositoryUrlException("Url "+url+" inválida");
+		}
+
+	}
+
+
 
 	/**
 	 * @param url
@@ -95,7 +155,7 @@ public class GitUtil {
 		this.git = Git.cloneRepository()
 				.setURI(url)
 				.setBare(false)
-				.setDirectory(new File(getDirectoryToSave().concat(url)))
+				.setDirectory(new File(getDirectoryToSave().concat(url.replace(":", "-"))))
 				.setBranch(branch)
 				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(login, password))
 				.call();
@@ -118,9 +178,9 @@ public class GitUtil {
 	 */
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 
-		Iterable<RevCommit> log = this.git.log().all().call();
+		Iterable<RevCommit> log = this.git.log().setMaxCount(200).call();
 		List<Revision> revisions = new ArrayList<Revision>();
-		
+
 		for (RevCommit jgitCommit: log) {
 
 			Revision revision = new Revision();
@@ -129,16 +189,16 @@ public class GitUtil {
 			revision.setDate(jgitCommit.getAuthorIdent().getWhen());
 			revision.setFiles(new ArrayList<OperationFile>());
 			revision.setExtracted(true);
-			
+
 
 			List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 			for (DiffEntry diff : diffsForTheCommit) {
 
 				OperationFile file = new OperationFile();
-				
+
 				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());
 				revision.setCodeSmellsFileAlteration(findFileToIdentifyCodeSmells);
-				
+
 				if(diff.getChangeType().name().equals(Constants.ADD)){
 					file.setOperationType(OperationType.ADD);
 					file.setPath(Constants.FILE_SEPARATOR.concat(diff.getNewPath()));
@@ -180,7 +240,7 @@ public class GitUtil {
 	}
 
 	private List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells(String newPath, RevTree tree) throws IOException {
-		
+
 		List<br.ufpi.codivision.debit.model.File> files = new ArrayList<>();
 
 		TreeWalk treeWalk = new TreeWalk(this.repository);
@@ -208,7 +268,7 @@ public class GitUtil {
 		treeWalk.close();
 
 		return files;
-		
+
 	}
 
 	public void testConnection() throws NoHeadException, GitAPIException {
@@ -263,38 +323,49 @@ public class GitUtil {
 	 * @return the test files
 	 * @throws IOException
 	 */
-	public List<br.ufpi.codivision.debit.model.File> getCodeSmellFiles() throws IOException{
+	public List<br.ufpi.codivision.debit.model.File> getCodeSmellFiles() throws Exception{
 		List<br.ufpi.codivision.debit.model.File> files = new ArrayList<>();
 
-		Ref head = this.repository.findRef(Constants.HEAD);
+		try {
 
-		RevWalk walk = new RevWalk(this.repository);
-		RevCommit commit = walk.parseCommit(head.getObjectId()); 
-		RevTree tree = commit.getTree(); 
-		TreeWalk treeWalk = new TreeWalk(this.repository);
-		treeWalk.addTree(tree); 
-		treeWalk.setRecursive(true); 
+			Ref head = this.repository.findRef(Constants.HEAD);
 
-		while(treeWalk.next()){
-			ObjectId objectId = treeWalk.getObjectId(0);
-			ObjectLoader loader = this.repository.open(objectId);
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			loader.copyTo(stream);
-			String filePath = Constants.FILE_SEPARATOR.concat(treeWalk.getPathString());
+			RevWalk walk = new RevWalk(this.repository);
+			RevCommit commit = walk.parseCommit(head.getObjectId()); 
+			RevTree tree = commit.getTree(); 
+			TreeWalk treeWalk = new TreeWalk(this.repository);
+			treeWalk.addTree(tree); 
+			treeWalk.setRecursive(true); 
 
-			if(filePath.contains(Constants.JAVA_EXTENSION)){
-				String fileCode = stream.toString();
-				CodeAnalysisProcessor processor = new CodeAnalysisProcessor();
-				br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
-				files.add(processFile);
+			while(treeWalk.next()){
+				ObjectId objectId = treeWalk.getObjectId(0);
+				ObjectLoader loader = this.repository.open(objectId);
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				loader.copyTo(stream);
+				String filePath = Constants.FILE_SEPARATOR.concat(treeWalk.getPathString());
+
+				if(filePath.contains(Constants.JAVA_EXTENSION)){
+					String fileCode = stream.toString();
+
+					CodeAnalysisProcessor processor = new CodeAnalysisProcessor();
+					br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
+
+					if(processFile!=null && processFile.getPath()!=null) {
+						files.add(processFile);
+					}
+
+				}
+
+				if(treeWalk.isSubtree()){
+					treeWalk.enterSubtree();
+				}
 			}
+			walk.close();
+			treeWalk.close();
 
-			if(treeWalk.isSubtree()){
-				treeWalk.enterSubtree();
-			}
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
-		walk.close();
-		treeWalk.close();
 
 		return files;
 	}

@@ -8,10 +8,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
-import br.ufpi.codivision.debit.codesmell.CodeSmellID;
+import br.ufpi.codivision.debit.metric.MetricID;
 
 @Entity
-public class CodeSmell implements PersistenceEntity {
+public class MetricMethod implements PersistenceEntity {
 	
 	/**
 	 * 
@@ -23,33 +23,36 @@ public class CodeSmell implements PersistenceEntity {
 	private Long id;
 	
 	@Enumerated(EnumType.STRING)
-	private CodeSmellID codeSmellType;
-
-	public CodeSmellID getCodeSmellType() {
-		return codeSmellType;
+	private MetricID metricType;
+	
+	private String qnt;
+	
+	public MetricID getMetricType() {
+		return metricType;
 	}
-
-	public void setCodeSmellType(CodeSmellID codeSmellType) {
-		this.codeSmellType = codeSmellType;
+	public void setMetricType(MetricID metricType) {
+		this.metricType = metricType;
 	}
-
 	@Override
 	public String toString() {
-		return  "<br>" + codeSmellType;
+		return "<br>" + metricType + "=" + qnt;
 	}
-
+	public String getQnt() {
+		return qnt;
+	}
+	public void setQnt(String qnt) {
+		this.qnt = qnt;
+	}
 	@Override
 	public Long getId() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
 	public void setId(Long id) {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
 
 }
+

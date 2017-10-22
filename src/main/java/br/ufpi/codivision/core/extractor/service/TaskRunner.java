@@ -30,6 +30,7 @@ import br.ufpi.codivision.common.notification.EmailDispatcher;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
+import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
@@ -47,7 +48,7 @@ public class TaskRunner implements Task{
 	@Inject private TaskService service;
 	@Inject private EntityManagerFactory factory;
 	private RepositoryDAO dao;
-	
+
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 
@@ -55,7 +56,7 @@ public class TaskRunner implements Task{
 
 		Extraction task = service.getFirstTask();
 		if(task != null) {
-			System.out.println("TaskRunner.execute()");
+			log.info("TaskRunner.execute()");
 
 			EntityManager em = factory.createEntityManager();
 			EntityTransaction transaction = em.getTransaction();
@@ -64,12 +65,28 @@ public class TaskRunner implements Task{
 			dao.setEntityManager(em);
 
 			Repository repository = dao.findById(task.getTarget());
+			
+			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
+			
 			try {
 
-				GitUtil util = task.getUtil();
+				RepositoryCredentials credentials = task.getCredentials();
 
+				GitUtil util = null;
+				log.info("Iniciando o Clone");
+				if(credentials.getLogin() == null || credentials.getPassword() == null) {
+					util = new GitUtil(repository.getUrl(),
+							repository.getExtractionPath().getPath().substring(1));
+				}else {
+					util = new GitUtil(repository.getUrl(),
+							repository.getExtractionPath().getPath().substring(1),
+							credentials.getLogin(), credentials.getPassword());
+				}
+				log.info("Clone finalizado");
 
+				log.info("Iniciando a extracao dos diffs");
 				repository.setRevisions(util.getRevisions());
+				log.info("Extracao dos diffs concluidas");
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 				repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
 
@@ -92,33 +109,39 @@ public class TaskRunner implements Task{
 				}
 
 				repository.setRevisions(revisions);
+				log.info("Iniciando a extracao dos testes");
 				repository.setTestFiles(util.getTestFiles());
+				log.info("A extracao dos testes concluida");
+				log.info("Iniciando DT");
 				repository.setCodeSmallsFile(util.getCodeSmellFiles());
+				log.info("Dt concluida");
 
 				DirTree tree = new DirTree();
 				tree.setText(repository.getExtractionPath().getPath().substring(1));
 				tree.setType(NodeType.FOLDER);
+				log.info("Iniciando a extracao da arvore");
 				tree.setChildren(util.getDirTree());
+				log.info("Arvore concluida");
 				repository.getExtractionPath().setDirTree(tree);
 
 				dao.save(repository);
-				
+
 				UserDAO userDAO = new UserDAO();
 				userDAO.setEntityManager(em);
-				
+
 				List<User> users = userDAO.listByRepository(repository.getId());
 				for (User toUser : users)
 					sendMail(toUser, repository.getName());
-				
+
 				util.closeRepository();
 
-				
+
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			System.out.println(DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl()))));
+
+			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
 
 			transaction.commit();
 			em.close();
@@ -129,7 +152,7 @@ public class TaskRunner implements Task{
 
 		try {
 
-			
+
 			String message = "<html><body>"
 					+ "<p>Ola! "+user.getName()+",<p>"
 					+ "<p>O repositorio "+repositoryName+" foi atualizado.</p>"

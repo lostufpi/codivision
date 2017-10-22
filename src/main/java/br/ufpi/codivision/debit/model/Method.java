@@ -5,10 +5,12 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
@@ -25,15 +27,16 @@ public class Method implements PersistenceEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Lob
 	private String name;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="methodId")
-	private List<Metric> codeMetrics;
+	private List<MetricMethod> codeMetrics;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="methodId")
-	private List<CodeSmell> codeSmells;
+	private List<CodeSmellMethod> codeSmells;
 	
 	public Method() {
 		this.codeMetrics = new ArrayList<>();
@@ -46,22 +49,22 @@ public class Method implements PersistenceEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public List<Metric> getCodeMetrics() {
+	public List<MetricMethod> getCodeMetrics() {
 		return codeMetrics;
 	}
-	public void setCodeMetrics(List<Metric> codeMetrics) {
+	public void setCodeMetrics(List<MetricMethod> codeMetrics) {
 		this.codeMetrics = codeMetrics;
 	}
-	public List<CodeSmell> getCodeSmells() {
+	public List<CodeSmellMethod> getCodeSmells() {
 		return codeSmells;
 	}
-	public void setCodeSmells(List<CodeSmell> codeSmells) {
+	public void setCodeSmells(List<CodeSmellMethod> codeSmells) {
 		this.codeSmells = codeSmells;
 	}
 
 	@Override
 	public String toString() {
-		return "Method [name=" + name + ", codeMetrics=" + codeMetrics + ", codeSmells=" + codeSmells + "]";
+		return "<br>" + name + "<br>------" + codeMetrics + "<br>------" + codeSmells + "";
 	}
 
 	@Override

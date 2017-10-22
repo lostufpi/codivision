@@ -18,9 +18,11 @@ import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.ExtractionPath;
+import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
+import br.ufpi.codivision.debit.model.File;
 
 /**
  * @author Werney Ayala
@@ -93,5 +95,32 @@ public class ExtractionPathController {
 		
 		return warningPaths;
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/tree/td")
+	public void getDirTreeTD(Long repositoryId){
+		
+		Repository repository = repositoryDAO.findById(repositoryId);
+		
+		DirTree tree = new DirTree();
+		tree.setType(NodeType.FOLDER);
+		tree.setText(repository.getName());
+		
+		for (File file : repository.getCodeSmallsFile()) {
+			DirTree dirTree = new DirTree();
+			dirTree.setType(NodeType.FILE);
+			
+			//pega a ultima porcao do nome
+			String[] split = file.getPath().split("/");
+			String name = split[split.length - 1];
+			
+			dirTree.setText(name);
+			
+			tree.getChildren().add(dirTree);
+		}
+		
+		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
+	}
+
 }
 

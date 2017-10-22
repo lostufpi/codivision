@@ -15,9 +15,11 @@ import br.ufpi.codivision.debit.metric.IMetric;
 import br.ufpi.codivision.debit.metric.MetricFactory;
 import br.ufpi.codivision.debit.metric.MetricID;
 import br.ufpi.codivision.debit.model.CodeSmell;
+import br.ufpi.codivision.debit.model.CodeSmellMethod;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
 import br.ufpi.codivision.debit.model.Metric;
+import br.ufpi.codivision.debit.model.MetricMethod;
 import br.ufpi.codivision.debit.parser.java.JavaParser;
 
 public class CodeAnalysisProcessor {
@@ -81,8 +83,11 @@ public class CodeAnalysisProcessor {
 			codeSmell.detect(ast);
 		}
 
-
 		for (AbstractType type : ast.getTypes()) {
+			
+			String path = type.getName().replaceAll("[.]", "/");
+			file.setPath(path);
+			
 			
 			List<Method> methods = new ArrayList<>();
 			for (AbstractMethod method : type.getMethods()) {
@@ -93,7 +98,7 @@ public class CodeAnalysisProcessor {
 				Map<MetricID, Object> convertMetrics = method.getMetrics();
 				
 				for(MetricID key: convertMetrics.keySet()) {
-					Metric m = new Metric();
+					MetricMethod m = new MetricMethod();
 					m.setMetricType(key);
 					m.setQnt(convertMetrics.get(key) + "");
 					myMethod.getCodeMetrics().add(m);
@@ -101,17 +106,16 @@ public class CodeAnalysisProcessor {
 				
 				
 				for(CodeSmellID codesmell: method.getCodeSmells()) {
-					CodeSmell cs = new CodeSmell();
+					CodeSmellMethod cs = new CodeSmellMethod();
 					cs.setCodeSmellType(codesmell);
 					myMethod.getCodeSmells().add(cs);
 				}
 				
 				methods.add(myMethod);
 			}
-			//TODO
-			String path = type.getName();
-			file.setPath(path);
+			
 			file.setMethods(methods);
+			
 			
 			Map<MetricID, Object> convertMetrics = type.getMetrics();
 			

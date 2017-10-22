@@ -63,17 +63,12 @@
 								</select>
 							</div>
 							<div class="col-lg-4">
-								<label for="path">Nome do Branch:</label> <input
+								<label for="path">Nome do Branch:</label>
+									 <input
 									type="text" class="form-control" id="path"
 									name="extractionPath.path" required>
 							</div>
 						</div>
-
-<!-- 						<div class="form-group" style="margin-top: 15px"> -->
-<%-- 							<label for="name"><fmt:message key="repository.name" />:</label> --%>
-<!-- 							<input type="text" class="form-control" id="name" -->
-<!-- 								name="repository.name" required> -->
-<!-- 						</div> -->
 
 						<div id="div-url" style="margin-top: 15px" >
 							<label for="url"><fmt:message key="repository.url" />:</label> <input
@@ -163,7 +158,7 @@
 		$(document).ready(function() {
 			
 			
-			$('#path').val("/master");
+			$('#path').val("master");
 			$('#name').val(" ");
 			$('#name').attr('disabled', 'disabled');
 
@@ -190,7 +185,7 @@
 					
 					$('#local').removeAttr('disabled');
 					$('#path').removeAttr('readonly');
-					$('#path').val("/master");
+					$('#path').val("master");
 					$('#name').val(" ");
 					$('#name').attr('disabled', 'disabled');
 				}

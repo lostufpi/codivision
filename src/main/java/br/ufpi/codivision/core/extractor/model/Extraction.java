@@ -3,8 +3,6 @@
  */
 package br.ufpi.codivision.core.extractor.model;
 
-import br.ufpi.codivision.core.repository.GitUtil;
-
 /**
  * @author Werney Ayala
  *
@@ -13,17 +11,18 @@ public class Extraction {
 	
 	private Long target;
 	private ExtractionType type;
-	private GitUtil util;
+	private RepositoryCredentials credentials;
+	
 	
 	/**
 	 * 
 	 */
 	public Extraction() {	}
 	
-	public Extraction(Long target, ExtractionType type, GitUtil util) {
+	public Extraction(Long target, ExtractionType type, RepositoryCredentials credentials) {
 		this.target =  target;
 		this.type = type;
-		this.setUtil(util);
+		this.setCredentials(credentials);
 	}
 	
 	/**
@@ -54,12 +53,13 @@ public class Extraction {
 		this.type = type;
 	}
 
-	public GitUtil getUtil() {
-		return util;
+	public RepositoryCredentials getCredentials() {
+		return credentials;
 	}
 
-	public void setUtil(GitUtil util) {
-		this.util = util;
+	public void setCredentials(RepositoryCredentials credentials) {
+		this.credentials = credentials;
 	}
+
 	
 }

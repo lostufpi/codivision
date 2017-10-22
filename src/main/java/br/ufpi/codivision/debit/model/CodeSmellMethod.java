@@ -11,7 +11,7 @@ import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.debit.codesmell.CodeSmellID;
 
 @Entity
-public class CodeSmell implements PersistenceEntity {
+public class CodeSmellMethod implements PersistenceEntity {
 	
 	/**
 	 * 
