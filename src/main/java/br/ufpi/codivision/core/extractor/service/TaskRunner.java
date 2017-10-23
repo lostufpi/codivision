@@ -142,7 +142,7 @@ public class TaskRunner implements Task{
 			}
 
 			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
-
+			log.info("TaskRunner.finalizado()");
 			transaction.commit();
 			em.close();
 		}

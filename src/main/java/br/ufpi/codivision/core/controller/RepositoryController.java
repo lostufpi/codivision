@@ -101,6 +101,10 @@ public class RepositoryController {
 		result.include("urlImage", urlImage);
 		result.include("types", types);
 		result.include("repositoryList", repositoryList);
+		//TODO
+		if(taskService.getTaskQueue().size()!=0) {
+			result.include("notice", new SimpleMessage("success", "repository.update.message", Severity.INFO));
+		}
 	}
 
 	@Post("/repository/add")
@@ -158,7 +162,7 @@ public class RepositoryController {
 
 			taskService.addTask(extraction);
 
-			result.use(Results.json()).withoutRoot().from("Voce receberá um email<br>quando finalizar sua extração").recursive().serialize();
+			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
 
 		} catch (Exception e) {
 			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();

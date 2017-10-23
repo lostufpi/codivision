@@ -6,8 +6,6 @@
 		
 		<div class="modal-content">
 			<img id="gif" src="http://pentaho.ssp.go.gov.br/pentaho/content/pentaho-cdf-dd/res/observatorio/paineis/sspgo/imagens/carregando-pacotes.gif" width="250" height="42">
-					
-
 		</div>
 		
 	</div>

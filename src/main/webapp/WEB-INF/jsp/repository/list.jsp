@@ -3,6 +3,10 @@
 
 <body>
 
+			<div id="error-extratc" class="alert alert-danger">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				<b id="core"></b>
+			</div>
 	
 	<div class="col-lg-3">
 		<div class="panel panel-default" style="height: 401px;">
@@ -33,7 +37,6 @@
 	</div>
 
 
-
 	<div class="col-lg-9">
 		<div class="row">
 			<div class="panel panel-default">
@@ -41,8 +44,7 @@
 					<h3>
 						<fmt:message key="repository.add" />
 					</h3>
-					
-					
+					<hr>
 						<div class="row">
 							<div class="col-lg-4">
 								<label for=""><fmt:message key="vcs" />:</label> <select
@@ -77,6 +79,7 @@
 
 						<hr>
 						<button id="btn_add" class="btn btn-primary pull-right">
+							<span class="glyphicon glyphicon-plus-sign"></span>
 							<fmt:message key="add" />
 						</button>
 					
@@ -157,7 +160,7 @@
 	<script>
 		$(document).ready(function() {
 			
-			
+			$('#error-extratc').hide();
 			$('#path').val("master");
 			$('#name').val(" ");
 			$('#name').attr('disabled', 'disabled');
@@ -204,8 +207,8 @@
 						if(data==''){
 					 		document.location.reload(true);
 					 	}else{
-					 		document.getElementById('text').innerHTML = data;
-					 		$('#error').modal('show');
+					 		$('#error-extratc').show();
+					 		document.getElementById('core').innerHTML = data;
 					 		$('#loading').modal('hide');
 					 	}
 					}
@@ -231,8 +234,8 @@
 					 	if(data==''){
 					 		document.location.reload(true);
 					 	}else{
-					 		document.getElementById('text').innerHTML = data;
-					 		$('#error').modal('show');
+					 		$('#error-extratc').show();
+					 		document.getElementById('core').innerHTML = data;
 					 		$('#loading').modal('hide');
 					 	}
 					}
