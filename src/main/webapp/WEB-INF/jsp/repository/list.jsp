@@ -3,11 +3,11 @@
 
 <body>
 
-			<div id="error-extratc" class="alert alert-danger">
-				<button type="button" class="close" data-dismiss="alert">&times;</button>
-				<b id="core"></b>
-			</div>
-	
+	<div id="error-extratc" class="alert alert-danger">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		<b id="core"></b>
+	</div>
+
 	<div class="col-lg-3">
 		<div class="panel panel-default" style="height: 401px;">
 			<div class="panel-body">
@@ -45,44 +45,44 @@
 						<fmt:message key="repository.add" />
 					</h3>
 					<hr>
-						<div class="row">
-							<div class="col-lg-4">
-								<label for=""><fmt:message key="vcs" />:</label> <select
-									class="form-control" id="type" name="repository.type">
-									<c:forEach var="option" items="${types}">
-										<option id="${option}" value="${option}"><fmt:message
+					<div class="row">
+						<div class="col-lg-4">
+							<label for=""><fmt:message key="vcs" />:</label> <select
+								class="form-control" id="type" name="repository.type">
+								<c:forEach var="option" items="${types}">
+									<option id="${option}" value="${option}"><fmt:message
 												key="${option.type}" /></option>
-									</c:forEach>
-								</select>
-							</div>
-							<div class="col-lg-4">
-								<label for="local"><fmt:message key="repository.type" />:</label>
-								<select class="form-control" id="local" name="repository.local">
-									<option value="false"><fmt:message
+								</c:forEach>
+							</select>
+						</div>
+						<div class="col-lg-4">
+							<label for="local"><fmt:message key="repository.type" />:</label>
+							<select class="form-control" id="local" name="repository.local">
+								<option value="false"><fmt:message
 											key="repository.remote" /></option>
-									<option value="true"><fmt:message
+								<option value="true"><fmt:message
 											key="repository.local" /></option>
-								</select>
-							</div>
-							<div class="col-lg-4">
-								<label for="path">Nome do Branch:</label>
-									 <input
-									type="text" class="form-control" id="path"
-									name="extractionPath.path" required>
-							</div>
+							</select>
 						</div>
-
-						<div id="div-url" style="margin-top: 15px" >
-							<label for="url"><fmt:message key="repository.url" />:</label> <input
-								type="text" class="form-control" id="url" name="repository.url" required>
+						<div class="col-lg-4">
+							<label for="path">Nome do Branch:</label> <input type="text"
+								class="form-control" id="path" name="extractionPath.path"
+								required>
 						</div>
+					</div>
 
-						<hr>
-						<button id="btn_add" class="btn btn-primary pull-right">
-							<span class="glyphicon glyphicon-plus-sign"></span>
-							<fmt:message key="add" />
-						</button>
-					
+					<div id="div-url" style="margin-top: 15px">
+						<label for="url"><fmt:message key="repository.url" />:</label> <input
+							type="text" class="form-control" id="url" name="repository.url"
+							required>
+					</div>
+
+					<hr>
+					<button id="btn_add" class="btn btn-primary pull-right">
+						<span class="glyphicon glyphicon-plus-sign"></span>
+						<fmt:message key="add" />
+					</button>
+
 				</div>
 			</div>
 		</div>
@@ -105,13 +105,12 @@
 									<tr>
 										<th>#</th>
 										<th><fmt:message key="repository.name" /></th>
-										<th>
-										<c:choose>
-											<c:when test="${repository.lastUpdate==null}">Status do Repositório</c:when>
-										<c:otherwise>
-											<fmt:message key="repository.update.date" /></c:otherwise>
-										</c:choose>		
-										</th>
+										<th><c:choose>
+												<c:when test="${repository.lastUpdate==null}">Status do Repositório</c:when>
+												<c:otherwise>
+													<fmt:message key="repository.update.date" />
+												</c:otherwise>
+											</c:choose></th>
 										<th class="text-center"><fmt:message key="options" /></th>
 									</tr>
 								</thead>
@@ -121,14 +120,13 @@
 										<tr>
 											<td>${s.index + 1}</td>
 											<td>${repository.name}</td>
-											<td>
-											
-											<c:choose><c:when test="${repository.lastUpdate==null}">Atualizando</c:when>
-											<c:otherwise>
-											<fmt:formatDate pattern="dd/MM/yyyy" value="${repository.lastUpdate}" /></c:otherwise>
-											</c:choose>	
-											
-											</td>
+											<td><c:choose>
+													<c:when test="${repository.lastUpdate==null}">Atualizando</c:when>
+													<c:otherwise>
+														<fmt:formatDate pattern="dd/MM/yyyy"
+															value="${repository.lastUpdate}" />
+													</c:otherwise>
+												</c:choose></td>
 											<td class="text-center"><a class="btn btn-primary"
 												href="${linkTo[RepositoryController].show(repository.id)}"><fmt:message
 														key="visualize" /></a> <a
@@ -151,22 +149,22 @@
 		</div>
 
 	</div>
-	
+
 	<jsp:include page="list-credential-modal.jsp" />
 	<jsp:include page="loading-modal.jsp" />
 	<jsp:include page="error-modal.jsp" />
-					
+
 
 	<script>
 		$(document).ready(function() {
 			
 			$('#error-extratc').hide();
+			
 			$('#path').val("master");
 			$('#name').val(" ");
 			$('#name').attr('disabled', 'disabled');
 
 			$('#type').change(showdata);
-			
 
 			function showdata() {
 				alert("show");
@@ -225,6 +223,8 @@
 				
 				}else{
 					
+				if($('#url').val()!=='' &&  $('#path').val()!==''){
+					
 				$('#loading').modal('show'); 
 				$.ajax({
 					type : 'POST',
@@ -240,6 +240,8 @@
 					 	}
 					}
 				});
+				
+				}
 				
 				}
 				}

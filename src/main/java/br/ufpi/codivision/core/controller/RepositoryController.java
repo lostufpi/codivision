@@ -51,6 +51,7 @@ import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.model.vo.TDChart;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
 
 /**
@@ -520,30 +521,31 @@ public class RepositoryController {
 
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/td")
-	public void getTD(Long repositoryId, String newPath){
-
+	public void getTD(Long repositoryId, String fileName){
+		
 		Repository repository = dao.findById(repositoryId);
-
-		List<TDChart> tdCharts = new ArrayList<>();
-
-		for(br.ufpi.codivision.debit.model.File file: repository.getCodeSmallsFile()) {
-			TDChart pai = new TDChart();
-			pai.setName(file.getPath());
-			pai.setId(file.getPath());
-			pai.value = null;
-			tdCharts.add(pai);
-
-			for(Method method: file.getMethods()) {
-				TDChart filho = new TDChart();
-				filho.setName(method.getName());
-				filho.setParent(pai.getName());
-				//filho.setValue((method.getCodeSmells().size() +2));
-				tdCharts.add(filho);
+		
+		if(!fileName.equals("/") && !fileName.equals("/".concat(repository.getName())) ) {
+			String[] split = fileName.split("/");
+			String name = split[split.length - 1];
+			
+			for (File file : repository.getCodeSmallsFile()) {
+				String[] split2 = file.getPath().split("/");
+				String name_file = split2[split2.length - 1];
+				
+				if(name.equals(name_file)) {
+					result.use(Results.json()).withoutRoot().from(file).recursive().serialize();
+					return;
+				}
+					
 			}
-
+			
+			
+		}else {
+			result.use(Results.json()).withoutRoot().from(repository.getCodeSmallsFile().size()).recursive().serialize();
 		}
 
-		result.use(Results.json()).withoutRoot().from(tdCharts).recursive().serialize();
+
 
 	}
 
