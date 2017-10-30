@@ -31,9 +31,33 @@
 						<div class="container-tree col-md-3">
 							<input style="margin-bottom: 10px" type="text"
 								class="form-control" id="jstree-search" placeholder="Pesquisar">
-							<div id="jstree"></div>
+							<div style="overflow: auto; height: 600px;" id="jstree"></div>
 						</div>
-						<div class="col-md-9" id="data"></div>
+						<div class="col-md-9" id="data">
+							<div class="panel-body">
+								<ul class="nav nav-tabs">
+									<li class="active"><a data-toggle="tab" href="#home">
+											Classe</a></li>
+									<li><a data-toggle="tab" href="#menu1">Métodos</a></li>
+								</ul>
+								<div class="tab-content">
+									<br />
+									<div id="home" class="tab-pane fade in active">
+										<br />
+									</div>
+									<div id="menu1" class="tab-pane fade">
+										<div class="container-tree col-md-5">
+											<br />
+											<div id="jstree2" style="overflow: auto; height: 550px;"></div>
+										</div>
+										<div class="col-md-7" id="data2"></div>
+									</div>
+								</div>
+							</div>
+
+
+
+						</div>
 					</div>
 				</div>
 
@@ -59,10 +83,11 @@
 
 	<script>
 		$(document)
-				.ready(
-						function() {
+				.ready(function() {
 
 							var repository = $('#repository').val();
+							
+							var fileId;
 
 							$('#jstree').on(
 									"changed.jstree",
@@ -72,10 +97,74 @@
 														data.selected[0], "/");
 										request(fileName);
 									});
+							
+							$('#jstree2').on(
+									"changed.jstree",
+									function(e, data) {
+										if(data.node !== undefined){
+											requestMethod(data.node);
+										}
+									});
+							
+							
+							function requestMethod(node){
+								
+								
+								$.ajax({
+									type : 'POST',
+									url : '/codivision/repository/'
+											+ repository + '/file/'+fileId+'/method/td',
+									data : {
+										'methodName' : node.text
+									},
+									success : function(data) {
 
+								
+									var smell = "";
+									for (i = 0; i < data.codeSmells.length; i++) {
+										smell += data.codeSmells[i].codeSmellType
+												+ " ";
+									}
+
+									if (smell === "") {
+										smell = "Método não possui code smells"
+									}
+
+									var metrics = "";
+									for (i = 0; i < data.codeMetrics.length; i++) {
+										metrics += "<tr><td>"
+												+ data.codeMetrics[i].metricType
+												+ " </td> <td> "
+												+ data.codeMetrics[i].qnt
+												+ "</td></tr>";
+									}
+
+
+									var text = ' <div>'
+											+ ' <p> <strong>Nome</strong>: '
+											+ data.name
+											+ ' </p> '
+											+ ' <p> <strong>CodeSmell</strong>: '
+											+ smell
+											+ ' </p> '
+											+ ' <table class="table"> '
+											+ ' <thead> <tr> <th>Métrica de Código</th> '
+											+ ' <th>Valor</th> </tr> </thead> '
+											+ ' <tbody>'
+											+ metrics
+											+ ' </tbody> '
+											+ ' </table> </div> '
+											;
+
+									document.getElementById("data2").innerHTML = text;
+									}
+								});
+								
+							}
+							
+							
 							function request(fileName) {
-								$
-										.ajax({
+								$.ajax({
 											type : 'POST',
 											url : '/codivision/repository/'
 													+ repository + '/td',
@@ -83,42 +172,93 @@
 												'fileName' : fileName
 											},
 											success : function(data) {
-												
-												var name = data.path.split("/")[data.path.split("/").length - 1];
-												
+
+												var name = data.path.split("/")[data.path
+														.split("/").length - 1];
+
 												var smell = "";
-												for(i = 0; i < data.codeSmells.length; i++){
-													smell += data.codeSmells[i].codeSmellType+" ";
+												for (i = 0; i < data.codeSmells.length; i++) {
+													smell += data.codeSmells[i].codeSmellType
+															+ " ";
 												}
-												
-												if(smell === ""){
+
+												if (smell === "") {
 													smell = "Classe não possui code smells"
 												}
-												
+
 												var metrics = "";
-												for(i = 0; i < data.codeMetrics.length; i++){
-													metrics += "<tr><td>" + data.codeMetrics[i].metricType+" </td> <td> "+ data.codeMetrics[i].qnt + "</td></tr>";
+												for (i = 0; i < data.codeMetrics.length; i++) {
+													metrics += "<tr><td>"
+															+ data.codeMetrics[i].metricType
+															+ " </td> <td> "
+															+ data.codeMetrics[i].qnt
+															+ "</td></tr>";
 												}
 
 
-												
-												var text = '<div class="panel-body"> '
-												+' <ul class="nav nav-tabs"> '+
-												' <li class="active"> '+
-												' <a data-toggle="tab" href="#home">'+
-												'Classe</a></li> <li><a data-toggle="tab" href="#menu1">Métodos</a></li> </ul> <div class="tab-content"> '+
-												' <div id="home" class="tab-pane fade in active"> <br/> '+
-												' <p> <strong>Nome</strong>: '+name+' </p> '+
-												' <p> <strong>Diretório</strong>: '+data.path+' </p> '+
-												' <p> <strong>CodeSmell</strong>: '+smell+' </p> '+
-												' <table class="table"> '+
-												' <thead> <tr> <th>Métrica de Código</th> '+
-												' <th>Valor</th> </tr> </thead> '+
-												' <tbody>'+ metrics +
-												' </tbody> '+
-												' </table> </div> <div id="menu1" class="tab-pane fade"> </div> </div> </div>';
+												var text = ' <div>'
+														+ ' <p> <strong>Nome</strong>: '
+														+ name
+														+ ' </p> '
+														+ ' <p> <strong>Diretório</strong>: '
+														+ data.path
+														+ ' </p> '
+														+ ' <p> <strong>CodeSmell</strong>: '
+														+ smell
+														+ ' </p> '
+														+ ' <p> <strong>Quantidade de CodeSmells de comentários</strong>: '
+														+ data.qntBadSmellComment
+														+ ' </p> '
+														+ ' <table class="table"> '
+														+ ' <thead> <tr> <th>Métrica de Código</th> '
+														+ ' <th>Valor</th> </tr> </thead> '
+														+ ' <tbody>'
+														+ metrics
+														+ ' </tbody> '
+														+ ' </table> </div> '
+														;
 
-												document.getElementById("data").innerHTML = text;
+												document.getElementById("home").innerHTML = text;
+												
+												fileId = data.id;
+
+												$.ajax({
+													type : 'POST',
+													url : '/codivision/repository/'+repository+'/method/' + fileId + '/tree',
+													success : function(treeData) {
+														
+														
+
+														$('#jstree2').jstree(
+																{
+																	'core' : {
+																		'data' : treeData
+																	},
+																	'types' : {
+																		"FOLDER" : {
+																			"valid_children" : [
+																					"FOLDER",
+																					"FILE" ]
+																		},
+																		"FILE" : {
+																			"icon" : "jstree-file",
+																			"valid_children" : [],
+																		}
+																	},
+																	'plugins' : [ "types",
+																			"wholerow", "sort",
+																			"search" ]
+																});
+														
+														
+														$('#jstree2').jstree(true).settings.core.data = treeData;
+														$('#jstree2').jstree(true).refresh();
+
+														
+													}
+
+												});
+											
 											
 											}
 										});
@@ -127,8 +267,7 @@
 
 							$.ajax({
 								type : 'POST',
-								url : '/codivision/repository/' + repository
-										+ '/tree/td',
+								url : '/codivision/repository/' + repository + '/tree/td',
 								success : function(treeData) {
 
 									$('#jstree').jstree(

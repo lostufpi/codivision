@@ -26,6 +26,7 @@ import br.ufpi.codivision.common.annotation.Permission;
 import br.ufpi.codivision.common.annotation.Public;
 import br.ufpi.codivision.common.security.UserSession;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
+import br.ufpi.codivision.core.dao.FileDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.dao.UserRepositoryDAO;
@@ -48,9 +49,11 @@ import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
-import br.ufpi.codivision.core.model.vo.TDChart;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.debit.codesmell.CodeSmellID;
+import br.ufpi.codivision.debit.model.CodeSmell;
+import br.ufpi.codivision.debit.model.CodeSmellMethod;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
 
@@ -68,6 +71,8 @@ public class RepositoryController {
 	@Inject private UserDAO userDAO;
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
+	@Inject private FileDAO fileDAO;
+	
 
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
@@ -168,7 +173,7 @@ public class RepositoryController {
 		} catch (Exception e) {
 			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
 		}
-	
+
 	}
 	/**
 	 * This method modifies the name of a repository
@@ -504,6 +509,9 @@ public class RepositoryController {
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/technicalDebit")
 	public void infoTD(Long repositoryId) {
+		
+		//gerateARFF(repositoryId);
+		
 		Repository repository = dao.findById(repositoryId);
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 
@@ -522,29 +530,125 @@ public class RepositoryController {
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/td")
 	public void getTD(Long repositoryId, String fileName){
-		
+
 		Repository repository = dao.findById(repositoryId);
-		
+
 		if(!fileName.equals("/") && !fileName.equals("/".concat(repository.getName())) ) {
 			String[] split = fileName.split("/");
 			String name = split[split.length - 1];
-			
+
 			for (File file : repository.getCodeSmallsFile()) {
 				String[] split2 = file.getPath().split("/");
 				String name_file = split2[split2.length - 1];
-				
+
 				if(name.equals(name_file)) {
 					result.use(Results.json()).withoutRoot().from(file).recursive().serialize();
 					return;
 				}
-					
+
 			}
-			
-			
+
+
 		}else {
 			result.use(Results.json()).withoutRoot().from(repository.getCodeSmallsFile().size()).recursive().serialize();
 		}
 
+
+
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/file/{fileId}/method/td")
+	public void getTDMethod(Long repositoryId, Long fileId, String methodName){
+
+		File file = fileDAO.findById(fileId);
+		
+		for (Method method : file.getMethods()) {
+			if(method.getName().equals(methodName)) {
+				result.use(Results.json()).withoutRoot().from(method).recursive().serialize();
+				return;
+			}
+				
+		}
+	}
+	
+	
+	public void gerateARFF(Long id) {
+		Repository repository = dao.findById(id);
+
+		String arff = "@relation dt\n" + 
+				"\n" + 
+				"@attribute brainclass numeric\n" + 
+				"@attribute brainmethod numeric\n" + 
+				"@attribute complexmethod numeric\n" + 
+				"@attribute godclass numeric\n" + 
+				"@attribute longmethod numeric\n" + 
+				"@attribute dataclass numeric\n" + 
+				"@attribute featureenvy numeric\n" + 
+				"@attribute codesmellcomments numeric\n" + 
+				"\n" + 
+				"@data\n";
+
+		
+
+		for (File file : repository.getCodeSmallsFile()) {
+			int[] list = new int[7];
+			for (CodeSmell codeSmell : file.getCodeSmells()) {
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.BRAIN_CLASS)) {
+					list[0] = list[0] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.BRAIN_METHOD)) {
+					list[1] = list[1] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.COMPLEX_METHOD)) {
+					list[2] = list[2] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.GOD_CLASS)) {
+					list[3] = list[3] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.LONG_METHOD)) {
+					list[4] = list[4] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.DATA_CLASS)) {
+					list[5] = list[5] + 1;
+				}
+				if(codeSmell.getCodeSmellType().equals(CodeSmellID.FEATURE_ENVY)) {
+					list[6] = list[6] + 1;
+				}
+			}
+			
+			for (Method method : file.getMethods()) {
+				for (CodeSmellMethod codeSmellMethod : method.getCodeSmells()) {
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.BRAIN_CLASS)) {
+						list[0] = list[0] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.BRAIN_METHOD)) {
+						list[1] = list[1] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.COMPLEX_METHOD)) {
+						list[2] = list[2] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.GOD_CLASS)) {
+						list[3] = list[3] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.LONG_METHOD)) {
+						list[4] = list[4] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.DATA_CLASS)) {
+						list[5] = list[5] + 1;
+					}
+					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.FEATURE_ENVY)) {
+						list[6] = list[6] + 1;
+					}
+				}
+			}
+			
+			
+			arff = arff +list[0]+","+list[1]+ ","+list[2]+","+list[3]+ ","+list[4]+","+list[5]+ ","+list[6]+","+file.getQntBadSmellComment()+"\n";			
+			
+		}
+		
+		System.out.println(arff);
 
 
 	}

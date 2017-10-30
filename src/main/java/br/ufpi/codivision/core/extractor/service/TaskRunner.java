@@ -48,6 +48,7 @@ public class TaskRunner implements Task{
 	@Inject private TaskService service;
 	@Inject private EntityManagerFactory factory;
 	private RepositoryDAO dao;
+	
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -112,9 +113,7 @@ public class TaskRunner implements Task{
 				log.info("Iniciando a extracao dos testes");
 				repository.setTestFiles(util.getTestFiles());
 				log.info("A extracao dos testes concluida");
-				log.info("Iniciando DT");
-				repository.setCodeSmallsFile(util.getCodeSmellFiles());
-				log.info("Dt concluida");
+				
 
 				DirTree tree = new DirTree();
 				tree.setText(repository.getExtractionPath().getPath().substring(1));
@@ -123,7 +122,12 @@ public class TaskRunner implements Task{
 				tree.setChildren(util.getDirTree());
 				log.info("Arvore concluida");
 				repository.getExtractionPath().setDirTree(tree);
+				
+				log.info("Iniciando DT");
+				repository.setCodeSmallsFile(util.getCodeSmellFiles());
+				log.info("Dt concluida");
 
+				log.info("Save repositories");
 				dao.save(repository);
 
 				UserDAO userDAO = new UserDAO();

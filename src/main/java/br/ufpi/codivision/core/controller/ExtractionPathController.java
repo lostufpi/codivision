@@ -14,6 +14,7 @@ import br.com.caelum.vraptor.Post;
 import br.com.caelum.vraptor.Result;
 import br.com.caelum.vraptor.view.Results;
 import br.ufpi.codivision.common.annotation.Permission;
+import br.ufpi.codivision.core.dao.FileDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.DirTree;
@@ -22,7 +23,9 @@ import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
+import br.ufpi.codivision.core.util.ProcessPath;
 import br.ufpi.codivision.debit.model.File;
+import br.ufpi.codivision.debit.model.Method;
 
 /**
  * @author Werney Ayala
@@ -33,6 +36,7 @@ public class ExtractionPathController {
 	
 	@Inject private Result result;
 	@Inject private RepositoryDAO repositoryDAO;
+	@Inject private FileDAO fileDAO;
 	
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/warningpaths")
@@ -121,6 +125,33 @@ public class ExtractionPathController {
 		
 		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/method/{fileId}/tree")
+	public void getDirTreeMethod(Long repositoryId, Long fileId){
+		
+		File file = fileDAO.findById(fileId);
+		
+		DirTree dirTree = new DirTree();
+		
+		String name = ProcessPath.convertPathToName(file.getPath());
+		dirTree.setText(name);
+		dirTree.setType(NodeType.FOLDER);
 
+		for (Method method : file.getMethods()) {
+			DirTree tree = new DirTree();
+			
+			//TODO
+			//String nameMethod = ProcessPath.modifyNameMethod(method.getName());
+			
+			tree.setText(method.getName());
+			tree.setType(NodeType.FILE);
+			
+			dirTree.getChildren().add(tree);
+		}
+		
+		result.use(Results.json()).withoutRoot().from(dirTree.getChildren()).recursive().serialize();
+	}
+	
 }
 

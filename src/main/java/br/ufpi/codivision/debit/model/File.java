@@ -29,15 +29,15 @@ public class File implements PersistenceEntity {
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="fileId")
+	private List<Method> methods;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="fileId")
 	private List<Metric> codeMetrics;
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="fileId")
 	private List<CodeSmell> codeSmells;
-	
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-	@JoinColumn(name="fileId")
-	private List<Method> methods;
 	
 	private long qntBadSmellComment;
 	
