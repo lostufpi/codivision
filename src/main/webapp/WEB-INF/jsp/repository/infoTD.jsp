@@ -66,8 +66,6 @@
 		</div>
 	</div>
 
-
-
 	<input type="hidden" id="repository" value="${repository.id}" />
 
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
@@ -142,7 +140,7 @@
 
 									var text = ' <div>'
 											+ ' <p> <strong>Nome</strong>: '
-											+ data.name
+											+ data.name.split("(")[0]
 											+ ' </p> '
 											+ ' <p> <strong>CodeSmell</strong>: '
 											+ smell
@@ -188,9 +186,9 @@
 
 												var metrics = "";
 												for (i = 0; i < data.codeMetrics.length; i++) {
-													metrics += "<tr><td>"
+													metrics += '<tr><td>'
 															+ data.codeMetrics[i].metricType
-															+ " </td> <td> "
+															+ ' </td> <td> '
 															+ data.codeMetrics[i].qnt
 															+ "</td></tr>";
 												}

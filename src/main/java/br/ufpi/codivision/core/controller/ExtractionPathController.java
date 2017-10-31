@@ -100,31 +100,31 @@ public class ExtractionPathController {
 		return warningPaths;
 	}
 	
-	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/tree/td")
-	public void getDirTreeTD(Long repositoryId){
-		
-		Repository repository = repositoryDAO.findById(repositoryId);
-		
-		DirTree tree = new DirTree();
-		tree.setType(NodeType.FOLDER);
-		tree.setText(repository.getName());
-		
-		for (File file : repository.getCodeSmallsFile()) {
-			DirTree dirTree = new DirTree();
-			dirTree.setType(NodeType.FILE);
-			
-			//pega a ultima porcao do nome
-			String[] split = file.getPath().split("/");
-			String name = split[split.length - 1];
-			
-			dirTree.setText(name);
-			
-			tree.getChildren().add(dirTree);
-		}
-		
-		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
-	}
+//	@Permission(PermissionType.MEMBER)
+//	@Post("/repository/{repositoryId}/tree/td")
+//	public void getDirTreeTD(Long repositoryId){
+//		
+//		Repository repository = repositoryDAO.findById(repositoryId);
+//		
+//		DirTree tree = new DirTree();
+//		tree.setType(NodeType.FOLDER);
+//		tree.setText(repository.getName());
+//		
+//		for (File file : repository.getCodeSmallsFile()) {
+//			DirTree dirTree = new DirTree();
+//			dirTree.setType(NodeType.FILE);
+//			
+//			//pega a ultima porcao do nome
+//			String[] split = file.getPath().split("/");
+//			String name = split[split.length - 1];
+//			
+//			dirTree.setText(name);
+//			
+//			tree.getChildren().add(dirTree);
+//		}
+//		
+//		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
+//	}
 	
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/method/{fileId}/tree")

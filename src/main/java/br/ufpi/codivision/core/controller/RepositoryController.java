@@ -3,6 +3,11 @@
  */
 package br.ufpi.codivision.core.controller;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,12 +40,14 @@ import br.ufpi.codivision.core.extractor.model.ExtractionType;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.extractor.service.TaskService;
 import br.ufpi.codivision.core.model.Configuration;
+import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.ExtractionPath;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.UserRepository;
+import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
 import br.ufpi.codivision.core.model.enums.TimeWindow;
@@ -56,6 +63,8 @@ import br.ufpi.codivision.debit.model.CodeSmell;
 import br.ufpi.codivision.debit.model.CodeSmellMethod;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
+import weka.clusterers.SimpleKMeans;
+import weka.core.Instances;
 
 /**
  * @author Werney Ayala
@@ -508,9 +517,7 @@ public class RepositoryController {
 
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/technicalDebit")
-	public void infoTD(Long repositoryId) {
-		
-		//gerateARFF(repositoryId);
+	public void infoTD(Long repositoryId) throws Exception {
 		
 		Repository repository = dao.findById(repositoryId);
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
@@ -572,9 +579,51 @@ public class RepositoryController {
 		}
 	}
 	
+	public static BufferedReader readDataFile(String filename) {
+		BufferedReader inputReader = null;
+ 
+		try {
+			inputReader = new BufferedReader(new FileReader(filename));
+		} catch (FileNotFoundException ex) {
+			System.err.println("File not found: " + filename);
+		}
+ 
+		return inputReader;
+	}
 	
-	public void gerateARFF(Long id) {
-		Repository repository = dao.findById(id);
+	public int[] calculaClusters() throws Exception {
+		SimpleKMeans kmeans = new SimpleKMeans();
+ 
+		kmeans.setSeed(10);
+ 
+		//important parameter to set: preserver order, number of cluster.
+		kmeans.setPreserveInstancesOrder(true);	
+		kmeans.setNumClusters(3);
+ 
+		BufferedReader datafile = readDataFile("file.arff"); 
+		Instances data = new Instances(datafile);
+ 
+ 
+		kmeans.buildClusterer(data);
+ 
+		// This array returns the cluster number (starting with 0) for each instance
+		// The array has as many elements as the number of instances
+		int[] assignments = kmeans.getAssignments();
+ 
+//		int i=0;
+//		for(int clusterNum : assignments) {
+//		    System.out.printf("Instance %d -> Cluster %d \n", i, clusterNum);
+//		    i++;
+//		}
+		
+		return assignments;
+	}
+	
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/tree/td")
+	public void getDirTreeTD(Long repositoryId) throws Exception{
+		Repository repository = dao.findById(repositoryId);
 
 		String arff = "@relation dt\n" + 
 				"\n" + 
@@ -648,8 +697,90 @@ public class RepositoryController {
 			
 		}
 		
-		System.out.println(arff);
-
+		PrintWriter writer = new PrintWriter("file.arff", "UTF-8");
+		writer.println(arff);
+		writer.close();
+		
+		int[] clusters = calculaClusters();
+		
+		
+		DirTree c1 = new DirTree();
+		c1.setText("Cluster 1");
+		c1.setType(NodeType.FOLDER);
+		
+		DirTree c2 = new DirTree();
+		c2.setText("Cluster 2");
+		c2.setType(NodeType.FOLDER);
+		
+		DirTree c3 = new DirTree();
+		c3.setText("Cluster 3");
+		c3.setType(NodeType.FOLDER);
+		
+		int i = 0;
+		for (int clusterNum : clusters) {
+			
+			if(clusterNum == 0) {
+				File file = repository.getCodeSmallsFile().get(i);
+				
+				DirTree dirTree = new DirTree();
+				dirTree.setType(NodeType.FILE);
+				
+				//pega a ultima porcao do nome
+				String[] split = file.getPath().split("/");
+				String name = split[split.length - 1];
+				
+				dirTree.setText(name);
+				
+				c1.getChildren().add(dirTree);
+				
+			}
+			if(clusterNum == 1) {
+				
+				File file = repository.getCodeSmallsFile().get(i);
+				
+				DirTree dirTree = new DirTree();
+				dirTree.setType(NodeType.FILE);
+				
+				//pega a ultima porcao do nome
+				String[] split = file.getPath().split("/");
+				String name = split[split.length - 1];
+				
+				dirTree.setText(name);
+				
+				c2.getChildren().add(dirTree);
+				
+			}
+			if(clusterNum == 2) {
+				
+				File file = repository.getCodeSmallsFile().get(i);
+				
+				DirTree dirTree = new DirTree();
+				dirTree.setType(NodeType.FILE);
+				
+				//pega a ultima porcao do nome
+				String[] split = file.getPath().split("/");
+				String name = split[split.length - 1];
+				
+				dirTree.setText(name);
+				
+				c3.getChildren().add(dirTree);
+				
+			}
+			
+			
+			i++;
+		}
+		
+		DirTree tree = new DirTree();
+		tree.setType(NodeType.FOLDER);
+		tree.setText(repository.getName());
+		
+		tree.getChildren().add(c1);
+		tree.getChildren().add(c2);
+		tree.getChildren().add(c3);
+		
+		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
+		
 
 	}
 
