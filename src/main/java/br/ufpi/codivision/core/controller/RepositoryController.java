@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -591,7 +590,7 @@ public class RepositoryController {
 		return inputReader;
 	}
 	
-	public int[] calculaClusters() throws Exception {
+	public int[] calculaClusters(Long repositoryId) throws Exception {
 		SimpleKMeans kmeans = new SimpleKMeans();
  
 		kmeans.setSeed(10);
@@ -600,7 +599,7 @@ public class RepositoryController {
 		kmeans.setPreserveInstancesOrder(true);	
 		kmeans.setNumClusters(3);
  
-		BufferedReader datafile = readDataFile("file.arff"); 
+		BufferedReader datafile = readDataFile(GitUtil.getDirectoryToSave().concat("file"+repositoryId+".arff")); 
 		Instances data = new Instances(datafile);
  
  
@@ -624,6 +623,31 @@ public class RepositoryController {
 	@Post("/repository/{repositoryId}/tree/td")
 	public void getDirTreeTD(Long repositoryId) throws Exception{
 		Repository repository = dao.findById(repositoryId);
+		
+		
+		ArrayList<File> fileWithTD = new ArrayList<File>();
+		
+		for (File file : repository.getCodeSmallsFile()) {
+			
+			boolean teste = false;
+			
+			if(file.getCodeSmells().isEmpty() && file.getQntBadSmellComment() == 0) {
+				for (Method method : file.getMethods()) {
+					if(!method.getCodeSmells().isEmpty()) {
+						teste = true;
+					}
+				}
+			}else {
+				teste = true;
+			}
+			
+			if(teste) {
+				
+				fileWithTD.add(file);
+			}
+			
+			
+		}
 
 		String arff = "@relation dt\n" + 
 				"\n" + 
@@ -640,7 +664,7 @@ public class RepositoryController {
 
 		
 
-		for (File file : repository.getCodeSmallsFile()) {
+		for (File file : fileWithTD) {
 			int[] list = new int[7];
 			for (CodeSmell codeSmell : file.getCodeSmells()) {
 				if(codeSmell.getCodeSmellType().equals(CodeSmellID.BRAIN_CLASS)) {
@@ -697,11 +721,11 @@ public class RepositoryController {
 			
 		}
 		
-		PrintWriter writer = new PrintWriter("file.arff", "UTF-8");
+		PrintWriter writer = new PrintWriter(GitUtil.getDirectoryToSave().concat("file"+repositoryId+".arff"), "UTF-8");
 		writer.println(arff);
 		writer.close();
 		
-		int[] clusters = calculaClusters();
+		int[] clusters = calculaClusters(repositoryId);
 		
 		
 		DirTree c1 = new DirTree();
@@ -720,7 +744,7 @@ public class RepositoryController {
 		for (int clusterNum : clusters) {
 			
 			if(clusterNum == 0) {
-				File file = repository.getCodeSmallsFile().get(i);
+				File file = fileWithTD.get(i);
 				
 				DirTree dirTree = new DirTree();
 				dirTree.setType(NodeType.FILE);
@@ -736,7 +760,7 @@ public class RepositoryController {
 			}
 			if(clusterNum == 1) {
 				
-				File file = repository.getCodeSmallsFile().get(i);
+				File file = fileWithTD.get(i);
 				
 				DirTree dirTree = new DirTree();
 				dirTree.setType(NodeType.FILE);
@@ -752,7 +776,7 @@ public class RepositoryController {
 			}
 			if(clusterNum == 2) {
 				
-				File file = repository.getCodeSmallsFile().get(i);
+				File file = fileWithTD.get(i);
 				
 				DirTree dirTree = new DirTree();
 				dirTree.setType(NodeType.FILE);

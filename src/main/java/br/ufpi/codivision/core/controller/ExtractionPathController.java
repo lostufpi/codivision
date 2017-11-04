@@ -139,8 +139,9 @@ public class ExtractionPathController {
 		dirTree.setType(NodeType.FOLDER);
 
 		for (Method method : file.getMethods()) {
-			DirTree tree = new DirTree();
 			
+			DirTree tree = new DirTree();
+			if(!method.getCodeSmells().isEmpty()) {
 			//TODO
 			//String nameMethod = ProcessPath.modifyNameMethod(method.getName());
 			
@@ -148,6 +149,7 @@ public class ExtractionPathController {
 			tree.setType(NodeType.FILE);
 			
 			dirTree.getChildren().add(tree);
+			}
 		}
 		
 		result.use(Results.json()).withoutRoot().from(dirTree.getChildren()).recursive().serialize();
