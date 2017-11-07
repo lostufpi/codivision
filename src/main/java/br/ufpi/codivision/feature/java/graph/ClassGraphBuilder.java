@@ -54,6 +54,9 @@ public class ClassGraphBuilder {
 				if(!graph.containsVertex(reference)){
 					graph.addVertex(reference);
 				}
+				if(n.getC().formatName().equals("RepositoryController") && reference.getC().formatName().equals("RepositoryController")){
+					System.out.println("RepositoryController");
+				}
 				n.incrementOUT();
 				reference.incrementIN();
 				graph.addEdge(n,reference);

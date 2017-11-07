@@ -35,8 +35,12 @@ public class Constants {
 	public static final String INTEGER = new String("Integer");
 	public static final String PRIMITIVE_BOOLEAN = new String("boolean");
 	public static final String BOOLEAN = new String("Boolean");
+	public static final String PRIMITIVE_LONG = new String("long");
+	public static final String LONG = new String("Long");
+	public static final String GENERIC = new String("T");
 	public static final String UNDEFINED = new String("undefined");
 	public static final String OVERRIDE_MODIFIER = new String("@Override");
+	public static final String PRIVATE_MODIFIER = new String("private");
 	public static final String TEST = new String("@Test");
 	public static final String ADD = new String("ADD");
 	public static final String MODIFY = new String("MODIFY");

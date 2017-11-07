@@ -8,6 +8,7 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
+import br.ufpi.codivision.feature.java.algorithm.model.PackageReference;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Class;
 import br.ufpi.codivision.feature.java.model.Package;;
@@ -107,6 +108,12 @@ public class ControllerDefiner {
 				}
 			}
 		}
+			
+//		Package p = checkPackagesWithAllClassesReferenced(packageControllers, canditateControllers); 
+//		if(p != null){
+//			packageControllers.add(p);
+//		}
+		
 		return packageControllers;
 	}
 	
@@ -127,7 +134,7 @@ public class ControllerDefiner {
 		for (Package p1 : packageControllers) {
 			List<NodeInfo> classesFromFirstPackage = new ArrayList<NodeInfo>();
 			for (Package p2 : packageControllers) {
-				if(!p1.getName().equals(p2.getName())){ //SE NÃO SÃO OS MESMOS PACOTES
+				if(!p1.getName().equals(p2.getName()) && !checkPackagesReferencesNumberFilter(packageControllers, p2)){ //SE NÃO SÃO OS MESMOS PACOTES
 					//ADICIONA TODAS AS CLASSES DO PRIMEIRO PACOTE À UMA LISTA
 					for (Class c: p1.getClasses()) {
 						NodeInfo n = searchNodeInfoFromClass(c);
@@ -223,6 +230,92 @@ public class ControllerDefiner {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * ESTE MÉTODO RETORNA TRUE SE UM PACOTE ESPECÍFICO POSSUI GRAU DE SAÍDA MAIOR QUE A MÉRDIA ENTRE OS PACOTES CONTROLLERS 
+	 * E GRAU DE ENTRA MENOR ENTRE OS MESMO PACOTES
+	 * 
+	 * @param packages
+	 * @param _package
+	 * @return
+	 */
+	private boolean checkPackagesReferencesNumberFilter (List<Package> packages, Package _package){
+		List<PackageReference> packagesReferences = new ArrayList<PackageReference>();
+		int referencesInNumberByPackage = 0;
+		int referencesOutNumberByPackage = 0;
+		
+		double averageInPackagesReferences = 0;
+		double averageOutPackagesReferences = 0;
+		
+		for (Package p : packages) {
+			for (Class c : p.getClasses()) {
+				referencesInNumberByPackage += searchNodeInfoFromClass(c).getDegreeIN();
+				referencesOutNumberByPackage += searchNodeInfoFromClass(c).getDegreeOUT();
+			}
+			PackageReference pr = new PackageReference(p);
+			pr.setReferencesInNumber(referencesInNumberByPackage);
+			pr.setReferencesOutNumber(referencesOutNumberByPackage);
+			referencesInNumberByPackage = 0;
+			referencesOutNumberByPackage = 0;
+			packagesReferences.add(pr);
+		}
+		
+		double sumReferencesInNumber = 0;
+		double sumReferencesOutNumber = 0;
+		
+		for (PackageReference packageReference : packagesReferences) {
+			sumReferencesInNumber += packageReference.getReferencesInNumber();
+			sumReferencesOutNumber += packageReference.getReferencesOutNumber();
+		}
+		
+		averageInPackagesReferences = sumReferencesInNumber/packagesReferences.size();
+		averageOutPackagesReferences = sumReferencesOutNumber/packagesReferences.size();
+		
+		for (PackageReference packageReference : packagesReferences) {
+			if(packageReference.getP().equals(_package)){
+				if(packageReference.getReferencesInNumber() < averageInPackagesReferences || packageReference.getReferencesOutNumber() > averageOutPackagesReferences ){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private Package checkPackagesWithAllClassesReferenced(List<Package> completededPackages, List<NodeInfo> canditateControllers){
+		int outDegreeNumber = -1;
+		boolean contens = false;
+		Class classWithBigDegreeOfOutReference = new Class();
+		Package p = null;
+		
+		for (NodeInfo n : canditateControllers) {
+			for (Package completedPackage : completededPackages) {
+				if(completedPackage.getClasses().contains(n.getC())){
+					contens = true;
+					break;
+				}
+			} 
+			if(!contens){
+				if(n.getDegreeOUT() > outDegreeNumber){
+					p = new Package();
+					outDegreeNumber = n.getDegreeOUT();
+					classWithBigDegreeOfOutReference = n.getC();
+				}
+			}
+			contens = false;
+		}
+		
+		if(p != null){
+			p.setName(classWithBigDegreeOfOutReference.getPackageName());
+			for (NodeInfo n : canditateControllers) {
+				if(n.getC().getPackageName().equals(p.getName())){
+					p.getClasses().add(n.getC());
+				}
+			}
+		}
+		
+		return p;
 	}
 }
 

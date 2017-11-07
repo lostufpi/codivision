@@ -11,6 +11,10 @@ public class Package {
 	private List<Class> classes;
 	private String name;
 	
+	public Package() {
+		this.classes = new ArrayList<Class>();
+	}
+
 	/**
 	 * @param name
 	 */

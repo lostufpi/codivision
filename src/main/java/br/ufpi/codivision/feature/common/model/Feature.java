@@ -2,6 +2,7 @@ package br.ufpi.codivision.feature.common.model;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,7 +27,7 @@ public class Feature implements PersistenceEntity {
 	private Long id;
 	private String name;
 	
-	@OneToMany(mappedBy = "feature")
+	@OneToMany(mappedBy = "feature", cascade = CascadeType.ALL)
 	private List<FeatureElement> featureElements;
 	
 	/**

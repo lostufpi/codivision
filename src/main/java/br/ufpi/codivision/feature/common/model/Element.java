@@ -19,7 +19,7 @@ import br.ufpi.codivision.core.util.Constants;
 /**
  * @author Vanderson Moura
  * 
- * CLASSE ABSTRATA QUE REPRESENTADA UM ELEMENTO (CLASSE JAVA OU ARQUIVO .c (LINGUAGEM C), POR EXEMPLO) QUE CONSTITUI UMA FEATURE
+ * CLASSE ABSTRATA QUE REPRESENTA UM ELEMENTO (CLASSE JAVA OU ARQUIVO .c (LINGUAGEM C), POR EXEMPLO) QUE CONSTITUI UMA FEATURE
  * EM QUALQUER QUE SEJA A LINGUAGEM DE PROGRAMAÇÃO, OS SEUS ELEMENTOS DEVERÃO EXTENDER DESTA CLASSE   
  * UM ELEMENTO TERÁ SEMPRE UM NOME (arquivo.java, arquivo.c, arquivo.cpp, ETC.) E UM NOME COMPLETO (PATH) (dir/dir/arquivo.java, POR EXEMPLO)
  * OS DEMAIS ATRIBUTOS DAS SUAS SUB-CLASSES DEVERÃO SER DO TIPO @Transient, POIS NÃO SERÃO PERSISTIDOS NO BANCO DE DADOS 
@@ -27,7 +27,7 @@ import br.ufpi.codivision.core.util.Constants;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="element_type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name="elementType", discriminatorType = DiscriminatorType.STRING)
 public abstract class Element implements PersistenceEntity {
 	
 	/**
@@ -93,7 +93,10 @@ public abstract class Element implements PersistenceEntity {
 	 * @return the formated fullname
 	 */
 	public String formatFullname(){
-		return this.getFullname().substring(0, this.getFullname().indexOf(Constants.DOT));
+		if(this.getFullname() != null) {
+			return this.getFullname().substring(0, this.getFullname().indexOf(Constants.DOT));
+		}
+		return new String();
 	}
 
 	/**

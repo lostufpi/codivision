@@ -69,6 +69,22 @@ public class ClassVerificator {
 				validReferences.add(node);
 			}
 		}
+		
+		//ADICIONANDO OS 'SIMPLE NAMES', PARA INCLUSÃO DE CLASSE REFERENCIADAS DURANTE O ACESSO A ATRIBUTOS ESTÁTICOS, E QUE ESTÁ NO MESMO PACOTE DA CLASSE REFERENCIADORA.
+		for (String s : referenceSet.getSimpleNames()){
+			String r = c.getPackageName().replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.FILE_SEPARATOR).concat(s);
+			for (String _import : referenceSet.getImports()) {
+				if(_import.contains(s)){
+					r = _import.replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.JAVA_EXTENSION);
+				}
+			}
+			node = searchNodeFromClassFullName(nodes, r);
+			if(node != null && node.getC() != c ){
+				if(!validReferences.contains(node)){
+					validReferences.add(node);
+				}
+			}
+		}
 		return validReferences;
 	}
 

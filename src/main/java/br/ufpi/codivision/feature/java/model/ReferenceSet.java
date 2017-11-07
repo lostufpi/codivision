@@ -10,7 +10,8 @@ import java.util.List;
 public class ReferenceSet {
 	private List<String> imports;
 	private List<String> references;
-	private List<String> InnerClasses;
+	private List<String> innerClasses;
+	private List<String> simpleNames;
 	
 	/**
 	 * 
@@ -18,7 +19,8 @@ public class ReferenceSet {
 	public ReferenceSet() {
 		this.imports = new ArrayList<String>();
 		this.references = new ArrayList<String>();
-		this.InnerClasses = new ArrayList<String>();
+		this.innerClasses = new ArrayList<String>();
+		this.simpleNames = new ArrayList<String>();
 	}
 
 	/**
@@ -53,13 +55,27 @@ public class ReferenceSet {
 	 * @return the InnerClasses
 	 */
 	public List<String> getInnerClasses() {
-		return InnerClasses;
+		return innerClasses;
 	}
 
 	/**
 	 * @param innerClasses to InnerClasses to set
 	 */
 	public void setInnerClasses(List<String> innerClasses) {
-		InnerClasses = innerClasses;
+		this.innerClasses = innerClasses;
+	}
+
+	/**
+	 * @return the simpleNames
+	 */
+	public List<String> getSimpleNames() {
+		return simpleNames;
+	}
+
+	/**
+	 * @param simpleNames to simpleNames to set
+	 */
+	public void setSimpleNames(List<String> simpleNames) {
+		this.simpleNames = simpleNames;
 	}
 }

@@ -66,14 +66,24 @@ public class ClassReferenceManager {
 			@Override
 			public boolean visit(ImportDeclaration node) {
 				referenceSet.getImports().add(node.getName().toString());
+//				System.out.print("$" + node.getName().toString() + "$, ");
 				return true; 
 			}
 			
+			@Override
+			public boolean visit(SimpleName node) {
+				referenceSet.getSimpleNames().add(node.toString());
+//				System.out.print("$" + node.toString() + "$, ");
+				return true;
+			}
+			
 			/** VISITA AS VARIÁVEIS PASSADAS COMO PARÂMETRO EM MÉTODOS DA CLASSE, INCLUÍNDO O CONSTRUTOR **/
-
 			@Override
 			public boolean visit(SingleVariableDeclaration node) {
 				referenceSet.getReferences().add(node.getType().toString());
+//				System.out.println("SINGLE: " + node.getType().toString());
+//				System.out.println("$" + node.getType().toString() + "$,");
+				
 				return true; 
 			}
 			
@@ -81,6 +91,8 @@ public class ClassReferenceManager {
 			@Override
 			public boolean visit(VariableDeclarationStatement node) {
 				referenceSet.getReferences().add(node.getType().toString());
+//				System.out.println("VAR_DECLARET_STATEMENT: " + node.getType().toString());
+//				System.out.print("$" + node.getType().toString()+"$, ");
 				return true; 
 			}
 			
@@ -97,6 +109,8 @@ public class ClassReferenceManager {
 					attributes.add(new Attribute(type, name));
 				}
 				referenceSet.getReferences().add(type);
+//				System.out.println("FIELD: " + type);
+//				System.out.print("$" + type+"$,");
 				return true; 
 			}
 			
@@ -104,6 +118,7 @@ public class ClassReferenceManager {
 			@Override
 			public boolean visit(AnonymousClassDeclaration node) {
 				referenceSet.getInnerClasses().add(node.getParent().toString());
+//				System.out.println("ANONIMA: " + node.getParent().toString());
 				return true; 
 			}
 			
@@ -116,6 +131,7 @@ public class ClassReferenceManager {
 			        if(superClassType != null){
 			        	String name = superClassType.toString();
 			        	referenceSet.getReferences().add(name);
+//			        	System.out.println("EXTEND: " + name);
 			        	if(name.contains(Constants.LESS_THEN)){
 			        		extendClass.setName(name.substring(0,name.indexOf(Constants.LESS_THEN)).concat(Constants.JAVA_EXTENSION));
 			        	}
@@ -145,9 +161,11 @@ public class ClassReferenceManager {
 				}
 				
 				for (Object o : node.modifiers().toArray()) {
+//					System.out.println("METODE MODIFIER: "+o.toString());
 					modifiers.add(o.toString());
 				}
 				
+//				System.out.println(content);
 				Method method = new Method(name, content, body, returnTypeMethod, parameters, modifiers);
 				defineMethodVariables(method);
 				defineMethodSimpleName(method);
@@ -236,12 +254,16 @@ public class ClassReferenceManager {
 		unit.accept(new ASTVisitor() {
 			@Override
 			public boolean visit(MethodInvocation node){
+//				System.out.println(node.toString());
 				br.ufpi.codivision.feature.java.model.MethodInvocation mi;
 				String expression = node.getExpression() != null ? node.getExpression().toString(): null;
+//				System.out.println(expression);
 				String name = node.getName().toString();
+//				System.out.println(node.getName().toString());
 				mi = new br.ufpi.codivision.feature.java.model.MethodInvocation(expression, name);
 				for (Object o : node.arguments()) {
 					mi.getArguments().add(String.valueOf(o));
+//					System.out.println(node.toString());
 				}
 				invocations.add(mi);
 				return true;

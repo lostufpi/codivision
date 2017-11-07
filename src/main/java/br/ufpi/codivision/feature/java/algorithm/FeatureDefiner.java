@@ -18,6 +18,7 @@ import br.ufpi.codivision.feature.java.model.Method;
 import br.ufpi.codivision.feature.java.model.MethodInvocation;
 import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Package;
+import br.ufpi.codivision.feature.java.model.Parameter;
 import br.ufpi.codivision.feature.java.model.Variable;
 
 /**
@@ -102,25 +103,29 @@ public class FeatureDefiner implements FeatureIdentify{
 			return false;
 		}
 		
-		ClassMethodVisit cmv;
-		boolean isCalledByOtherMethod = false;
-		
-		for (Method m : controllerMethod.getOwnerClass().getMethods()) {
-			if(!m.equals(controllerMethod)){
-				for (MethodInvocation mi : m.getMethodInvocations()) {
-					cmv = buildClassMethodVisit(mi, m.getOwnerClass(), m, graph);
-					if(cmv != null){
-						if(cmv.getMethod().equals(controllerMethod)){
-							isCalledByOtherMethod = true;
-						}
-					}
-				}
-			}
-		}
-		
-		if(isCalledByOtherMethod){
+		if (controllerMethod.getModifiers().contains(Constants.PRIVATE_MODIFIER)){
 			return false;
 		}
+		
+//		ClassMethodVisit cmv;
+//		boolean isCalledByOtherMethod = false;
+//		
+//		for (Method m : controllerMethod.getOwnerClass().getMethods()) {
+//			if(!m.equals(controllerMethod)){
+//				for (MethodInvocation mi : m.getMethodInvocations()) {
+//					cmv = buildClassMethodVisit(mi, m.getOwnerClass(), m, graph);
+//					if(cmv != null){
+//						if(cmv.getMethod().equals(controllerMethod)){
+//							isCalledByOtherMethod = true;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		
+//		if(isCalledByOtherMethod){
+//			return false;
+//		}
 		
 		return true;
 	}
@@ -141,8 +146,10 @@ public class FeatureDefiner implements FeatureIdentify{
 		while(cmvList.size() > 0){
 			Class sourceClass = cmvList.get(0).getC();
 			Method sourceMethod = cmvList.get(0).getMethod();
-			addSimpleName(referencesClass, sourceMethod, graph);
-			formatAndAddMultiTypesVariables(referencesClass, sourceMethod);
+			
+			this.addSourceAndSuperClass(referencesClass, sourceClass);
+			this.addSimpleName(referencesClass, sourceMethod, graph);
+			this.formatAndAddMultiTypesVariables(referencesClass, sourceMethod);
 			
 			for (MethodInvocation mi : sourceMethod.getMethodInvocations()) {
 				if(!referencesClass.contains(sourceClass)){
@@ -171,35 +178,45 @@ public class FeatureDefiner implements FeatureIdentify{
 	 */
 	private ClassMethodVisit buildClassMethodVisit(MethodInvocation mi, Class sourceClass, Method sourceMethod, Graph<NodeInfo, DefaultEdge> graph){
 		String expression = mi.getExpression();
-		String type = null;
+		String expressionType = null;
 		Class targetClass = null;
 		
 		if(expression != null){ //SE O MÉTODO CHAMADO NÃO É INTERNO À CLASSE, OU SEJA, NÃO PRECISA SER CHAMADO POR UMA EXPRESSÃO
 			if(!expression.contains(Constants.THIS)){ // SE NÃO CONTER "THIS", PODE SER UMA VARIÁVEL LOCAL
 				for (Variable v : sourceMethod.getVariables()) {
 					if(v.getName().equals(expression)){
-						type = v.getType();
+						expressionType = v.getType();
 					}
 				}
 			}
 			
-			if(type == null){ //SE TYPE FOR "NULL", A VARIÁVEL PODE SER UM ATRIBUTO DA CLASSE, NÃO PRECEDIDO DE "THIS"
+			if(expressionType == null){ //SE TYPE FOR "NULL", A VARIÁVEL PODE SER UM ATRIBUTO DA CLASSE, NÃO PRECEDIDO DE "THIS"
 				for (Attribute a : sourceClass.getAttributes()) {
 					if(a.getName().equals(expression.substring(expression.indexOf(Constants.DOT)+1))){
-						type = a.getType();
+						expressionType = a.getType();
 						break;
 					}
 				}
 			}
 			
-			if(type == null){ //SE NÃO FOR UM ATRIBUTO DA CLASSE OU DO MÉTODO, A EXPRESSÃO PODE REPRESENTAR UMA CLASSE (ACESSANDO MÉTODO ESTÁTICO) 
+			
+			
+			if(expressionType == null){ //SE NÃO FOR UM ATRIBUTO DA CLASSE OU DO MÉTODO, A EXPRESSÃO PODE REPRESENTAR UMA CLASSE (ACESSANDO MÉTODO ESTÁTICO) 
 				Class expressionClass = findClassFromType(sourceClass, expression);
 				if(expressionClass != null){
-					type = expressionClass.formatName();
+					expressionType = expressionClass.formatName();
 				}
 			}
+			
+			if(expressionType == null) {
+				Class c = this.checkFrameworkMethodInvocation(expression, sourceClass);
+				if(c!=null) {
+					expressionType = c.formatName();
+				}
+			}
+			
 		}
-		targetClass = type == null ? sourceClass : findClassFromType(sourceClass, type);
+		targetClass = expressionType == null ? sourceClass : findClassFromType(sourceClass, expressionType);
 		
 		if(targetClass != null){
 			Method targetMethod = findTargetMethod(sourceClass, targetClass, sourceMethod, mi);
@@ -232,33 +249,35 @@ public class FeatureDefiner implements FeatureIdentify{
 		Method targetMethod = null;
 		boolean isEqualParam = true;
 		
-		for (Method m : targetClass.getMethods()) {
-			if(m.getParameters().size() == mi.getArguments().size() && m.getName().equals(mi.getName())){
-				isEqualParam = checkMethodParameters(mi.getArguments(), mi.getArguments().size(), sourceClass, sourceMethod, m);
-				if(isEqualParam){
-					targetMethod = m;
-					break;
+		if(targetClass != null) {
+			for (Method m : targetClass.getMethods()) {
+				if(m.getParameters().size() == mi.getArguments().size() && m.getName().equals(mi.getName())){
+					boolean isAllParametersGenerics = true;
+					for (Parameter p : m.getParameters()) {
+						if(!p.getType().equals(Constants.GENERIC)) {
+							isAllParametersGenerics = false;
+						}
+					}
+					if(isAllParametersGenerics) {
+						return m;
+					}
 				}
 			}
-		}
-		
-		if(targetMethod == null){ //SE METHOD FOR "NULL", PODE SER QUE O MÉTODO EXISTA, PORÉM PODEM TER RECEBIDO ARGUMENTOS DO TIPO DE DADOS PRIMITIVOS E POSSUIR PARÂMETROS ABSTRATOS  
-			for (Method m : targetClass.getMethods()) { 
+			
+			for (Method m : targetClass.getMethods()) {
 				if(m.getParameters().size() == mi.getArguments().size() && m.getName().equals(mi.getName())){
-					isEqualParam = checkMethodParametersPrimitAbst(mi.getArguments(), mi.getArguments().size(), sourceClass, sourceMethod, m);
+					isEqualParam = checkMethodParameters(mi.getArguments(), mi.getArguments().size(), sourceClass, sourceMethod, m);
 					if(isEqualParam){
 						targetMethod = m;
 						break;
 					}
 				}
 			}
-		}
-		
-		if(targetMethod == null){ //SE METHOD FOR NULL, PODE SER QUE O MÉTODO EXISTA, PORÉM COM PARÂMETROS OPCIONAIS
-			for (Method m : targetClass.getMethods()) { 
-				if(m.getName().equals(mi.getName())){
-					if(m.containsOptionalParam()){
-						isEqualParam = checkMethodParameters(mi.getArguments(), m.getParameters().size()-1, sourceClass, sourceMethod, m);
+			
+			if(targetMethod == null){ //SE METHOD FOR "NULL", PODE SER QUE O MÉTODO EXISTA, PORÉM PODEM TER RECEBIDO ARGUMENTOS DO TIPO DE DADOS PRIMITIVOS E POSSUIR PARÂMETROS ABSTRATOS  
+				for (Method m : targetClass.getMethods()) { 
+					if(m.getParameters().size() == mi.getArguments().size() && m.getName().equals(mi.getName())){
+						isEqualParam = checkMethodParametersPrimitAbst(mi.getArguments(), mi.getArguments().size(), sourceClass, sourceMethod, m);
 						if(isEqualParam){
 							targetMethod = m;
 							break;
@@ -266,7 +285,33 @@ public class FeatureDefiner implements FeatureIdentify{
 					}
 				}
 			}
+			
+			if(targetMethod == null){ //SE METHOD FOR NULL, PODE SER QUE O MÉTODO EXISTA, PORÉM COM PARÂMETROS OPCIONAIS
+				for (Method m : targetClass.getMethods()) { 
+					if(m.getName().equals(mi.getName())){
+						if(m.containsOptionalParam()){
+							isEqualParam = checkMethodParameters(mi.getArguments(), m.getParameters().size()-1, sourceClass, sourceMethod, m);
+							if(isEqualParam){
+								targetMethod = m;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			if(targetMethod == null) { //SE METHOD FOR NULL, PODE SER QUE O MÉTODO EXISTA, PORÉM SEJA UM MÉTODO DA SUPERCLASSE
+				Class c = new Class();
+				if(targetClass.getSuperClass() != null){
+					c = findClassFromType(targetClass, targetClass.getSuperClass().getName());
+					if(c != null) {
+						targetClass.setSuperClass(c);
+					}
+					return findTargetMethod(sourceClass, c, sourceMethod, mi); //REFAZ O MESMO PROCESSO COM BASE NA SUPERCLASSE
+				}
+			}
 		}
+		
 		return targetMethod;
 	}
 	
@@ -328,6 +373,9 @@ public class FeatureDefiner implements FeatureIdentify{
 			return true;
 		}
 		if((paramType.equals(Constants.PRIMITIVE_BOOLEAN) && argumentType.equals(Constants.BOOLEAN)) || (paramType.equals(Constants.BOOLEAN) && argumentType.equals(Constants.PRIMITIVE_BOOLEAN))) {
+			return true;
+		}
+		if((paramType.equals(Constants.PRIMITIVE_LONG) && argumentType.equals(Constants.LONG)) || (paramType.equals(Constants.LONG) && argumentType.equals(Constants.PRIMITIVE_LONG))) {
 			return true;
 		}
 		return false;
@@ -475,7 +523,7 @@ public class FeatureDefiner implements FeatureIdentify{
 	 * @return
 	 */
 	private Class findClassFromType (Class classSource, String type){
-		NodeInfo ni = new NodeInfo(new Class());
+		NodeInfo ni = null;
 	
 		for (Iterator<NodeInfo> iterator = this.graph.vertexSet().iterator(); iterator.hasNext();) {
 			NodeInfo node = iterator.next();
@@ -485,13 +533,24 @@ public class FeatureDefiner implements FeatureIdentify{
 		}
 		type = formatType(type)[0];
 		
-		for (Iterator<DefaultEdge> i =  this.graph.edgesOf(ni).iterator(); i.hasNext();) {
-			DefaultEdge de = (DefaultEdge) i.next();
-			if(type.equals(this.graph.getEdgeTarget(de).getC().formatName())){
-				return this.graph.getEdgeTarget(de).getC();
+		if(ni != null) {
+			for (Iterator<DefaultEdge> i =  this.graph.edgesOf(ni).iterator(); i.hasNext();) {
+				DefaultEdge de = (DefaultEdge) i.next();
+				if(type.equals(this.graph.getEdgeTarget(de).getC().formatName())){
+					return this.graph.getEdgeTarget(de).getC();
+				}
 			}
 		}
 		return null;
+	}
+	
+	private void addSourceAndSuperClass (List<Class> referencesClass, Class sourceClass) {
+		if(!referencesClass.contains(sourceClass)) {
+			referencesClass.add(sourceClass);
+		}
+		if(sourceClass.getSuperClass() != null && !referencesClass.contains(sourceClass.getSuperClass()) && sourceClass.getSuperClass().getPackageName() != null) {
+			referencesClass.add(sourceClass.getSuperClass());
+		}
 	}
 	
 	/**
@@ -509,5 +568,32 @@ public class FeatureDefiner implements FeatureIdentify{
 				.replace(Constants.CLOSE_BRACKET, Constants.NUMBER_SIGN)
 				.split(Constants.NUMBER_SIGN);
 		return splitedStr;
+	}
+	
+	private Class checkFrameworkMethodInvocation(String methodInvocationExpression, Class sourceClass) {
+		List<Class> matchClasses = new ArrayList<>(); 
+		NodeInfo nodeSource = null;
+
+		for (Iterator<NodeInfo> iterator = this.graph.vertexSet().iterator(); iterator.hasNext();) {
+			NodeInfo node = iterator.next();
+			if(node.getC().equals(sourceClass)) {
+				nodeSource = node;
+			}
+			if(methodInvocationExpression.contains(node.getC().formatName().concat(Constants.DOT).concat(Constants.CLASS))){
+				matchClasses.add(node.getC());
+			}	
+		}
+		
+		if(!matchClasses.isEmpty()) {
+			for (Iterator<DefaultEdge> i = this.graph.edgesOf(nodeSource).iterator(); i.hasNext();) {
+				DefaultEdge de = (DefaultEdge) i.next();
+				for (Class mc : matchClasses) {
+					if(this.graph.getEdgeTarget(de).getC().equals(mc)) {
+						return mc;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

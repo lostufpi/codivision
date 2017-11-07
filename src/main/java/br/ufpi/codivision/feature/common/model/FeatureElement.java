@@ -1,5 +1,6 @@
 package br.ufpi.codivision.feature.common.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,10 +10,6 @@ import javax.persistence.ManyToOne;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
 
-/**
- * @author Vanderson Moura
- *
- */
 /**
  * @author Vanderson Moura
  *
@@ -32,7 +29,7 @@ public class FeatureElement implements PersistenceEntity{
 	@JoinColumn(name = "featureId")
 	private Feature feature;
 	
-	@ManyToOne
+	@ManyToOne (cascade = {CascadeType.MERGE, CascadeType.PERSIST})
 	@JoinColumn(name = "elementId")
 	private Element element;
 	
@@ -75,5 +72,14 @@ public class FeatureElement implements PersistenceEntity{
 	 */
 	public void setElement(Element element) {
 		this.element = element;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		FeatureElement fe = (FeatureElement) obj;
+		if(this.feature.getName().equals(fe.getFeature().getName()) && this.element.getFullname().equals(fe.element.getFullname())){
+			return true;
+		}
+		return false;
 	}
 }
