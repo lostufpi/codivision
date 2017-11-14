@@ -196,8 +196,8 @@ public class GitUtil {
 
 				OperationFile file = new OperationFile();
 
-//				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());
-//				revision.setCodeSmellsFileAlteration(findFileToIdentifyCodeSmells);
+				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());
+				revision.setCodeSmellsFileAlteration(findFileToIdentifyCodeSmells);
 
 				if(diff.getChangeType().name().equals(Constants.ADD)){
 					file.setOperationType(OperationType.ADD);

@@ -3,10 +3,6 @@
  */
 package br.ufpi.codivision.core.controller;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -57,13 +53,8 @@ import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.QuickSort;
-import br.ufpi.codivision.debit.codesmell.CodeSmellID;
-import br.ufpi.codivision.debit.model.CodeSmell;
-import br.ufpi.codivision.debit.model.CodeSmellMethod;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
-import weka.clusterers.SimpleKMeans;
-import weka.core.Instances;
 
 /**
  * @author Werney Ayala
@@ -578,59 +569,16 @@ public class RepositoryController {
 		}
 	}
 	
-	public static BufferedReader readDataFile(String filename) {
-		BufferedReader inputReader = null;
- 
-		try {
-			inputReader = new BufferedReader(new FileReader(filename));
-		} catch (FileNotFoundException ex) {
-			System.err.println("File not found: " + filename);
-		}
- 
-		return inputReader;
-	}
-	
-	public int[] calculaClusters(Long repositoryId) throws Exception {
-		SimpleKMeans kmeans = new SimpleKMeans();
- 
-		kmeans.setSeed(10);
- 
-		//important parameter to set: preserver order, number of cluster.
-		kmeans.setPreserveInstancesOrder(true);	
-		kmeans.setNumClusters(3);
- 
-		BufferedReader datafile = readDataFile(GitUtil.getDirectoryToSave().concat("file"+repositoryId+".arff")); 
-		Instances data = new Instances(datafile);
- 
- 
-		kmeans.buildClusterer(data);
- 
-		// This array returns the cluster number (starting with 0) for each instance
-		// The array has as many elements as the number of instances
-		int[] assignments = kmeans.getAssignments();
- 
-//		int i=0;
-//		for(int clusterNum : assignments) {
-//		    System.out.printf("Instance %d -> Cluster %d \n", i, clusterNum);
-//		    i++;
-//		}
-		
-		return assignments;
-	}
-	
-	
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/tree/td")
 	public void getDirTreeTD(Long repositoryId) throws Exception{
 		Repository repository = dao.findById(repositoryId);
-		
 		
 		ArrayList<File> fileWithTD = new ArrayList<File>();
 		
 		for (File file : repository.getCodeSmallsFile()) {
 			
 			boolean teste = false;
-			
 			if(file.getCodeSmells().isEmpty() && file.getQntBadSmellComment() == 0) {
 				for (Method method : file.getMethods()) {
 					if(!method.getCodeSmells().isEmpty()) {
@@ -640,168 +588,29 @@ public class RepositoryController {
 			}else {
 				teste = true;
 			}
-			
 			if(teste) {
-				
 				fileWithTD.add(file);
-			}
-			
+			}	
 			
 		}
 
-		String arff = "@relation dt\n" + 
-				"\n" + 
-				"@attribute brainclass numeric\n" + 
-				"@attribute brainmethod numeric\n" + 
-				"@attribute complexmethod numeric\n" + 
-				"@attribute godclass numeric\n" + 
-				"@attribute longmethod numeric\n" + 
-				"@attribute dataclass numeric\n" + 
-				"@attribute featureenvy numeric\n" + 
-				"@attribute codesmellcomments numeric\n" + 
-				"\n" + 
-				"@data\n";
-
-		
-
-		for (File file : fileWithTD) {
-			int[] list = new int[7];
-			for (CodeSmell codeSmell : file.getCodeSmells()) {
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.BRAIN_CLASS)) {
-					list[0] = list[0] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.BRAIN_METHOD)) {
-					list[1] = list[1] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.COMPLEX_METHOD)) {
-					list[2] = list[2] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.GOD_CLASS)) {
-					list[3] = list[3] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.LONG_METHOD)) {
-					list[4] = list[4] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.DATA_CLASS)) {
-					list[5] = list[5] + 1;
-				}
-				if(codeSmell.getCodeSmellType().equals(CodeSmellID.FEATURE_ENVY)) {
-					list[6] = list[6] + 1;
-				}
-			}
-			
-			for (Method method : file.getMethods()) {
-				for (CodeSmellMethod codeSmellMethod : method.getCodeSmells()) {
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.BRAIN_CLASS)) {
-						list[0] = list[0] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.BRAIN_METHOD)) {
-						list[1] = list[1] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.COMPLEX_METHOD)) {
-						list[2] = list[2] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.GOD_CLASS)) {
-						list[3] = list[3] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.LONG_METHOD)) {
-						list[4] = list[4] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.DATA_CLASS)) {
-						list[5] = list[5] + 1;
-					}
-					if(codeSmellMethod.getCodeSmellType().equals(CodeSmellID.FEATURE_ENVY)) {
-						list[6] = list[6] + 1;
-					}
-				}
-			}
-			
-			
-			arff = arff +list[0]+","+list[1]+ ","+list[2]+","+list[3]+ ","+list[4]+","+list[5]+ ","+list[6]+","+file.getQntBadSmellComment()+"\n";			
-			
-		}
-		
-		PrintWriter writer = new PrintWriter(GitUtil.getDirectoryToSave().concat("file"+repositoryId+".arff"), "UTF-8");
-		writer.println(arff);
-		writer.close();
-		
-		int[] clusters = calculaClusters(repositoryId);
-		
-		
-		DirTree c1 = new DirTree();
-		c1.setText("Cluster 1");
-		c1.setType(NodeType.FOLDER);
-		
-		DirTree c2 = new DirTree();
-		c2.setText("Cluster 2");
-		c2.setType(NodeType.FOLDER);
-		
-		DirTree c3 = new DirTree();
-		c3.setText("Cluster 3");
-		c3.setType(NodeType.FOLDER);
-		
-		int i = 0;
-		for (int clusterNum : clusters) {
-			
-			if(clusterNum == 0) {
-				File file = fileWithTD.get(i);
-				
-				DirTree dirTree = new DirTree();
-				dirTree.setType(NodeType.FILE);
-				
-				//pega a ultima porcao do nome
-				String[] split = file.getPath().split("/");
-				String name = split[split.length - 1];
-				
-				dirTree.setText(name);
-				
-				c1.getChildren().add(dirTree);
-				
-			}
-			if(clusterNum == 1) {
-				
-				File file = fileWithTD.get(i);
-				
-				DirTree dirTree = new DirTree();
-				dirTree.setType(NodeType.FILE);
-				
-				//pega a ultima porcao do nome
-				String[] split = file.getPath().split("/");
-				String name = split[split.length - 1];
-				
-				dirTree.setText(name);
-				
-				c2.getChildren().add(dirTree);
-				
-			}
-			if(clusterNum == 2) {
-				
-				File file = fileWithTD.get(i);
-				
-				DirTree dirTree = new DirTree();
-				dirTree.setType(NodeType.FILE);
-				
-				//pega a ultima porcao do nome
-				String[] split = file.getPath().split("/");
-				String name = split[split.length - 1];
-				
-				dirTree.setText(name);
-				
-				c3.getChildren().add(dirTree);
-				
-			}
-			
-			
-			i++;
-		}
-		
 		DirTree tree = new DirTree();
 		tree.setType(NodeType.FOLDER);
 		tree.setText(repository.getName());
 		
-		tree.getChildren().add(c1);
-		tree.getChildren().add(c2);
-		tree.getChildren().add(c3);
+		for (File file2 : fileWithTD) {
+			
+			DirTree tree2 = new DirTree();
+			tree2.setType(NodeType.FILE);
+			
+			//pega a ultima porcao do nome
+			String[] split = file2.getPath().split("/");
+			String name = split[split.length - 1];
+			
+			tree2.setText(name);
+			
+			tree.getChildren().add(tree2);
+		}
 		
 		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
 		
