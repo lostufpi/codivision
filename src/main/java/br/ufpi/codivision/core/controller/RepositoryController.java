@@ -52,9 +52,14 @@ import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
+import br.ufpi.codivision.feature.common.model.Feature;
+import br.ufpi.codivision.feature.common.model.FeatureElement;
+import br.ufpi.codivision.feature.common.util.FeatureNodeType;
+import br.ufpi.codivision.feature.common.util.FeatureTree;
 
 /**
  * @author Werney Ayala
@@ -616,6 +621,72 @@ public class RepositoryController {
 		
 
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Get("/repository/{repositoryId}/features")
+	public void features(Long repositoryId) throws Exception {
+		
+		Repository repository = dao.findById(repositoryId);
+		RepositoryVO repositoryVO = new RepositoryVO(repository);
 
+		Configuration configuration = repository.getConfiguration();
+		configuration.refreshTime();
 
+		List<TimeWindow> windows = new ArrayList<TimeWindow>(Arrays.asList(TimeWindow.values()));
+
+		result.include("windows", windows);
+		result.include("configuration", configuration);
+		result.include("repository", repositoryVO);
+
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/feature/tree")
+	public void getFeaturesTree(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		ExtractionPath extractionPath = repository.getExtractionPath();
+		List<Feature> features = extractionPath.getFeatures();
+		
+		FeatureTree root = new FeatureTree();
+		root.setType(FeatureNodeType.FEATURE);
+		root.setText(repository.getName());
+		
+		String a, b;
+		
+		for (Feature f : features) {
+			a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+			b = String.valueOf(f.getId());
+			FeatureTree featureTree = new FeatureTree();
+			featureTree.setId(a.concat(b));
+			featureTree.setText(f.getName());
+			featureTree.setType(FeatureNodeType.FEATURE);
+			for (FeatureElement fe : f.getFeatureElements()) {
+				a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+				b = String.valueOf(fe.getElement().getId());
+				FeatureTree elementTree = new FeatureTree();
+				elementTree.setId(a.concat(b));
+				elementTree.setText(fe.getElement().getFullname());
+				elementTree.setType(FeatureNodeType.ELEMENT);
+				featureTree.getChildren().add(elementTree);
+			}
+			root.getChildren().add(featureTree);
+		}
+		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/features/alterations")
+	public void getFeatureAlterations(Long repositoryId, String newPath, String nodeId){
+		List<AuthorPercentage> percentage = new ArrayList<>();
+		Repository repository = dao.findById(repositoryId);
+		
+		if(newPath.contains(Constants.JAVA_EXTENSION)) {
+			newPath = newPath.substring(newPath.indexOf(Constants.FILE_SEPARATOR.concat(Constants.FILE_SEPARATOR))+1);
+			percentage = dao.getPercentage(repositoryId, newPath);
+		}else {
+			Long featureId = newPath.equals(Constants.FILE_SEPARATOR.concat(repository.getName())) || newPath.equals(Constants.FILE_SEPARATOR) ? null : Long.valueOf(nodeId.substring(4));
+			percentage = dao.getFeaturePercentage(repositoryId, featureId);
+		}
+		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+	}
 }

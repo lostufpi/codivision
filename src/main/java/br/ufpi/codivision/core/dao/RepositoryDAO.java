@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
 import br.ufpi.codivision.core.model.Configuration;
@@ -169,6 +170,75 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				.setParameter("path", path+"%")
 				.getResultList();
 		
+	}
+	
+public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featureId){
+		
+		/* Obtem a quantidade de alterações realizadas por outros desenvolvedores no arquivo 
+		 * Essas alterações são calculadas em nível de arquivo pois foi a única forma que encotrei de fazer
+		 * Essa é uma subconsulta baseada na consulta principal, então ela depende da data da consulta principal,
+		 * 		pois só são contabilizadas alterações posteriores a data informada */
+		String futureAlterations = "SELECT case when count(*) < 20 then count(*) else 20 end from "
+										+ "Repository as r, "
+										+ "IN(r.revisions) as rev, "
+										+ "IN(rev.files) as f "
+									+ "WHERE "
+										+ "f.path = file.path and "
+										+ "r.id = :repositoryId and "
+										+ "rev.author != revision.author and "
+										+ "rev.date > revision.date";
+		
+		/* Cria um objeto do tipo AuthorPercentage
+		 * Recebe como parâmetros um desenvolvedor e a quantidade de alterações realizadas por ele
+		 * A quantidade de alterações é calculada da seguinte forma:
+		 * 		- São somados os valores de ADD MOD e DEL para arquivo dentro do caminho selecionado
+		 * 				- Esses valores são multiplicados pelos seus respectivos pesos
+		 * 		- O valor resultante é penalizado de acordo com a data em que foi feita essa alteração 
+		 * 				- 10% por mês decorrido 
+		 * 		- O valor resultante é penalizado de acordo com a quantidade de alterações realizadas 
+		 * 				por outros desenvolvedores (5% por cada alteração realizada por outro desenvolvedor). 
+		 * 		- Todo esse calculo é feito para cada arquivo e depois agregado por todos os arquivos 
+		 * 				por meio da função SUM e agrupado por cada desenvolvedor */
+		String newAuthorPercentace = "new br.ufpi.codivision.core.model.vo.AuthorPercentage("
+										+ "revision.author, "
+								   		+ "sum( "
+								   			+ "((file.lineAdd * configuration.addWeight) + (file.lineMod * configuration.modWeight) + (file.lineDel * configuration.delWeight)) * "
+								   			+ "(1.0 - ( datediff(current_date(),cast(revision.date as date)) * configuration.monthlyDegradationPercentage)) * "
+								   			+ "(1.0 - ((" + futureAlterations + ") * (configuration.changeDegradation/100) )) "
+					   					+ "), "
+					   					+ "sum(file.lineAdd + file.lineMod + file.lineDel + 0)"
+				   					+ ")";
+		
+		String queryFiles = new String();
+		
+		if(featureId != null) {
+			queryFiles = "SELECT f.element.fullname FROM FeatureElement f WHERE f.feature.id = :featureId";
+		}else {
+			queryFiles = "SELECT e.fullname FROM Element e";
+		}
+		
+		/* A query principal */
+		String query = "SELECT " + newAuthorPercentace + " from "
+							+ "Repository as repository "
+							+ "inner join repository.configuration as configuration, "
+							+ "IN(repository.revisions) as revision, "
+							+ "IN(revision.files) as file "
+					+ "WHERE "
+						+ "file.path IN (" + queryFiles + ") and "
+						+ "repository.id = :repositoryId and "
+						+ "revision.date >= configuration.initDate and "
+						+ "revision.date <= configuration.endDate "
+					+ "GROUP BY "
+						+ "revision.author "
+					+ "ORDER BY "
+						+ "revision.author ASC";
+		
+		TypedQuery<AuthorPercentage> typedQuery = em.createQuery(query, AuthorPercentage.class).setParameter("repositoryId", repositoryId);
+		if(featureId != null) {
+			typedQuery.setParameter("featureId", featureId);
+		}
+		
+		return typedQuery.getResultList();
 	}
 	
 	@SuppressWarnings("unchecked")

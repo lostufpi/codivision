@@ -39,6 +39,11 @@ import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
 import br.ufpi.codivision.core.util.Outliers;
+import br.ufpi.codivision.feature.common.model.Feature;
+import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
+import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
+import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
+import br.ufpi.codivision.feature.java.model.Class;
 
 
 @Scheduled(fixedRate = 60000, concurrent = false)
@@ -126,7 +131,21 @@ public class TaskRunner implements Task{
 				log.info("Iniciando DT");
 				repository.setCodeSmallsFile(util.getCodeSmellFiles());
 				log.info("Dt concluida");
-
+				
+				log.info("Extraindo arquivos de código...");
+				List<Class> arquivosJava = util.getRepositoryJavaFiles();
+				log.info("Extração de arquivos de código concluída!");
+				
+				if(!arquivosJava.isEmpty()) {
+					log.info("Inicializando a identificação de funcionalidades...");
+					ClassGraphBuilder builder = new ClassGraphBuilder(arquivosJava);
+					ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
+					FeatureDefiner fd = new FeatureDefiner(controllerDefiner.controllersDefiner(), builder.getG());
+					List<Feature> features = fd.featureIdentify();
+					repository.getExtractionPath().setFeatures(features);
+					log.info("Identificação de funcionalidades concluída!");
+				}
+			
 				log.info("Save repositories");
 				dao.save(repository);
 
