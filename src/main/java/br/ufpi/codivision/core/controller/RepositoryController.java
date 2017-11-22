@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -52,6 +53,7 @@ import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
+import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
@@ -526,7 +528,7 @@ public class RepositoryController {
 
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/td")
-	public void getTD(Long repositoryId, String fileName){
+	public void getTDClass(Long repositoryId, String fileName){
 
 		Repository repository = dao.findById(repositoryId);
 
@@ -539,6 +541,11 @@ public class RepositoryController {
 				String name_file = split2[split2.length - 1];
 
 				if(name.equals(name_file)) {
+					
+					List<AuthorPercentage> percentage = dao.getPercentage(repositoryId, "/src/main/java/"+file.getPath());
+					
+					Fuzzy.calcula(repository, file, percentage);
+					
 					result.use(Results.json()).withoutRoot().from(file).recursive().serialize();
 					return;
 				}

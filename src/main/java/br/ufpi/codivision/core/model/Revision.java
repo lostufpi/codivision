@@ -3,6 +3,7 @@
  */
 package br.ufpi.codivision.core.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -54,7 +55,9 @@ public class Revision implements PersistenceEntity{
 	@JoinColumn(name="revisionId")
 	private List<File> codeSmellsFileAlteration;
 	
-	public Revision() { }
+	public Revision() { 
+		this.codeSmellsFileAlteration = new ArrayList<>();
+	}
 	
 	/**
 	 * @return the author
