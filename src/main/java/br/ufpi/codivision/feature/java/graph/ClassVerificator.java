@@ -72,20 +72,22 @@ public class ClassVerificator {
 		
 		//ADICIONANDO OS 'SIMPLE NAMES', PARA INCLUSÃO DE CLASSE REFERENCIADAS DURANTE O ACESSO A ATRIBUTOS ESTÁTICOS, E QUE ESTÁ NO MESMO PACOTE DA CLASSE REFERENCIADORA.
 		for (String s : referenceSet.getSimpleNames()){
-			String r = c.getPackageName().replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.FILE_SEPARATOR).concat(s);
-			for (String _import : referenceSet.getImports()) {
-				if(_import.contains(s)){
-					r = _import.replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.JAVA_EXTENSION);
+			if(classSimpleNameVerifify(s, nodes)) {
+				String r = c.getPackageName().replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.FILE_SEPARATOR).concat(s);
+				for (String _import : referenceSet.getImports()) {
+					if(_import.contains(s)){
+						r = _import.replace(Constants.DOT, Constants.FILE_SEPARATOR).concat(Constants.JAVA_EXTENSION);
+					}
+				}
+				node = searchNodeFromClassFullName(nodes, r);
+				if(node != null && node.getC() != c ){
+					if(!validReferences.contains(node)){
+						validReferences.add(node);
+					}
+				}
 				}
 			}
-			node = searchNodeFromClassFullName(nodes, r);
-			if(node != null && node.getC() != c ){
-				if(!validReferences.contains(node)){
-					validReferences.add(node);
-				}
-			}
-		}
-		return validReferences;
+			return validReferences;
 	}
 
 	/**
@@ -100,6 +102,24 @@ public class ClassVerificator {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * VERFICA DE UM SIMPLE NAME REPRESENTA UM NOME DE UMA CLASSE E SE ESTA CLASSE PERTENCE AO SISTEMA
+	 * 
+	 * @param simpleName
+	 * @param nodes
+	 * @return
+	 */
+	private boolean classSimpleNameVerifify(String simpleName, List<NodeInfo> nodes) {
+		if(simpleName.substring(0,1).equals(simpleName.substring(0,1).toUpperCase())) {
+			for (NodeInfo n : nodes) {
+				if(simpleName.equals(n.getC().formatName())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/**
