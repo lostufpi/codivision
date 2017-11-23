@@ -26,7 +26,15 @@
 	</repositories>
 
 	<dependencies>
-
+		
+		<!-- Dependência para trabalhar com fuzzy -->
+		<dependency>
+			<groupId>jFuzzyLogic</groupId>
+			<artifactId>jFuzzyLogic</artifactId>
+			<version>1.0</version>
+		</dependency>
+	
+		
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>

@@ -53,6 +53,7 @@ import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
+import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
@@ -76,7 +77,7 @@ public class RepositoryController {
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
 	@Inject private FileDAO fileDAO;
-	
+
 
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
@@ -513,7 +514,7 @@ public class RepositoryController {
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/technicalDebit")
 	public void infoTD(Long repositoryId) throws Exception {
-		
+
 		Repository repository = dao.findById(repositoryId);
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 
@@ -531,7 +532,7 @@ public class RepositoryController {
 
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/td")
-	public void getTD(Long repositoryId, String fileName){
+	public void getTDClass(Long repositoryId, String fileName){
 
 		Repository repository = dao.findById(repositoryId);
 
@@ -544,6 +545,11 @@ public class RepositoryController {
 				String name_file = split2[split2.length - 1];
 
 				if(name.equals(name_file)) {
+
+					List<AuthorPercentage> percentage = dao.getPercentage(repositoryId, "/src/main/java/"+file.getPath());
+
+					Fuzzy.calcula(repository, file, percentage);
+
 					result.use(Results.json()).withoutRoot().from(file).recursive().serialize();
 					return;
 				}
@@ -558,31 +564,31 @@ public class RepositoryController {
 
 
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/file/{fileId}/method/td")
 	public void getTDMethod(Long repositoryId, Long fileId, String methodName){
 
 		File file = fileDAO.findById(fileId);
-		
+
 		for (Method method : file.getMethods()) {
 			if(method.getName().equals(methodName)) {
 				result.use(Results.json()).withoutRoot().from(method).recursive().serialize();
 				return;
 			}
-				
+
 		}
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/tree/td")
 	public void getDirTreeTD(Long repositoryId) throws Exception{
 		Repository repository = dao.findById(repositoryId);
-		
+
 		ArrayList<File> fileWithTD = new ArrayList<File>();
-		
+
 		for (File file : repository.getCodeSmallsFile()) {
-			
+
 			boolean teste = false;
 			if(file.getCodeSmells().isEmpty() && file.getQntBadSmellComment() == 0) {
 				for (Method method : file.getMethods()) {
@@ -596,36 +602,36 @@ public class RepositoryController {
 			if(teste) {
 				fileWithTD.add(file);
 			}	
-			
+
 		}
 
 		DirTree tree = new DirTree();
 		tree.setType(NodeType.FOLDER);
 		tree.setText(repository.getName());
-		
+
 		for (File file2 : fileWithTD) {
-			
+
 			DirTree tree2 = new DirTree();
 			tree2.setType(NodeType.FILE);
-			
+
 			//pega a ultima porcao do nome
 			String[] split = file2.getPath().split("/");
 			String name = split[split.length - 1];
-			
+
 			tree2.setText(name);
-			
+
 			tree.getChildren().add(tree2);
 		}
-		
+
 		result.use(Results.json()).withoutRoot().from(tree).recursive().serialize();
-		
+
 
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/features")
 	public void features(Long repositoryId) throws Exception {
-		
+
 		Repository repository = dao.findById(repositoryId);
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 
@@ -639,20 +645,20 @@ public class RepositoryController {
 		result.include("repository", repositoryVO);
 
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/feature/tree")
 	public void getFeaturesTree(Long repositoryId) {
 		Repository repository = dao.findById(repositoryId);
 		ExtractionPath extractionPath = repository.getExtractionPath();
 		List<Feature> features = extractionPath.getFeatures();
-		
+
 		FeatureTree root = new FeatureTree();
 		root.setType(FeatureNodeType.FEATURE);
 		root.setText(repository.getName());
-		
+
 		String a, b;
-		
+
 		for (Feature f : features) {
 			a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
 			b = String.valueOf(f.getId());
@@ -673,13 +679,13 @@ public class RepositoryController {
 		}
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
-	
+
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/features/alterations")
 	public void getFeatureAlterations(Long repositoryId, String newPath, String nodeId){
 		List<AuthorPercentage> percentage = new ArrayList<>();
 		Repository repository = dao.findById(repositoryId);
-		
+
 		if(newPath.contains(Constants.JAVA_EXTENSION)) {
 			newPath = newPath.substring(newPath.indexOf(Constants.FILE_SEPARATOR.concat(Constants.FILE_SEPARATOR))+1);
 			percentage = dao.getPercentage(repositoryId, newPath);
@@ -689,4 +695,5 @@ public class RepositoryController {
 		}
 		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
 	}
+
 }
