@@ -44,6 +44,7 @@ import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Class;
+import br.ufpi.codivision.feature.java.model.NodeInfo;
 
 
 @Scheduled(fixedRate = 60000, concurrent = false)
@@ -135,6 +136,26 @@ public class TaskRunner implements Task{
 				log.info("Extraindo arquivos de código...");
 				List<Class> arquivosJava = util.getRepositoryJavaFiles();
 				log.info("Extração de arquivos de código concluída!");
+				
+				if(!arquivosJava.isEmpty()) {
+					log.info("Inicializando a identificacao do acoplamento");
+					ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
+					
+					for (NodeInfo nodeInfo : graph.getG().vertexSet()) {
+						for (br.ufpi.codivision.debit.model.File file : repository.getCodeSmallsFile()) {
+							String full = "/src/main/java/" + file.getPath();	
+							full = full.concat(".java");
+
+							if(nodeInfo.getC().getFullname().equals(full)) {
+								file.setAcoplamento(nodeInfo.getDegreeOUT());
+							}
+								
+						}
+						
+					}
+					
+					log.info("Finalizando a identificacao do acoplamento");
+				}
 				
 				if(!arquivosJava.isEmpty()) {
 					log.info("Inicializando a identificação de funcionalidades...");

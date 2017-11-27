@@ -51,6 +51,7 @@ import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.model.vo.TDFile;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.Fuzzy;
@@ -584,7 +585,7 @@ public class RepositoryController {
 	@Post("/repository/{repositoryId}/tree/td")
 	public void getDirTreeTD(Long repositoryId) throws Exception{
 		Repository repository = dao.findById(repositoryId);
-
+		
 		ArrayList<File> fileWithTD = new ArrayList<File>();
 
 		for (File file : repository.getCodeSmallsFile()) {
@@ -694,6 +695,16 @@ public class RepositoryController {
 			percentage = dao.getFeaturePercentage(repositoryId, featureId);
 		}
 		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/files/criticality")
+	public void getFilesCriticality(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		
+		List<TDFile> criticidade = Fuzzy.criticidade(repository);
+		
+		result.use(Results.json()).withoutRoot().from(criticidade).recursive().serialize();
 	}
 
 }

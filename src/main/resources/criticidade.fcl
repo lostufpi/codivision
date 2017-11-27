@@ -1,0 +1,98 @@
+FUNCTION_BLOCK criticidade	// Definição do bloco
+
+// Define variáveis de entrada
+VAR_INPUT				
+	ACOPLAMENTO : REAL;
+	DIVIDA : REAL;
+	COMPLEXIDADE : REAL;
+END_VAR
+
+// Define variáveis de saída
+VAR_OUTPUT				
+	GC : REAL; 
+END_VAR
+
+// Define as funções de pertinencia para a variável ACOPLAMENTO
+FUZZIFY ACOPLAMENTO			
+	TERM baixo := (0.0, 1) (0.3, 0);
+	TERM  medio := (0.25, 0) (0.5, 1) (0.75, 0);
+	TERM alto := (0.7, 0)(1.0, 1);
+END_FUZZIFY
+
+// Define as funções de pertinencia para a variável DIVIDA
+FUZZIFY DIVIDA		
+	TERM baixa := (0.0, 1) (0.3, 0);
+	TERM  media := (0.25, 0) (0.5, 1) (0.75, 0);
+	TERM alta := (0.7, 0)(1.0, 1);
+END_FUZZIFY
+
+// Define as funções de pertinencia para a variável COMPLEXIDADE
+FUZZIFY COMPLEXIDADE		
+	TERM baixa := (0.0, 1) (0.3, 0);
+	TERM  media := (0.25, 0) (0.5, 1) (0.75, 0);
+	TERM alta := (0.7, 0)(1.0, 1);
+END_FUZZIFY
+
+// Define as funções de pertinencias para a variável de saída GC
+DEFUZZIFY GC			
+	TERM muitobaixo := (0.0, 1) (25.0, 0);
+	TERM baixo := (15.0, 0) (30.0, 1) (45.0, 0);
+	TERM medio := (35.0, 0) (50.0, 1) (65.0, 0);
+	TERM alto := (55.0, 0) (70.0, 1) (85.0, 0);
+	TERM muitoalto := (75.0, 0) (100.0, 1) ;
+	METHOD : COG;		// Método de centro de gravidade
+	DEFAULT := 0;		// Valor padrão (caso nenhuma regra for ativada)
+END_DEFUZZIFY
+
+// Definição das regras
+RULEBLOCK ConjuntoRegras
+
+
+	AND : MIN;	// Use 'min' for 'and'
+	ACT : MIN;	// Use 'min' activation method
+	ACCU : MAX;	// Use 'max' accumulation method
+	
+	//Para DIVIDA baixa
+	RULE 1: IF DIVIDA IS baixa AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS baixa THEN GC IS muitobaixo;
+	RULE 2: IF DIVIDA IS baixa AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS media THEN GC IS muitobaixo;
+	RULE 3: IF DIVIDA IS baixa AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS alta THEN GC IS baixo;
+	
+	RULE 4: IF DIVIDA IS baixa AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS baixa THEN GC IS  baixo;
+	RULE 5: IF DIVIDA IS baixa AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS media THEN GC IS baixo;
+	RULE 6: IF DIVIDA IS baixa AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS alta THEN GC IS baixo;
+	
+	RULE 7: IF DIVIDA IS baixa AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS baixa THEN GC IS  baixo;
+	RULE 8: IF DIVIDA IS baixa AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS media THEN GC IS medio;
+	RULE 9: IF DIVIDA IS baixa AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS alta THEN GC IS medio;
+	
+	//Para DIVIDA media
+	RULE 10: IF DIVIDA IS media AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS baixa THEN GC IS baixo;
+	RULE 11: IF DIVIDA IS media AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS media THEN GC IS medio;
+	RULE 12: IF DIVIDA IS media AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS alta THEN GC IS alto;
+	
+	RULE 13: IF DIVIDA IS media AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS baixa THEN GC IS  medio;
+	RULE 14: IF DIVIDA IS media AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS media THEN GC IS medio;
+	RULE 15: IF DIVIDA IS media AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS alta THEN GC IS alto;
+	
+	RULE 16: IF DIVIDA IS media AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS baixa THEN GC IS  medio;
+	RULE 17: IF DIVIDA IS media AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS media THEN GC IS alto;
+	RULE 18: IF DIVIDA IS media AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS alta THEN GC IS alto;
+	
+	//Para DIVIDA alta
+	RULE 19: IF DIVIDA IS alta AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS baixa THEN GC IS medio;
+	RULE 20: IF DIVIDA IS alta AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS media THEN GC IS alto;
+	RULE 21: IF DIVIDA IS alta AND ACOPLAMENTO IS baixo AND COMPLEXIDADE IS alta THEN GC IS alto;
+	
+	RULE 22: IF DIVIDA IS alta AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS baixa THEN GC IS  alto;
+	RULE 23: IF DIVIDA IS alta AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS media THEN GC IS alto;
+	RULE 24: IF DIVIDA IS alta AND ACOPLAMENTO IS medio AND COMPLEXIDADE IS alta THEN GC IS muitoalto;
+	
+	RULE 25: IF DIVIDA IS alta AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS baixa THEN GC IS  alto;
+	RULE 26: IF DIVIDA IS alta AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS media THEN GC IS muitoalto;
+	RULE 27: IF DIVIDA IS alta AND ACOPLAMENTO IS alto AND COMPLEXIDADE IS alta THEN GC IS muitoalto;
+	
+	
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

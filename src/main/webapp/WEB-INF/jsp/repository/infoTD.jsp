@@ -11,6 +11,21 @@
 
 	<div class="row">
 
+		
+		<div class="col-lg-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div id="files">
+					
+					</div>
+				
+				</div>
+		    </div>
+		</div>
+	</div>
+
+	<div class="row">
+
 		<!-- Panel repository chart -->
 		<div class="col-lg-12">
 			<div class="panel panel-default">
@@ -65,6 +80,8 @@
 			</div>
 		</div>
 	</div>
+	
+	
 
 	<input type="hidden" id="repository" value="${repository.id}" />
 
@@ -290,6 +307,45 @@
 											});
 
 									request("/");
+								}
+
+							});
+							
+							
+							$.ajax({
+								type : 'POST',
+								url : '/codivision/repository/' + repository + '/files/criticality',
+								success : function(data) {
+									
+									var core = "";
+									for (i = 0; i < data.length; i++) {
+										core += '<tr><td>'
+												+ data[i].path
+												+ ' </td> <td> '
+												+ data[i].acoplamento
+												+ '</td><td>'
+												+ data[i].complexidade
+												+ ' </td><td>'
+												+ data[i].qntTD
+												+ ' </td><td>'
+												+ data[i].gc
+												+ ' </td></tr>';
+									}
+
+									var table =  ' <table class="table"> '
+									+ ' <thead> <tr> <th>Nome do Arquivo</th> '
+									+ ' <th>Acoplamento</th>' 
+									+ ' <th>Complexidade</th> '
+									+ ' <th>Quantidade de DTs</th> '
+									+ ' <th>Grau de Criticidade</th> '
+									+ '</tr> </thead> '
+									+ ' <tbody>'
+									+ core
+									+ ' </tbody> '
+									+ ' </table> </div> '
+									
+									document.getElementById("files").innerHTML = table;
+									
 								}
 
 							});

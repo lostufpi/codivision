@@ -27,6 +27,8 @@ public class File implements PersistenceEntity {
 	
 	private String path;
 	
+	private int acoplamento;
+	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="fileId")
 	private List<Method> methods;
@@ -96,6 +98,14 @@ public class File implements PersistenceEntity {
 	public void setId(Long id) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int getAcoplamento() {
+		return acoplamento;
+	}
+
+	public void setAcoplamento(int acoplamento) {
+		this.acoplamento = acoplamento;
 	}
 	
 }
