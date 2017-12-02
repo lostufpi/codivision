@@ -97,8 +97,8 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 				+ "rev3.author = revision.author and "
 				+ "file3.operationType = 'ADD' )"; 
 		
-		List<AuthorPercentage> at =  em.createQuery("select new br.ufpi.codivision.core.model.vo.AuthorPercentage( revision.author, sum(3.293 + (1.98 * " + firstAuthor + ") + (0.164 * " + myAlterations + ") - (0.321 * log( 1 + " + otherAlterations + "))), 0l) from Repository as repository, "
-				+ "IN(repository.revisions) as revision, IN(revision.files) as file where repository.id = :repositoryId and file.path like :path group by revision.author", AuthorPercentage.class)
+		List<AuthorPercentage> at =  em.createQuery("select new br.ufpi.codivision.core.model.vo.AuthorPercentage( revision.author.name, sum(3.293 + (1.98 * " + firstAuthor + ") + (0.164 * " + myAlterations + ") - (0.321 * log( 1 + " + otherAlterations + "))), 0l) from Repository as repository, "
+				+ "IN(repository.revisions) as revision, IN(revision.files) as file where repository.id = :repositoryId and file.path like :path group by revision.author.name", AuthorPercentage.class)
 				.setParameter("repositoryId", repositoryId)
 				.setParameter("path", path + "%")
 				.getResultList();
@@ -140,7 +140,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		 * 		- Todo esse calculo é feito para cada arquivo e depois agregado por todos os arquivos 
 		 * 				por meio da função SUM e agrupado por cada desenvolvedor */
 		String newAuthorPercentace = "new br.ufpi.codivision.core.model.vo.AuthorPercentage("
-										+ "revision.author, "
+										+ "revision.author.name, "
 								   		+ "sum( "
 								   			+ "((file.lineAdd * configuration.addWeight) + (file.lineMod * configuration.modWeight) + (file.lineDel * configuration.delWeight)) * "
 								   			+ "(1.0 - ( datediff(current_date(),cast(revision.date as date)) * configuration.monthlyDegradationPercentage)) * "
@@ -161,9 +161,9 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 						+ "revision.date >= configuration.initDate and "
 						+ "revision.date <= configuration.endDate "
 					+ "GROUP BY "
-						+ "revision.author "
+						+ "revision.author.name "
 					+ "ORDER BY "
-						+ "revision.author ASC";
+						+ "revision.author.name ASC";
 		
 		return em.createQuery(query, AuthorPercentage.class)
 				.setParameter("repositoryId", repositoryId)
@@ -200,7 +200,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 		 * 		- Todo esse calculo é feito para cada arquivo e depois agregado por todos os arquivos 
 		 * 				por meio da função SUM e agrupado por cada desenvolvedor */
 		String newAuthorPercentace = "new br.ufpi.codivision.core.model.vo.AuthorPercentage("
-										+ "revision.author, "
+										+ "revision.author.name, "
 								   		+ "sum( "
 								   			+ "((file.lineAdd * configuration.addWeight) + (file.lineMod * configuration.modWeight) + (file.lineDel * configuration.delWeight)) * "
 								   			+ "(1.0 - ( datediff(current_date(),cast(revision.date as date)) * configuration.monthlyDegradationPercentage)) * "
@@ -229,9 +229,9 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 						+ "revision.date >= configuration.initDate and "
 						+ "revision.date <= configuration.endDate "
 					+ "GROUP BY "
-						+ "revision.author "
+						+ "revision.author.name "
 					+ "ORDER BY "
-						+ "revision.author ASC";
+						+ "revision.author.name ASC";
 		
 		TypedQuery<AuthorPercentage> typedQuery = em.createQuery(query, AuthorPercentage.class).setParameter("repositoryId", repositoryId);
 		if(featureId != null) {
@@ -380,7 +380,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 			testPath = testPath + ") ";
 		}
 		
-				String query = "SELECT revision.author as author, "
+				String query = "SELECT revision.author.name as author, "
 						+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 						+ "FROM Repository AS repository "
 						+ "inner join repository.configuration as configuration, "
@@ -389,8 +389,8 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 						+ "WHERE repository.id = "+repositoryId+" "+testPath
 						+ "and revision.date >= configuration.initDate and "
 						+ "revision.date <= configuration.endDate "
-						+ "GROUP BY revision.author "
-						+ "ORDER BY revision.author";
+						+ "GROUP BY revision.author.name "
+						+ "ORDER BY revision.author.name";
 				
 				List<Object[]> list = em.createQuery(query).getResultList();
 				
@@ -431,7 +431,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 			testPath = testPath + ") ";
 		}
 		
-		String query = "SELECT revision.author as author, "
+		String query = "SELECT revision.author.name as author, "
 				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
@@ -440,8 +440,8 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPathNot
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
-				+ "GROUP BY revision.author "
-				+ "ORDER BY revision.author";
+				+ "GROUP BY revision.author.name "
+				+ "ORDER BY revision.author.name";
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		
@@ -555,7 +555,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 			testPathNot = testPathNot + ") ";
 			testPath = testPath + ") ";
 		}
-		String query = "SELECT revision.author as author, "
+		String query = "SELECT revision.author.name as author, "
 				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
@@ -564,8 +564,8 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPath
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
-				+ "GROUP BY revision.author "
-				+ "ORDER BY revision.author";
+				+ "GROUP BY revision.author.name "
+				+ "ORDER BY revision.author.name";
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		
@@ -624,7 +624,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
 				+ "IN(revision.files) as file "
-				+ "WHERE repository.id = "+repositoryId+" AND revision.author LIKE '"+author+"' "+testPathNot
+				+ "WHERE repository.id = "+repositoryId+" AND revision.author.name LIKE '"+author+"' "+testPathNot
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
 				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
@@ -636,7 +636,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision, "
 				+ "IN(revision.files) as file "
-				+ "WHERE repository.id = "+repositoryId+" AND revision.author LIKE '"+author+"' "+testPath
+				+ "WHERE repository.id = "+repositoryId+" AND revision.author.name LIKE '"+author+"' "+testPath
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
 				+ "GROUP BY MONTH(revision.date) , DAY(revision.date) "
@@ -701,13 +701,13 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 	}
 	@SuppressWarnings("unchecked")
 	public List<String> getAuthors(long repositoryId){
-		String query = "SELECT revision.author as author "
+		String query = "SELECT revision.author.name as author "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
 				+ "IN(repository.revisions) as revision "
 				+ "WHERE revision.date >= configuration.initDate AND "
 				+ "revision.date <= configuration.endDate "
-				+ "AND repository.id = "+repositoryId+" GROUP BY author";
+				+ "AND repository.id = "+repositoryId+" GROUP BY author.name";
 		
 		List<String> list = em.createQuery(query).getResultList();
 		return list;
@@ -736,7 +736,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 		}
 		
 		
-		String query = "SELECT revision.author as author, "
+		String query = "SELECT revision.author.name as author, "
 				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
@@ -745,8 +745,8 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPathNot
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
-				+ "GROUP BY revision.author "
-				+ "ORDER BY revision.author";
+				+ "GROUP BY revision.author.name "
+				+ "ORDER BY revision.author.name";
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		
@@ -791,7 +791,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 		
 		
 		
-		String query = "SELECT revision.author as author, "
+		String query = "SELECT revision.author.name as author, "
 				+ "SUM(file.lineAdd + file.lineMod + file.lineDel) as soma "
 				+ "FROM Repository AS repository "
 				+ "inner join repository.configuration as configuration, "
@@ -800,8 +800,8 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "WHERE repository.id = "+repositoryId+" AND file.path LIKE '"+path+"%' "+testPath
 				+ "and revision.date >= configuration.initDate and "
 				+ "revision.date <= configuration.endDate "
-				+ "GROUP BY revision.author "
-				+ "ORDER BY revision.author";
+				+ "GROUP BY revision.author.name "
+				+ "ORDER BY revision.author.name";
 		
 		List<Object[]> list = em.createQuery(query).getResultList();
 		

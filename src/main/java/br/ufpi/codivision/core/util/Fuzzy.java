@@ -277,20 +277,20 @@ public class Fuzzy {
 							//verifica comments
 							if(file2.getQntBadSmellComment() < file.getQntBadSmellComment()) {
 
-								Map<String, Integer> map = hashMap.get(revision.getAuthor());
+								Map<String, Integer> map = hashMap.get(revision.getAuthor().getName());
 
 								Integer TDresolvido = (int) (file.getQntBadSmellComment() - file2.getQntBadSmellComment());
 
 								if(map==null) {
 									Map<String, Integer> maps = new HashMap<>();
 									maps.put("TDComment", TDresolvido);
-									hashMap.put(revision.getAuthor(), maps);
+									hashMap.put(revision.getAuthor().getName(), maps);
 								}else {
 									Integer integer = map.get("TDComment");
 									if(integer==null) {
-										hashMap.get(revision.getAuthor()).put("TDComment", TDresolvido);
+										hashMap.get(revision.getAuthor().getName()).put("TDComment", TDresolvido);
 									}else {
-										hashMap.get(revision.getAuthor()).put("TDComment", integer + TDresolvido);
+										hashMap.get(revision.getAuthor().getName()).put("TDComment", integer + TDresolvido);
 									}
 								}
 
@@ -303,17 +303,17 @@ public class Fuzzy {
 									}
 								}
 								//caso nao pare no continue de fora é pq nao existe mais o codesmall
-								Map<String, Integer> map = hashMap.get(revision.getAuthor());
+								Map<String, Integer> map = hashMap.get(revision.getAuthor().getName());
 								if(map==null) {
 									Map<String, Integer> maps = new HashMap<>();
 									maps.put(codeSmell.getCodeSmellType()+"", 1);
-									hashMap.put(revision.getAuthor(), maps);
+									hashMap.put(revision.getAuthor().getName(), maps);
 								}else {
 									Integer integer = map.get(codeSmell.getCodeSmellType()+"");
 									if(integer==null) {
-										hashMap.get(revision.getAuthor()).put(codeSmell.getCodeSmellType()+"", 1);
+										hashMap.get(revision.getAuthor().getName()).put(codeSmell.getCodeSmellType()+"", 1);
 									}else {
-										hashMap.get(revision.getAuthor()).put(codeSmell.getCodeSmellType()+"", integer + 1);
+										hashMap.get(revision.getAuthor().getName()).put(codeSmell.getCodeSmellType()+"", integer + 1);
 									}
 								}
 
@@ -350,31 +350,31 @@ public class Fuzzy {
 							for (String key : antigo.keySet()) {
 								Integer integer = atual.get(key);
 								if(integer == null) {
-									Map<String, Integer> map = hashMap.get(revision.getAuthor());
+									Map<String, Integer> map = hashMap.get(revision.getAuthor().getName());
 									if(map == null) {
 										Map<String, Integer> maps = new HashMap<>();
 										maps.put(key+"", antigo.get(key));
-										hashMap.put(revision.getAuthor(), maps);
+										hashMap.put(revision.getAuthor().getName(), maps);
 									}else {
-										Integer integer2 = hashMap.get(revision.getAuthor()).get(key+"");
+										Integer integer2 = hashMap.get(revision.getAuthor().getName()).get(key+"");
 										if(integer2==null) {
-											hashMap.get(revision.getAuthor()).put(key+"", antigo.get(key));
+											hashMap.get(revision.getAuthor().getName()).put(key+"", antigo.get(key));
 										}else {
-											hashMap.get(revision.getAuthor()).put(key+"", antigo.get(key) + integer2);
+											hashMap.get(revision.getAuthor().getName()).put(key+"", antigo.get(key) + integer2);
 										}
 									}
 								}else {
-									Map<String, Integer> map = hashMap.get(revision.getAuthor());
+									Map<String, Integer> map = hashMap.get(revision.getAuthor().getName());
 									if(map == null) {
 										Map<String, Integer> maps = new HashMap<>();
 										maps.put(key+"", atual.get(key) - antigo.get(key));
-										hashMap.put(revision.getAuthor(), maps);
+										hashMap.put(revision.getAuthor().getName(), maps);
 									}else {
-										Integer integer2 = hashMap.get(revision.getAuthor()).get(key+"");
+										Integer integer2 = hashMap.get(revision.getAuthor().getName()).get(key+"");
 										if(integer2==null) {
-											hashMap.get(revision.getAuthor()).put(key+"", atual.get(key) - antigo.get(key));
+											hashMap.get(revision.getAuthor().getName()).put(key+"", atual.get(key) - antigo.get(key));
 										}else {
-											hashMap.get(revision.getAuthor()).put(key+"", atual.get(key) - antigo.get(key) + integer2);
+											hashMap.get(revision.getAuthor().getName()).put(key+"", atual.get(key) - antigo.get(key) + integer2);
 										}
 									}
 								}

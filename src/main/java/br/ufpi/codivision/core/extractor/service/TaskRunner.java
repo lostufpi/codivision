@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import br.com.caelum.vraptor.tasks.Task;
 import br.com.caelum.vraptor.tasks.scheduler.Scheduled;
 import br.ufpi.codivision.common.notification.EmailDispatcher;
+import br.ufpi.codivision.core.dao.AuthorDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
@@ -53,7 +54,9 @@ public class TaskRunner implements Task{
 
 	@Inject private TaskService service;
 	@Inject private EntityManagerFactory factory;
+	
 	private RepositoryDAO dao;
+	private AuthorDAO authorDAO;
 	
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -70,6 +73,9 @@ public class TaskRunner implements Task{
 			transaction.begin();
 			dao = new RepositoryDAO();
 			dao.setEntityManager(em);
+			
+			authorDAO = new AuthorDAO();
+			authorDAO.setEntityManager(em);
 
 			Repository repository = dao.findById(task.getTarget());
 			
@@ -168,6 +174,10 @@ public class TaskRunner implements Task{
 				}
 			
 				log.info("Save repositories");
+				
+				for (Revision r : repository.getRevisions()) {
+					r.setAuthor(this.authorDAO.save(r.getAuthor()));
+				}
 				dao.save(repository);
 
 				UserDAO userDAO = new UserDAO();

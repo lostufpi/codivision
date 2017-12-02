@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 import br.ufpi.codivision.core.exception.InvalidCredentialException;
 import br.ufpi.codivision.core.exception.InvalidExtractionPathException;
 import br.ufpi.codivision.core.exception.InvalidRepositoryUrlException;
+import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.OperationFile;
 import br.ufpi.codivision.core.model.Revision;
@@ -178,14 +180,21 @@ public class GitUtil {
 	 */
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 
-		Iterable<RevCommit> log = this.git.log().setMaxCount(1).call();
+		Iterable<RevCommit> log = this.git.log().setMaxCount(2000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
 
+		HashMap<String, Author> authors = new HashMap<>();
 		for (RevCommit jgitCommit: log) {
+			Author author = authors.get(jgitCommit.getCommitterIdent().getEmailAddress());
 
+			if(author == null) {
+				author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
+				authors.put(jgitCommit.getCommitterIdent().getEmailAddress(), author);
+			}
+				
 			Revision revision = new Revision();
 			revision.setExternalId(jgitCommit.getName());
-			revision.setAuthor(jgitCommit.getCommitterIdent().getName());
+			revision.setAuthor(author);
 			revision.setDate(jgitCommit.getAuthorIdent().getWhen());
 			revision.setFiles(new ArrayList<OperationFile>());
 			revision.setExtracted(true);

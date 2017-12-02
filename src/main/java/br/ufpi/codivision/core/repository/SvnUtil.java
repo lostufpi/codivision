@@ -121,7 +121,8 @@ public class SvnUtil {
 	public Revision createRevision(SVNLogEntry logEntry){
 		Revision revision = new Revision();
 		revision.setExternalId(logEntry.getRevision()+"");
-		revision.setAuthor(logEntry.getAuthor());
+		//TODO refatorar: author passou a ser um objeto não String.
+//		revision.setAuthor(logEntry.getAuthor());
 		revision.setDate(logEntry.getDate());
 		revision.setFiles(new ArrayList<OperationFile>());
 		

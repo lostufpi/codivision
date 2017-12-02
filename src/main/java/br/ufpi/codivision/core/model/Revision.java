@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -38,7 +39,8 @@ public class Revision implements PersistenceEntity{
 	
 	private String externalId;
 	
-	private String author;
+	@ManyToOne (targetEntity = Author.class)
+	private Author author;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date date;
@@ -62,14 +64,14 @@ public class Revision implements PersistenceEntity{
 	/**
 	 * @return the author
 	 */
-	public String getAuthor() {
+	public Author getAuthor() {
 		return author;
 	}
 
 	/**
 	 * @param author the author to set
 	 */
-	public void setAuthor(String author) {
+	public void setAuthor(Author author) {
 		this.author = author;
 	}
 
