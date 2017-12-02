@@ -9,46 +9,21 @@
 
 <body>
 
-	<div class="row">
-
+	<div class="row" >
+	
+	
+		<div id="myModal2" class="modal fade" role="dialog">
+		  <div class="modal-dialog modal-lg">
 		
-		<div class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-body">
-					<div id="files">
-					
-					</div>
-				
-				</div>
-		    </div>
-		</div>
-	</div>
-
-	<div class="row">
-
-		<!-- Panel repository chart -->
-		<div class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-body">
-
-					<h3 style="display: inline-block">Informações sobre Dívida
-						Técnica no Repositório ${repository.name}</h3>
-					<button style="margin-top: 15px"
-						class="btn btn-lg btn-primary pull-right" data-toggle="modal"
-						data-target="#config">
-						<i class="glyphicon glyphicon-cog"></i>
-					</button>
-					<%-- 					<jsp:include page="chart-config-modal.jsp" /> --%>
-
-					<hr>
-
-					<div class="row vdivided">
-						<div class="container-tree col-md-3">
-							<input style="margin-bottom: 10px" type="text"
-								class="form-control" id="jstree-search" placeholder="Pesquisar">
-							<div style="overflow: auto; height: 600px;" id="jstree"></div>
-						</div>
-						<div class="col-md-9" id="data">
+		    <!-- Modal content-->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">&times;</button>
+		        <h4 class="modal-title">Informações detalhada dos arquivos</h4>
+		      </div>
+		      <div class="modal-body">
+		        <div class="row vdivided">
+						<div class="col-md-8" id="data">
 							<div class="panel-body">
 								<ul class="nav nav-tabs">
 									<li class="active"><a data-toggle="tab" href="#home">
@@ -73,6 +48,70 @@
 
 
 						</div>
+						<div class="col-md-4" >
+							<div id="rec"></div>
+						</div>
+						
+					</div>
+		        
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+		      </div>
+		    </div>
+		
+		  </div>
+		</div>
+	
+	
+		<div id="myModal" class="modal fade" role="dialog">
+		  <div class="modal-dialog modal-lg">
+		
+		    <!-- Modal content-->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">&times;</button>
+		        <h4 class="modal-title">Informações detalhada dos arquivos</h4>
+		      </div>
+		      <div class="modal-body">
+		        <div id="files"></div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+		      </div>
+		    </div>
+		
+		  </div>
+		</div>
+
+		
+		
+	</div>
+
+	<div class="row">
+
+		<!-- Panel repository chart -->
+		<div class="col-lg-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<h3 style="display: inline-block">Informações sobre Dívida
+						Técnica no Repositório ${repository.name}</h3>
+					<button style="margin-top: 15px"
+						class="btn btn-lg btn-primary pull-right" data-toggle="modal"
+						data-target="#config">
+						<i class="glyphicon glyphicon-cog"></i>
+					</button>
+					<%-- 					<jsp:include page="chart-config-modal.jsp" /> --%>
+
+					<hr>
+					<div class="col-lg-12">
+						
+							<div class="panel-body" style="display: none;" id="div-detalhar">
+								<button id="detalhar"  type="button" class="btn btn-info btn-sm" style="float: right;" data-toggle="modal" data-target="#myModal">Detalhar</button>
+								<div id="chart-bar"></div>
+							</div>
+					    
 					</div>
 				</div>
 
@@ -86,7 +125,8 @@
 	<input type="hidden" id="repository" value="${repository.id}" />
 
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
-	<script src="<c:url value="/vendor/highcharts/highcharts.js" />"></script>
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/modules/exporting.js"></script>
 	<script
 		src="<c:url value="/vendor/highcharts/modules/no-data-to-display.js" />"></script>
 	<script
@@ -99,19 +139,92 @@
 	<script>
 		$(document)
 				.ready(function() {
+					
+					
+					$('#div-detalhar').hide();
+					var repository = $('#repository').val();
+					
+					var fileId;
+					
+					
+					$.ajax({
+						type : 'POST',
+						url : '/codivision/repository/' + repository + '/files/criticality/chart',
+						success : function(core) {
+							$('#div-detalhar').show();
 
-							var repository = $('#repository').val();
+							var a1 = '{ "obj":';
+							var a2 = a1.concat(core);
+							var a3 = a2.concat('}');
 							
-							var fileId;
+							var myobj = JSON.parse(a3);
+							
+							Highcharts.chart('chart-bar', {
+							    chart: {
+							        type: 'column'
+							    },
+							    title: {
+							        text: 'Criticidade dos arquivos em relação a presença de Dívidas Técnicas'
+							    },
+							    subtitle: {
+							        text: 'Criticidade inferida para cada arquivo levando-se em consideração o acoplamento, complexidade ciclomática e as dívidas técnicas'
+							    },
+							    xAxis: {
+							        type: 'category',
+							        labels: {
+							            rotation: -45,
+							            style: {
+							                fontSize: '13px',
+							                fontFamily: 'Verdana, sans-serif'
+							            }
+							        }
+							    },
+							    yAxis: {
+							        min: 0,
+							        title: {
+							            text: 'Criticidade'
+							        }
+							    },plotOptions: {
+							            series: {
+							                cursor: 'pointer',
+							                point: {
+							                    events: {
+							                        click: function() {
+							                           request(this.options.name);
+							                           $("#myModal2").modal();
+							                        }
+							                    }
+							                }
+							            }
+							        },
+							    legend: {
+							        enabled: false
+							    },
+							    tooltip: {
+							        pointFormat: 'Criticidade: <b>{point.y:.1f} </b>'
+							    },
+							    series: [{
+							        name: 'Population',
+							        data: myobj.obj,
+							        dataLabels: {
+							            enabled: true,
+							            rotation: -90,
+							            color: '#FFFFFF',
+							            align: 'right',
+							            format: '{point.y:.1f}', // one decimal
+							            y: 10, // 10 pixels down from the top
+							            style: {
+							                fontSize: '13px',
+							                fontFamily: 'Verdana, sans-serif'
+							            }
+							        }
+							    }]
+							});
+							
+					
+						}
+					});
 
-							$('#jstree').on(
-									"changed.jstree",
-									function(e, data) {
-										var fileName = "/"
-												+ data.instance.get_path(
-														data.selected[0], "/");
-										request(fileName);
-									});
 							
 							$('#jstree2').on(
 									"changed.jstree",
@@ -279,37 +392,6 @@
 										});
 
 							}
-
-							$.ajax({
-								type : 'POST',
-								url : '/codivision/repository/' + repository + '/tree/td',
-								success : function(treeData) {
-
-									$('#jstree').jstree(
-											{
-												'core' : {
-													'data' : treeData
-												},
-												'types' : {
-													"FOLDER" : {
-														"valid_children" : [
-																"FOLDER",
-																"FILE" ]
-													},
-													"FILE" : {
-														"icon" : "jstree-file",
-														"valid_children" : [],
-													}
-												},
-												'plugins' : [ "types",
-														"wholerow", "sort",
-														"search" ]
-											});
-
-									request("/");
-								}
-
-							});
 							
 							
 							$.ajax({
@@ -346,9 +428,78 @@
 									
 									document.getElementById("files").innerHTML = table;
 									
+									
 								}
 
 							});
+							
+							recomendacao();
+							
+							function recomendacao(){
+									
+									Highcharts.chart('rec', {
+									    chart: {
+									        type: 'bar'
+									    },
+									    title: {
+									        text: 'Recomendação para pagamento das Dívidas Técnicas'
+									    },
+									    subtitle: {
+									        text: ''
+									    },
+									    xAxis: {
+									        type: 'category',
+									        labels: {
+									            rotation: 0,
+									            style: {
+									                fontSize: '13px',
+									                fontFamily: 'Verdana, sans-serif'
+									            }
+									        }
+									    },
+									    yAxis: {
+									        min: 0,
+									        title: {
+									            text: 'Population (millions)'
+									        }
+									    },
+									    legend: {
+									        enabled: false
+									    },
+									    tooltip: {
+									        pointFormat: 'Population in 2008: <b>{point.y:.1f} millions</b>'
+									    },
+									    series: [{
+									        name: 'Population',
+									        data: [
+									            ['Shanghai', 23.7],
+									            ['Lagos', 16.1],
+									            ['Istanbul', 14.2],
+									            ['Karachi', 14.0],
+									            ['Mumbai', 12.5],
+									            ['Moscow', 12.1],
+									            ['São Paulo', 11.8],
+									            ['Beijing', 11.7],
+									            ['Guangzhou', 11.1],
+									            ['Delhi', 11.1],
+									        ],
+									        dataLabels: {
+									            enabled: true,
+									            rotation: 0,
+									            color: '#FFFFFF',
+									            align: 'right',
+									            format: '{point.y:.1f}', // one decimal
+									            y: 10, // 10 pixels down from the top
+									            style: {
+									                fontSize: '13px',
+									                fontFamily: 'Verdana, sans-serif'
+									            }
+									        }
+									    }]
+									});
+							
+							}
+							
 
 						});
 	</script>

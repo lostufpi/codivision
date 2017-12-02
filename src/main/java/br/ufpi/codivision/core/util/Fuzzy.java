@@ -118,7 +118,7 @@ public class Fuzzy {
 
 			double valor = fis.getVariable("GC").getValue();
 			
-			TDFile tdFile = new TDFile(file.getPath(), file.getAcoplamento(), qntCom, qntTD, valor);
+			TDFile tdFile = new TDFile(ProcessPath.convertPathToName(file.getPath()), file.getAcoplamento(), qntCom, qntTD, valor);
 			tdFiles.add(tdFile);
 
 		}

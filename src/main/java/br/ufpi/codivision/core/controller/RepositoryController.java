@@ -55,6 +55,7 @@ import br.ufpi.codivision.core.model.vo.TDFile;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.Fuzzy;
+import br.ufpi.codivision.core.util.ProcessPath;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.debit.model.File;
 import br.ufpi.codivision.debit.model.Method;
@@ -705,6 +706,31 @@ public class RepositoryController {
 		List<TDFile> criticidade = Fuzzy.criticidade(repository);
 		
 		result.use(Results.json()).withoutRoot().from(criticidade).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/files/criticality/chart")
+	public void getFilesCriticalityChart(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		
+		List<TDFile> criticidade = Fuzzy.criticidade(repository);
+		
+		String res = "";
+		for (int i = 0; i < criticidade.size(); i++) {
+			TDFile tdFile = criticidade.get(i);
+			if(i==0) {
+				res = res + "[[\""+ProcessPath.convertPathToName(tdFile.getPath())+"\","+Double.parseDouble(tdFile.getGc()+"");
+			}else if(i == criticidade.size() - 1) {
+				res = res + "],[\""+ProcessPath.convertPathToName(tdFile.getPath())+"\","+Double.parseDouble(tdFile.getGc()+"")+"]]";
+			}else {
+				res = res + "],[\""+ProcessPath.convertPathToName(tdFile.getPath())+"\","+Double.parseDouble(tdFile.getGc()+"");
+			}
+			
+			
+		}
+		
+		
+		result.use(Results.json()).withoutRoot().from(res).recursive().serialize();
 	}
 
 }
