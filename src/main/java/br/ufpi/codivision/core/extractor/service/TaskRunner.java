@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -32,6 +33,7 @@ import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
+import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
@@ -76,7 +78,6 @@ public class TaskRunner implements Task{
 			
 			authorDAO = new AuthorDAO();
 			authorDAO.setEntityManager(em);
-
 			Repository repository = dao.findById(task.getTarget());
 			
 			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
@@ -113,15 +114,15 @@ public class TaskRunner implements Task{
 
 				int limiar = (int) Outliers.indentify(qntFileRevision);
 
-
 				List<Revision> revisions = new ArrayList<Revision>();
 				for(Revision revision: repository.getRevisions()) {
 					if(revision.getTotalFiles() <= limiar) {
 						revisions.add(revision);
 					}
 				}
-
+				
 				repository.setRevisions(revisions);
+				
 				log.info("Iniciando a extracao dos testes");
 				repository.setTestFiles(util.getTestFiles());
 				log.info("A extracao dos testes concluida");
@@ -155,11 +156,8 @@ public class TaskRunner implements Task{
 							if(nodeInfo.getC().getFullname().equals(full)) {
 								file.setAcoplamento(nodeInfo.getDegreeOUT());
 							}
-								
 						}
-						
 					}
-					
 					log.info("Finalizando a identificacao do acoplamento");
 				}
 				
@@ -175,9 +173,8 @@ public class TaskRunner implements Task{
 			
 				log.info("Save repositories");
 				
-				for (Revision r : repository.getRevisions()) {
-					r.setAuthor(this.authorDAO.save(r.getAuthor()));
-				}
+				
+				saveAuthors(revisions);
 				dao.save(repository);
 
 				UserDAO userDAO = new UserDAO();
@@ -250,5 +247,25 @@ public class TaskRunner implements Task{
 			log.error(e.getMessage());
 		}
 	}
-
+	
+	private void saveAuthors(List<Revision> revisions) {
+		HashMap<String, Author> authors = new HashMap<>();
+		
+ 		for (Revision r : revisions) {
+			Author author = authors.get(r.getAuthor().getEmail());
+			if(author == null) {
+				author = new Author(r.getAuthor().getName(), r.getAuthor().getEmail());
+				authors.put(r.getAuthor().getEmail(), author);
+			}
+ 		}
+ 		
+ 		for (Author a : authors.values()) {
+ 			a = this.authorDAO.save(a);
+ 			for (Revision r : revisions) {
+ 				if(r.getAuthor().getEmail().equals(a.getEmail())) {
+ 					r.setAuthor(a);
+ 				}
+ 			}
+		}
+	}
 }

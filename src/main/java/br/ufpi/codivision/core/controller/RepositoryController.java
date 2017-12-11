@@ -63,6 +63,8 @@ import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.common.model.FeatureElement;
 import br.ufpi.codivision.feature.common.util.FeatureNodeType;
 import br.ufpi.codivision.feature.common.util.FeatureTree;
+import br.ufpi.codivision.feature.dao.FeatureDAO;
+import br.ufpi.codivision.feature.dao.FeatureElementDAO;
 
 /**
  * @author Werney Ayala
@@ -79,7 +81,9 @@ public class RepositoryController {
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
 	@Inject private FileDAO fileDAO;
-
+	@Inject private FeatureDAO featureDAO;
+	@Inject private FeatureElementDAO featureElementDAO;
+	
 
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
@@ -696,6 +700,14 @@ public class RepositoryController {
 			percentage = dao.getFeaturePercentage(repositoryId, featureId);
 		}
 		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+	}
+	
+	@Post("/remove/feature")
+	public void removeFeature(Long repositoryId, String nameFeature, String idFeature) {
+		if(idFeature != null && !nameFeature.contains(Constants.JAVA_EXTENSION)) {
+			this.featureElementDAO.removeFeatureElementByFeatureId(Long.valueOf(idFeature.substring(4)));
+			this.featureDAO.delete(Long.valueOf(idFeature.substring(4)));
+		}
 	}
 	
 	@Permission(PermissionType.MEMBER)

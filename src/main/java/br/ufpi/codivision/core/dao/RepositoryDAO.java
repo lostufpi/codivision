@@ -214,7 +214,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 		if(featureId != null) {
 			queryFiles = "SELECT f.element.fullname FROM FeatureElement f WHERE f.feature.id = :featureId";
 		}else {
-			queryFiles = "SELECT e.fullname FROM Element e";
+			queryFiles = "SELECT f.element.fullname FROM FeatureElement f";
 		}
 		
 		/* A query principal */

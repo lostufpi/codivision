@@ -2,6 +2,7 @@ package br.ufpi.codivision.feature.dao;
 
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
@@ -21,6 +22,16 @@ public class FeatureElementDAO extends GenericDAO<FeatureElement> {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	
+	public void removeFeatureElementByFeatureId(Long featureId) {
+		try {
+			Query query = this.em.createQuery("DELETE FeatureElement WHERE featureId = :featureId");
+			query.setParameter("featureId", featureId);
+			query.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

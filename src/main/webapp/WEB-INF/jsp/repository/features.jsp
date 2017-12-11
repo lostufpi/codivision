@@ -21,7 +21,8 @@
 					<hr>
 					
 					<div class="row vdivided">
-						<div class="container-tree col-md-4">
+						<div class="container-tree col-md-4" >
+							<button style="margin-bottom:10px; float: right" type="button" class="btn btn-danger btn-sm" onclick="feature_delete();"> <i class="glyphicon glyphicon-remove"></i> Remover Feature</button>
 							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Pesquisar">
 							<div id="jstree"></div>
 						</div>
@@ -71,9 +72,11 @@
 				type : 'POST',
 				url : '/codivision/repository/'+repository+'/feature/tree',
 				success : function(treeData){
-
+					var data = treeData;
 					$('#jstree').jstree({
+					
 						'core' : {
+							  'check_callback' : true,
 							  'data' : treeData
 							},
 						'types' : {
@@ -85,7 +88,7 @@
 							      "valid_children" : [],
 							    }
 							},
-						'plugins' : ["types", "wholerow", "sort", "search"]
+						'plugins' : ["types", "wholerow", "sort", "search", "state", "contextmenu"]
 					});
 					
 					request("/", null);
@@ -101,7 +104,7 @@
 			      $('#jstree').jstree(true).search(v);
 			    }, 250);
 			});
-			
+
 			function request(newPath, nodeId){
 				$('#truckfactor-label').text('');
 				$.ajax({
@@ -167,5 +170,33 @@
 			}
 		
 		});
+
+		function feature_delete() {
+			delete_backend();
+			delete_frontend();
+		};
+
+		function delete_backend() {
+			var repository = $('#repository').val();
+			var ref = $('#jstree').jstree(true),
+			sel = ref.get_selected();
+			var node = ref.get_node(sel);
+			var idFeature = node.id;
+			var nameFeature = "/" + ref.get_path(node, "/");
+
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/remove/feature',
+				data : {'nameFeature' : nameFeature, 'idFeature' : idFeature},
+			});
+		}
+
+		function delete_frontend() {
+			var tree = $('#jstree').jstree(true);
+			var	selected = tree.get_selected();
+			tree.hide_node(selected);
+			tree.delete_node(selected);
+		};
+
 	</script>
 </body>

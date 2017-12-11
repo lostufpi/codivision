@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -183,15 +182,8 @@ public class GitUtil {
 		Iterable<RevCommit> log = this.git.log().setMaxCount(2000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
 
-		HashMap<String, Author> authors = new HashMap<>();
 		for (RevCommit jgitCommit: log) {
-			Author author = authors.get(jgitCommit.getCommitterIdent().getEmailAddress());
-
-			if(author == null) {
-				author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
-				authors.put(jgitCommit.getCommitterIdent().getEmailAddress(), author);
-			}
-				
+			Author author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
 			Revision revision = new Revision();
 			revision.setExternalId(jgitCommit.getName());
 			revision.setAuthor(author);

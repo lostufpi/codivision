@@ -1,5 +1,7 @@
 package br.ufpi.codivision.core.dao;
 
+import java.util.List;
+
 import javax.persistence.NoResultException;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
@@ -15,10 +17,13 @@ public class AuthorDAO extends GenericDAO<Author>{
 	}
 	
 	public Author findByEmail(String email){
+		List<Author> authors; 
 		try{
-			return em.createQuery("SELECT a FROM Author a WHERE a.email = :email ", Author.class)
+			authors = em.createQuery("SELECT a FROM Author a WHERE a.email = :email ", Author.class)
 					.setParameter("email", email)
-					.getSingleResult();
+					.getResultList();
+			return authors.isEmpty() ? null : authors.get(0);
+			
 		} catch (NoResultException e) {
 			return null;
 		}
