@@ -191,7 +191,6 @@ public class GitUtil {
 			revision.setFiles(new ArrayList<OperationFile>());
 			revision.setExtracted(true);
 
-
 			List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 			for (DiffEntry diff : diffsForTheCommit) {
 

@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -28,12 +28,10 @@ import org.slf4j.LoggerFactory;
 import br.com.caelum.vraptor.tasks.Task;
 import br.com.caelum.vraptor.tasks.scheduler.Scheduled;
 import br.ufpi.codivision.common.notification.EmailDispatcher;
-import br.ufpi.codivision.core.dao.AuthorDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
-import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.DirTree;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
@@ -41,7 +39,10 @@ import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
+import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.core.util.Outliers;
+import br.ufpi.codivision.debit.model.InfoTD;
+import br.ufpi.codivision.debit.model.TDAuthor;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
@@ -56,9 +57,7 @@ public class TaskRunner implements Task{
 
 	@Inject private TaskService service;
 	@Inject private EntityManagerFactory factory;
-	
 	private RepositoryDAO dao;
-	private AuthorDAO authorDAO;
 	
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -75,9 +74,7 @@ public class TaskRunner implements Task{
 			transaction.begin();
 			dao = new RepositoryDAO();
 			dao.setEntityManager(em);
-			
-			authorDAO = new AuthorDAO();
-			authorDAO.setEntityManager(em);
+
 			Repository repository = dao.findById(task.getTarget());
 			
 			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
@@ -114,15 +111,15 @@ public class TaskRunner implements Task{
 
 				int limiar = (int) Outliers.indentify(qntFileRevision);
 
+
 				List<Revision> revisions = new ArrayList<Revision>();
 				for(Revision revision: repository.getRevisions()) {
 					if(revision.getTotalFiles() <= limiar) {
 						revisions.add(revision);
 					}
 				}
-				
+
 				repository.setRevisions(revisions);
-				
 				log.info("Iniciando a extracao dos testes");
 				repository.setTestFiles(util.getTestFiles());
 				log.info("A extracao dos testes concluida");
@@ -156,8 +153,11 @@ public class TaskRunner implements Task{
 							if(nodeInfo.getC().getFullname().equals(full)) {
 								file.setAcoplamento(nodeInfo.getDegreeOUT());
 							}
+								
 						}
+						
 					}
+					
 					log.info("Finalizando a identificacao do acoplamento");
 				}
 				
@@ -170,11 +170,30 @@ public class TaskRunner implements Task{
 					repository.getExtractionPath().setFeatures(features);
 					log.info("Identificação de funcionalidades concluída!");
 				}
+				
+				
+				log.info("Iniciando a extracao do historico de DTs pagas por cada desenvolvedor");
+				Map<String, Map<String, Integer>> tdRemove = Fuzzy.historicTDRemove(repository);
+				List<TDAuthor> list = new ArrayList<TDAuthor>();
+				for (String nameAuthor : tdRemove.keySet()) {
+					TDAuthor tdAuthor = new TDAuthor(nameAuthor);
+					Map<String, Integer> map = tdRemove.get(nameAuthor);
+					for (String dt : map.keySet()) {
+						InfoTD infoTD = new InfoTD();
+						infoTD.setCodeSmellType(dt);
+						infoTD.setQnt(map.get(dt));
+						tdAuthor.getYoursCodeSmell().add(infoTD);
+					}
+					
+					list.add(tdAuthor);
+				}
+				
+				repository.setTdAuthor(list);
+				log.info("Extracao do historico de DTs pagas por cada desenvolvedor concluída!");
+				
+				
 			
 				log.info("Save repositories");
-				
-				
-				saveAuthors(revisions);
 				dao.save(repository);
 
 				UserDAO userDAO = new UserDAO();
@@ -247,25 +266,5 @@ public class TaskRunner implements Task{
 			log.error(e.getMessage());
 		}
 	}
-	
-	private void saveAuthors(List<Revision> revisions) {
-		HashMap<String, Author> authors = new HashMap<>();
-		
- 		for (Revision r : revisions) {
-			Author author = authors.get(r.getAuthor().getEmail());
-			if(author == null) {
-				author = new Author(r.getAuthor().getName(), r.getAuthor().getEmail());
-				authors.put(r.getAuthor().getEmail(), author);
-			}
- 		}
- 		
- 		for (Author a : authors.values()) {
- 			a = this.authorDAO.save(a);
- 			for (Revision r : revisions) {
- 				if(r.getAuthor().getEmail().equals(a.getEmail())) {
- 					r.setAuthor(a);
- 				}
- 			}
-		}
-	}
+
 }

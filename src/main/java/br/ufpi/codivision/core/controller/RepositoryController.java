@@ -51,6 +51,7 @@ import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.model.vo.TDDevChart;
 import br.ufpi.codivision.core.model.vo.TDFile;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
@@ -551,15 +552,9 @@ public class RepositoryController {
 				String name_file = split2[split2.length - 1];
 
 				if(name.equals(name_file)) {
-
-					List<AuthorPercentage> percentage = dao.getPercentage(repositoryId, "/src/main/java/"+file.getPath());
-
-					Fuzzy.calcula(repository, file, percentage);
-
 					result.use(Results.json()).withoutRoot().from(file).recursive().serialize();
 					return;
 				}
-
 			}
 
 
@@ -743,6 +738,58 @@ public class RepositoryController {
 		
 		
 		result.use(Results.json()).withoutRoot().from(res).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/td/recomendation")
+	public void getTDRecomendation(Long repositoryId, String fileName){
+
+		Repository repository = dao.findById(repositoryId);
+		String res = "";
+
+		if(!fileName.equals("/") && !fileName.equals("/".concat(repository.getName())) ) {
+			String[] split = fileName.split("/");
+			String name = split[split.length - 1];
+
+			for (File file : repository.getCodeSmallsFile()) {
+				String[] split2 = file.getPath().split("/");
+				String name_file = split2[split2.length - 1];
+
+				if(name.equals(name_file)) {
+
+					List<AuthorPercentage> percentage = dao.getPercentage(repositoryId, "/src/main/java/"+file.getPath());
+
+					List<TDDevChart> recommendation = Fuzzy.recommendation(repository, file, percentage);
+					
+					
+					
+					for (int i = 0; i < recommendation.size(); i++) {
+						
+						TDDevChart dev = recommendation.get(i);
+						
+						
+						if(i==0) {
+							res = res + "[[\""+dev.getDevName()+"\","+Double.parseDouble(dev.getGrp()+"");
+						}else if(i == recommendation.size() - 1) {
+							res = res + "],[\""+dev.getDevName()+"\","+Double.parseDouble(dev.getGrp()+"")+"]]";
+						}else {
+							res = res + "],[\""+dev.getDevName()+"\","+Double.parseDouble(dev.getGrp()+"");
+						}
+					}
+
+					result.use(Results.json()).withoutRoot().from(res).recursive().serialize();
+					return;
+				}
+
+			}
+
+
+		}else {
+			result.use(Results.json()).withoutRoot().from(res).recursive().serialize();
+		}
+
+
+
 	}
 
 }

@@ -24,6 +24,7 @@ import javax.persistence.TemporalType;
 import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
 import br.ufpi.codivision.debit.model.File;
+import br.ufpi.codivision.debit.model.TDAuthor;
 
 /**
  * @author Werney Ayala
@@ -85,12 +86,17 @@ public class Repository implements PersistenceEntity{
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Configuration configuration;
 	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="repositoryId")
+	private List<TDAuthor> tdAuthor;
+	
 	public Repository(){
 		this.revisions = new ArrayList<Revision>();
 		this.deletedRevisions = new ArrayList<String>();
 		this.extractionPath = new ExtractionPath();
 		this.testFiles = new ArrayList<TestFile>();
 		this.codeSmallsFile = new ArrayList<>();
+		this.tdAuthor = new ArrayList<>();
 	}
 	
 	public List<TestFile> getTestFiles() {
@@ -305,5 +311,13 @@ public class Repository implements PersistenceEntity{
 
 	public void setCodeSmallsFile(List<File> codeSmallsFile) {
 		this.codeSmallsFile = codeSmallsFile;
+	}
+
+	public List<TDAuthor> getTdAuthor() {
+		return tdAuthor;
+	}
+
+	public void setTdAuthor(List<TDAuthor> tdAuthor) {
+		this.tdAuthor = tdAuthor;
 	}
 }

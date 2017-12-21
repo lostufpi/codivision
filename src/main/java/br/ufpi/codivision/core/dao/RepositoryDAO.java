@@ -707,7 +707,7 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 				+ "IN(repository.revisions) as revision "
 				+ "WHERE revision.date >= configuration.initDate AND "
 				+ "revision.date <= configuration.endDate "
-				+ "AND repository.id = "+repositoryId+" GROUP BY author.name";
+				+ "AND repository.id = "+repositoryId+" GROUP BY revision.author.name";
 		
 		List<String> list = em.createQuery(query).getResultList();
 		return list;

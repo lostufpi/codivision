@@ -8,7 +8,8 @@ public enum CodeSmellID {
 	GOD_CLASS("godclass"),
 	LONG_METHOD("longmethod"),
 	DATA_CLASS("dataclass"),
-	FEATURE_ENVY("featureenvy");
+	FEATURE_ENVY("featureenvy"),
+	TD_COMMENT("td comment");
 
 	private String descricao;
 	

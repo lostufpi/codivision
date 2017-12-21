@@ -49,6 +49,7 @@
 
 						</div>
 						<div class="col-md-4" >
+							<img id="img-carregando" src="http://i.kinja-img.com/gawker-media/image/upload/chag4hzw0pgvgy5ujnom.gif" class="img-responsive" alt="Cinque Terre">
 							<div id="rec"></div>
 						</div>
 						
@@ -97,18 +98,16 @@
 
 					<h3 style="display: inline-block">Informações sobre Dívida
 						Técnica no Repositório ${repository.name}</h3>
-					<button style="margin-top: 15px"
-						class="btn btn-lg btn-primary pull-right" data-toggle="modal"
-						data-target="#config">
-						<i class="glyphicon glyphicon-cog"></i>
-					</button>
-					<%-- 					<jsp:include page="chart-config-modal.jsp" /> --%>
+					<button id="detalhar"  type="button" class="btn btn-info btn-md" style="float: right;" data-toggle="modal" data-target="#myModal">Detalhar</button>
 
 					<hr>
 					<div class="col-lg-12">
 						
+						<div class="panel-body"  id="div-carregando">
+							<center>
+							<img src="http://i.kinja-img.com/gawker-media/image/upload/chag4hzw0pgvgy5ujnom.gif" class="img-responsive" alt="Cinque Terre">
+						</center></div>	
 							<div class="panel-body" style="display: none;" id="div-detalhar">
-								<button id="detalhar"  type="button" class="btn btn-info btn-sm" style="float: right;" data-toggle="modal" data-target="#myModal">Detalhar</button>
 								<div id="chart-bar"></div>
 							</div>
 					    
@@ -151,7 +150,13 @@
 						type : 'POST',
 						url : '/codivision/repository/' + repository + '/files/criticality/chart',
 						success : function(core) {
+							if(core===""){
+								document.getElementById("div-detalhar").innerHTML = "<center><h3>Não foram identificados problemas de Dívidas Técnicas no projeto</h3></center>";
+							}
+							
 							$('#div-detalhar').show();
+							$('#div-carregando').hide();
+							document.getElementById("rec").innerHTML = "";
 
 							var a1 = '{ "obj":';
 							var a2 = a1.concat(core);
@@ -191,6 +196,9 @@
 							                    events: {
 							                        click: function() {
 							                           request(this.options.name);
+							                           recomendacao(this.options.name);
+							                           $('#rec').hide();
+							                           $('#img-carregando').show();
 							                           $("#myModal2").modal();
 							                        }
 							                    }
@@ -433,16 +441,35 @@
 
 							});
 							
-							recomendacao();
 							
-							function recomendacao(){
+							
+							function recomendacao(fileName){
+								
+								$.ajax({
+									type : 'POST',
+									url : '/codivision/repository/'
+											+ repository + '/td/recomendation',
+									data : {
+										'fileName' : fileName
+									},
+									success : function(core) {
+										
+										$('#img-carregando').hide();
+										$('#rec').show();
+										
+										var a1 = '{ "obj":';
+										var a2 = a1.concat(core);
+										var a3 = a2.concat('}');
+										
+										var myobj = JSON.parse(a3);
+								
 									
 									Highcharts.chart('rec', {
 									    chart: {
 									        type: 'bar'
 									    },
 									    title: {
-									        text: 'Recomendação para pagamento das Dívidas Técnicas'
+									        text: 'Recomendação para pagamento de Dívidas Técnicas'
 									    },
 									    subtitle: {
 									        text: ''
@@ -460,29 +487,18 @@
 									    yAxis: {
 									        min: 0,
 									        title: {
-									            text: 'Population (millions)'
+									            text: 'Grau de Recomendação para Pagamento (GRP)'
 									        }
 									    },
 									    legend: {
 									        enabled: false
 									    },
 									    tooltip: {
-									        pointFormat: 'Population in 2008: <b>{point.y:.1f} millions</b>'
+									        pointFormat: 'GRP <b>{point.y:.1f}</b>'
 									    },
 									    series: [{
 									        name: 'Population',
-									        data: [
-									            ['Shanghai', 23.7],
-									            ['Lagos', 16.1],
-									            ['Istanbul', 14.2],
-									            ['Karachi', 14.0],
-									            ['Mumbai', 12.5],
-									            ['Moscow', 12.1],
-									            ['São Paulo', 11.8],
-									            ['Beijing', 11.7],
-									            ['Guangzhou', 11.1],
-									            ['Delhi', 11.1],
-									        ],
+									        data: myobj.obj,
 									        dataLabels: {
 									            enabled: true,
 									            rotation: 0,
@@ -498,6 +514,7 @@
 									    }]
 									});
 							
+									}});
 							}
 							
 
