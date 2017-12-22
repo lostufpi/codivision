@@ -14,23 +14,23 @@ END_VAR
 
 // Define as funções de pertinencia para a variável ACOPLAMENTO
 FUZZIFY ACOPLAMENTO			
-	TERM baixo := (0.0, 1) (0.3, 0);
-	TERM  medio := (0.25, 0) (0.5, 1) (0.75, 0);
-	TERM alto := (0.7, 0)(1.0, 1);
+	TERM baixo := (0.0, 1) (0.5, 0);
+	TERM  medio := (0.0, 0) (0.5, 1) (1.0, 0);
+	TERM alto := (0.5, 0)(1.0, 1);
 END_FUZZIFY
 
 // Define as funções de pertinencia para a variável DIVIDA
 FUZZIFY DIVIDA		
-	TERM baixa := (0.0, 1) (0.3, 0);
-	TERM  media := (0.25, 0) (0.5, 1) (0.75, 0);
-	TERM alta := (0.7, 0)(1.0, 1);
+	TERM baixa := (0.0, 1) (0.5, 0);
+	TERM  media := (0.0, 0) (0.5, 1) (1.0, 0);
+	TERM alta := (0.5, 0)(1.0, 1);
 END_FUZZIFY
 
 // Define as funções de pertinencia para a variável COMPLEXIDADE
 FUZZIFY COMPLEXIDADE		
-	TERM baixa := (0.0, 1) (0.3, 0);
-	TERM  media := (0.25, 0) (0.5, 1) (0.75, 0);
-	TERM alta := (0.7, 0)(1.0, 1);
+	TERM baixa := (0.0, 1) (0.5, 0);
+	TERM  media := (0.0, 0) (0.5, 1) (1.0, 0);
+	TERM alta := (0.5, 0)(1.0, 1);
 END_FUZZIFY
 
 // Define as funções de pertinencias para a variável de saída GC

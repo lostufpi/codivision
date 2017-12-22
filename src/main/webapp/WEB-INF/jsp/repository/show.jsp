@@ -95,7 +95,7 @@
 					<form method="get" action="${linkTo[RepositoryController].testInformation(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Contribuição</button>
 					</form>
-					<form method="get" action="${linkTo[RepositoryController].infoTD(repository.id)}">
+					<form method="get" action="${linkTo[TechnicalDebtController].infoTD(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Dívida Técnica</button>
 					</form>
 					<form method="get" action="${linkTo[RepositoryController].features(repository.id)}">

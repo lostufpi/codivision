@@ -141,7 +141,6 @@ public class Fuzzy {
 		//estrutura que armazena o hitorico de tds de cada dev
 		Map<String, Map<String, Integer>> historicTDRemove = converteHistorico(repository.getTdAuthor());
 
-		System.out.println(file.getPath());
 
 		if(file.getQntBadSmellComment() > 0)
 			td.put("TDComment", 1);
