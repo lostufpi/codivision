@@ -50,10 +50,12 @@ import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.common.model.FeatureElement;
+import br.ufpi.codivision.feature.common.model.UseCase;
 import br.ufpi.codivision.feature.common.util.FeatureNodeType;
 import br.ufpi.codivision.feature.common.util.FeatureTree;
 import br.ufpi.codivision.feature.dao.FeatureDAO;
 import br.ufpi.codivision.feature.dao.FeatureElementDAO;
+import br.ufpi.codivision.feature.dao.UseCaseDAO;
 
 /**
  * @author Werney Ayala
@@ -71,6 +73,7 @@ public class RepositoryController {
 	@Inject private ConfigurationDAO configurationDAO;
 	@Inject private FeatureDAO featureDAO;
 	@Inject private FeatureElementDAO featureElementDAO;
+	@Inject private UseCaseDAO useCaseDAO;
 	
 
 	@Inject private RepositoryValidator validator;
@@ -504,6 +507,22 @@ public class RepositoryController {
 	}
 
 	@Permission(PermissionType.MEMBER)
+	@Get("/repository/{repositoryId}/usecase")
+	public void usecase(Long repositoryId) throws Exception {
+		Repository repository = dao.findById(repositoryId);
+		RepositoryVO repositoryVO = new RepositoryVO(repository);
+
+		Configuration configuration = repository.getConfiguration();
+		configuration.refreshTime();
+
+		List<TimeWindow> windows = new ArrayList<TimeWindow>(Arrays.asList(TimeWindow.values()));
+
+		result.include("windows", windows);
+		result.include("configuration", configuration);
+		result.include("repository", repositoryVO);
+	}
+
+	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/features")
 	public void features(Long repositoryId) throws Exception {
 
@@ -572,12 +591,34 @@ public class RepositoryController {
 	}
 	
 	@Post("/remove/feature")
-	public void removeFeature(Long repositoryId, String nameFeature, String idFeature) {
-		if(idFeature != null && !nameFeature.contains(Constants.JAVA_EXTENSION)) {
+	public void removeFeature(String idFeature) {
+		if(idFeature != null) {
 			this.featureElementDAO.removeFeatureElementByFeatureId(Long.valueOf(idFeature.substring(4)));
 			this.featureDAO.delete(Long.valueOf(idFeature.substring(4)));
 		}
 	}
 	
-
+	@Post("/agroup/{repositoryId}/feature")
+	public void agroupFeature(Long repositoryId, String name, String[] features) {
+		Repository repository = dao.findById(repositoryId);
+		UseCase uc = new UseCase();
+		
+		for (String featureID : features) {
+			Feature f = this.featureDAO.findById(Long.valueOf(featureID.substring(4)));
+			if(f != null) {
+				uc.getFeatures().add(f);
+			}
+		}
+		
+		uc = this.useCaseDAO.save(uc);
+		if(repository.getExtractionPath().getUseCases() != null) {
+			repository.getExtractionPath().getUseCases().add(uc);
+		}else {
+			List<UseCase> useCases = new ArrayList<>();
+			useCases.add(uc);
+			repository.getExtractionPath().setUseCases(useCases);
+		}
+		
+		this.dao.save(repository);
+	}
 }

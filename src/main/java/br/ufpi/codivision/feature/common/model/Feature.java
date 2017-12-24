@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
@@ -29,6 +31,11 @@ public class Feature implements PersistenceEntity {
 	
 	@OneToMany(mappedBy = "feature", cascade = CascadeType.ALL)
 	private List<FeatureElement> featureElements;
+	
+	@ManyToOne
+	@JoinColumn(name = "useCaseId")
+	private UseCase useCase;
+	
 	
 	/**
 	 * 
@@ -90,5 +97,13 @@ public class Feature implements PersistenceEntity {
 	 */
 	public void setFeatureElements(List<FeatureElement> featureElements) {
 		this.featureElements = featureElements;
+	}
+
+	public UseCase getUseCase() {
+		return useCase;
+	}
+
+	public void setUseCase(UseCase useCase) {
+		this.useCase = useCase;
 	}
 }
