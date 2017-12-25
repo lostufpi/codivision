@@ -26,7 +26,22 @@
 							<div id="jstree"></div>
 						</div>
 						<div class="col-md-8 text-center">
-							<div id="table-use-cases"></div>
+							<div id="table-use-cases">
+								<h3 style="display:inline-block">Casos de uso definidos</h3>
+								<hr/>
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th style="text-align: center">ID</th>
+											<th style="text-align: center">Nome</th>
+											<th style="text-align: center">Quant. de Features</th>
+										</tr>
+									</thead>
+									<tbody id="table-use-cases-body">
+											
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -48,6 +63,7 @@
 	<script>
 		$(document).ready(function(){
 			var repository = $('#repository').val();
+			updateUseCaseTable();
 			$.ajax({
 				type : 'POST',
 				url : '/codivision/repository/'+repository+'/feature/tree',
@@ -138,7 +154,28 @@
 
 		$('#btn_add_usecase').click(function(){
 			agroup();
-			document.location.reload(true);
+			updateUseCaseTable();
 		});
+
+		function updateUseCaseTable() {
+			var repository = $('#repository').val();
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/repository/' + repository + '/usecases',
+				success : function(data) {
+					var table_body = "";
+					for (i = 0; i < data.length; i++) {
+						table_body += '<tr><td>'
+								+ data[i].id
+								+ ' </td> <td> '
+								+ data[i].name
+								+ '</td><td>'
+								+ data[i].totalFeatures
+								+ ' </td></tr>';
+					}
+					document.getElementById("table-use-cases-body").innerHTML = table_body;
+				}
+			});
+		}
 	</script>
 </body>

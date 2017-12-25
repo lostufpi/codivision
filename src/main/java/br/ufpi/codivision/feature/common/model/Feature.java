@@ -32,6 +32,9 @@ public class Feature implements PersistenceEntity {
 	@OneToMany(mappedBy = "feature", cascade = CascadeType.ALL)
 	private List<FeatureElement> featureElements;
 	
+	@OneToMany(mappedBy = "feature")
+	private List<FeatureUseCase> featureUseCases;
+	
 	@ManyToOne
 	@JoinColumn(name = "useCaseId")
 	private UseCase useCase;
@@ -105,5 +108,13 @@ public class Feature implements PersistenceEntity {
 
 	public void setUseCase(UseCase useCase) {
 		this.useCase = useCase;
+	}
+
+	public List<FeatureUseCase> getFeatureUseCases() {
+		return featureUseCases;
+	}
+
+	public void setFeatureUseCases(List<FeatureUseCase> featureUseCases) {
+		this.featureUseCases = featureUseCases;
 	}
 }

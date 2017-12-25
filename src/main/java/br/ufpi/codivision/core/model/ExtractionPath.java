@@ -18,6 +18,7 @@ import javax.persistence.OneToOne;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
 import br.ufpi.codivision.feature.common.model.Feature;
+import br.ufpi.codivision.feature.common.model.UseCase;
 
 /**
  * @author Werney Ayala
@@ -48,6 +49,14 @@ public class ExtractionPath implements PersistenceEntity{
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="extractionPathId")
 	private List<Feature> features;
+	
+//	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//	@JoinColumn(name="extractionPathId")
+//	private List<UseCase> useCases; 
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="extractionPathId")
+	private List<UseCase> useCases; 
 
 	public ExtractionPath(){ }
 
@@ -115,4 +124,11 @@ public class ExtractionPath implements PersistenceEntity{
 		this.dirTreeJson = dirTreeJson;
 	}
 
+	public List<UseCase> getUseCases() {
+		return useCases;
+	}
+
+	public void setUseCases(List<UseCase> useCases) {
+		this.useCases = useCases;
+	}
 }

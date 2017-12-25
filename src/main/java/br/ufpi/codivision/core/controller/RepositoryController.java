@@ -45,17 +45,18 @@ import br.ufpi.codivision.core.model.validator.RepositoryValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.model.vo.UseCaseVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.QuickSort;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.common.model.FeatureElement;
+import br.ufpi.codivision.feature.common.model.FeatureUseCase;
 import br.ufpi.codivision.feature.common.model.UseCase;
 import br.ufpi.codivision.feature.common.util.FeatureNodeType;
 import br.ufpi.codivision.feature.common.util.FeatureTree;
 import br.ufpi.codivision.feature.dao.FeatureDAO;
 import br.ufpi.codivision.feature.dao.FeatureElementDAO;
-import br.ufpi.codivision.feature.dao.UseCaseDAO;
 
 /**
  * @author Werney Ayala
@@ -73,8 +74,6 @@ public class RepositoryController {
 	@Inject private ConfigurationDAO configurationDAO;
 	@Inject private FeatureDAO featureDAO;
 	@Inject private FeatureElementDAO featureElementDAO;
-	@Inject private UseCaseDAO useCaseDAO;
-	
 
 	@Inject private RepositoryValidator validator;
 	@Inject private ConfigurationValidator configurationValidator;
@@ -591,6 +590,7 @@ public class RepositoryController {
 	}
 	
 	@Post("/remove/feature")
+	@Permission(PermissionType.MEMBER)
 	public void removeFeature(String idFeature) {
 		if(idFeature != null) {
 			this.featureElementDAO.removeFeatureElementByFeatureId(Long.valueOf(idFeature.substring(4)));
@@ -599,18 +599,24 @@ public class RepositoryController {
 	}
 	
 	@Post("/agroup/{repositoryId}/feature")
+	@Permission(PermissionType.MEMBER)
 	public void agroupFeature(Long repositoryId, String name, String[] features) {
 		Repository repository = dao.findById(repositoryId);
 		UseCase uc = new UseCase();
+		List<FeatureUseCase> featureUseCases = new ArrayList<>();
+		uc.setName(name);
 		
 		for (String featureID : features) {
 			Feature f = this.featureDAO.findById(Long.valueOf(featureID.substring(4)));
 			if(f != null) {
-				uc.getFeatures().add(f);
+				FeatureUseCase fuc = new FeatureUseCase();
+				fuc.setFeature(f);
+				fuc.setUseCase(uc);
+				featureUseCases.add(fuc);
 			}
 		}
+		uc.setFeatureUseCases(featureUseCases);
 		
-		uc = this.useCaseDAO.save(uc);
 		if(repository.getExtractionPath().getUseCases() != null) {
 			repository.getExtractionPath().getUseCases().add(uc);
 		}else {
@@ -620,5 +626,18 @@ public class RepositoryController {
 		}
 		
 		this.dao.save(repository);
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/usecases")
+	public void useCases(Long repositoryId) throws Exception {
+		Repository repository = dao.findById(repositoryId);
+		List<UseCase> useCases = repository.getExtractionPath().getUseCases();
+		List<UseCaseVO> useCasesVO = new ArrayList<>();
+		
+		for (UseCase uc : useCases) {
+			useCasesVO.add(new UseCaseVO(uc));
+		}
+		result.use(Results.json()).withoutRoot().from(useCasesVO).recursive().serialize();
 	}
 }

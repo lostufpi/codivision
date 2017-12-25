@@ -26,12 +26,12 @@ public class UseCase implements PersistenceEntity{
 	
 	private String name;
 	
-	@OneToMany(mappedBy = "useCase", cascade = {CascadeType.PERSIST, CascadeType.REFRESH})
-	private List<Feature> features;
-	
+	@OneToMany(mappedBy = "useCase", cascade = CascadeType.ALL)
+	private List<FeatureUseCase> featureUseCases;
 	
 	public UseCase() {
-		this.features = new ArrayList<>();
+		super();
+		this.featureUseCases = new ArrayList<>();
 	}
 
 	@Override
@@ -44,19 +44,19 @@ public class UseCase implements PersistenceEntity{
 		this.id = id;
 	}
 
-	public List<Feature> getFeatures() {
-		return features;
-	}
-
-	public void setFeatures(List<Feature> features) {
-		this.features = features;
-	}
-
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public List<FeatureUseCase> getFeatureUseCases() {
+		return featureUseCases;
+	}
+
+	public void setFeatureUseCases(List<FeatureUseCase> featureUseCases) {
+		this.featureUseCases = featureUseCases;
 	}
 }
