@@ -3,6 +3,8 @@
 
 <head>
 	<link href="<c:url value="/vendor/jstree/themes/default/style.min.css" />" rel="stylesheet">
+	<link href="<c:url value="/vendor/datatable/bootstrap.min.css" />" rel="stylesheet">
+	<link href="<c:url value="/vendor/datatable/dataTables.bootstrap.min.css" />" rel="stylesheet">
 </head>
 
 <body>
@@ -27,10 +29,11 @@
 						</div>
 						<div class="col-md-8 text-center">
 							<div id="table-use-cases">
-								<h3 style="display:inline-block">Casos de uso definidos</h3>
-								<hr/>
-								<table class="table table-hover">
+								<table id="example" class="table table-striped table-bordered" cellspacing="0" width="100%">
 									<thead>
+										<tr>
+	      									<th style="text-align: center" colspan="3"> Casos de Uso </th>
+	    								</tr>
 										<tr>
 											<th style="text-align: center">ID</th>
 											<th style="text-align: center">Nome</th>
@@ -51,19 +54,29 @@
 	
 	<input type="hidden" id="repository" value="${repository.id}" />
 	
+	
+	<script src="<c:url value="/vendor/datatable/jquery-1.12.4.js" />"></script>
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
 	<script src="<c:url value="/vendor/highcharts/highcharts.js" />"></script>
 	<script src="<c:url value="/vendor/highcharts/modules/no-data-to-display.js" />"></script>
 	<script src="<c:url value="/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js" />"></script>
 	<script src="<c:url value="/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.pt-BR.min.js" />"></script>
 	
+    <script src="<c:url value="/vendor/datatable/jquery.dataTables.min.js" />"></script>
+    <script src="<c:url value="/vendor/datatable/dataTables.bootstrap.min.js" />"></script>
+	
 	<jsp:include page="use-case-name-modal.jsp" />
-	<jsp:include page="loading-modal.jsp"/>
 	
 	<script>
+
+		window.onload = function() {
+			$('#example').DataTable();
+		};
+
 		$(document).ready(function(){
 			var repository = $('#repository').val();
 			updateUseCaseTable();
+			 
 			$.ajax({
 				type : 'POST',
 				url : '/codivision/repository/'+repository+'/feature/tree',
@@ -143,7 +156,6 @@
 			}
 
 			var name = $('#usecase_name').val();
-			$('#loading').modal('show'); 
 			$.ajax({
 				type : 'POST',
 				url : '/codivision/agroup/'+repository+'/feature',
@@ -176,6 +188,7 @@
 					document.getElementById("table-use-cases-body").innerHTML = table_body;
 				}
 			});
+			
 		}
 	</script>
 </body>
