@@ -14,7 +14,7 @@
 			<div class="panel panel-default">
 				<div class="panel-body">
 			
-					<h3 style="display:inline-block">Familiaridade sobre features no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Familiaridade sobre Casos de Uso no repositório ${repository.name}</h3>
 					<form class="pull-right" method="get" action="${linkTo[RepositoryController].usecase(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
@@ -57,7 +57,7 @@
 	<script>
 		$(document).ready(function(){
 			
-			Highcharts.setOptions({lang: {noData: "Não houveram alterações neste diretório/arquivo no período especificado"}});
+			Highcharts.setOptions({lang: {noData: "Não houve alterações no período especificado."}});
 			
 			var repository = $('#repository').val();
 			var alert = $('#alert').val();
@@ -72,7 +72,7 @@
 			
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/repository/'+repository+'/feature/tree',
+				url : '/codivision/repository/'+repository+'/usecase/tree',
 				success : function(treeData){
 					var data = treeData;
 					$('#jstree').jstree({
@@ -83,7 +83,8 @@
 							},
 						'types' : {
 							"FEATURE" : {
-							      "valid_children" : ["FEATUE", "ELEMENT"]
+								 "icon" : "glyphicon glyphicon-folder-close",
+							      "valid_children" : ["FEATURE", "ELEMENT"]
 							    },
 							"ELEMENT" : {
 							      "icon" : "jstree-file",
@@ -111,7 +112,7 @@
 				$('#truckfactor-label').text('');
 				$.ajax({
 					type : 'POST',
-					url : '/codivision/repository/'+repository+'/features/alterations',
+					url : '/codivision/repository/'+repository+'/usecase/alterations',
 					data : {'newPath' : newPath, 'nodeId' : nodeId},
 					success : function(chartData){
 						
@@ -123,7 +124,7 @@
 					            text: ''
 					        },
 					        title: {
-					            text: 'Familiaridade nessa funcionalidade/arquivo:'
+					            text: 'Familiaridade nesse Caso de Uso/Arquivo:'
 					        },
 					        subtitle: {
 					        	text: '#',

@@ -6,6 +6,7 @@ package br.ufpi.codivision.core.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -49,6 +50,7 @@ import br.ufpi.codivision.core.model.vo.UseCaseVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.feature.common.model.Element;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.common.model.FeatureElement;
 import br.ufpi.codivision.feature.common.model.FeatureUseCase;
@@ -572,22 +574,6 @@ public class RepositoryController {
 		}
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
-
-	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/features/alterations")
-	public void getFeatureAlterations(Long repositoryId, String newPath, String nodeId){
-		List<AuthorPercentage> percentage = new ArrayList<>();
-		Repository repository = dao.findById(repositoryId);
-
-		if(newPath.contains(Constants.JAVA_EXTENSION)) {
-			newPath = newPath.substring(newPath.indexOf(Constants.FILE_SEPARATOR.concat(Constants.FILE_SEPARATOR))+1);
-			percentage = dao.getPercentage(repositoryId, newPath);
-		}else {
-			Long featureId = newPath.equals(Constants.FILE_SEPARATOR.concat(repository.getName())) || newPath.equals(Constants.FILE_SEPARATOR) ? null : Long.valueOf(nodeId.substring(4));
-			percentage = dao.getFeaturePercentage(repositoryId, featureId);
-		}
-		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
-	}
 	
 	@Post("/remove/feature")
 	@Permission(PermissionType.MEMBER)
@@ -639,5 +625,62 @@ public class RepositoryController {
 			useCasesVO.add(new UseCaseVO(uc));
 		}
 		result.use(Results.json()).withoutRoot().from(useCasesVO).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/usecase/alterations")
+	public void getUseCaseAlterations(Long repositoryId, String newPath, String nodeId){
+		List<AuthorPercentage> percentage = new ArrayList<>();
+		Repository repository = dao.findById(repositoryId);
+
+		if(newPath.contains(Constants.JAVA_EXTENSION)) {
+			newPath = newPath.substring(newPath.indexOf(Constants.FILE_SEPARATOR.concat(Constants.FILE_SEPARATOR))+1);
+			percentage = dao.getPercentage(repositoryId, newPath);
+		}else {
+			Long useCaseId = newPath.equals(Constants.FILE_SEPARATOR.concat(repository.getName())) || newPath.equals(Constants.FILE_SEPARATOR) ? null : Long.valueOf(nodeId.substring(4));
+			percentage = dao.getUseCasePercentage(repositoryId, useCaseId);
+		}
+		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/usecase/tree")
+	public void getUseCasesTree(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		ExtractionPath extractionPath = repository.getExtractionPath();
+		List<UseCase> useCases = extractionPath.getUseCases();
+		HashMap<Long, Element> elementsUnique = new HashMap<>();
+
+		FeatureTree root = new FeatureTree();
+		root.setType(FeatureNodeType.FEATURE);
+		root.setText(repository.getName());
+
+		String a, b;
+
+		for (UseCase uc : useCases) {
+			elementsUnique = new HashMap<>();
+			a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+			b = String.valueOf(uc.getId());
+			FeatureTree featureTree = new FeatureTree();
+			featureTree.setId(a.concat(b));
+			featureTree.setText(uc.getName());
+			featureTree.setType(FeatureNodeType.FEATURE);
+			for (FeatureUseCase fuc : uc.getFeatureUseCases()) {
+				for (FeatureElement fe : fuc.getFeature().getFeatureElements()) {
+					if(elementsUnique.get(fe.getElement().getId()) == null) {
+						elementsUnique.put(fe.getElement().getId(), fe.getElement());
+						a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+						b = String.valueOf(fe.getElement().getId());
+						FeatureTree elementTree = new FeatureTree();
+						elementTree.setId(a.concat(b));
+						elementTree.setText(fe.getElement().getFullname());
+						elementTree.setType(FeatureNodeType.ELEMENT);
+						featureTree.getChildren().add(elementTree);
+					}
+				}
+			}
+			root.getChildren().add(featureTree);
+		}
+		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
 }

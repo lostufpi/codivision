@@ -172,7 +172,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 	}
 	
-public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featureId){
+public List<AuthorPercentage> getUseCasePercentage(Long repositoryId, Long useCaseId){
 		
 		/* Obtem a quantidade de alterações realizadas por outros desenvolvedores no arquivo 
 		 * Essas alterações são calculadas em nível de arquivo pois foi a única forma que encotrei de fazer
@@ -211,10 +211,10 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 		
 		String queryFiles = new String();
 		
-		if(featureId != null) {
-			queryFiles = "SELECT f.element.fullname FROM FeatureElement f WHERE f.feature.id = :featureId";
+		if(useCaseId != null) {
+			queryFiles = "SELECT DISTINCT f.element.fullname FROM FeatureElement f WHERE f.feature.id IN (SELECT u.feature.id FROM FeatureUseCase u WHERE u.useCase.id = :useCaseId)";
 		}else {
-			queryFiles = "SELECT f.element.fullname FROM FeatureElement f";
+			queryFiles = "SELECT DISTINCT f.element.fullname FROM FeatureElement f WHERE f.feature.id IN (SELECT u.feature.id FROM FeatureUseCase u)";
 		}
 		
 		/* A query principal */
@@ -234,13 +234,13 @@ public List<AuthorPercentage> getFeaturePercentage(Long repositoryId, Long featu
 						+ "revision.author.name ASC";
 		
 		TypedQuery<AuthorPercentage> typedQuery = em.createQuery(query, AuthorPercentage.class).setParameter("repositoryId", repositoryId);
-		if(featureId != null) {
-			typedQuery.setParameter("featureId", featureId);
+		if(useCaseId != null) {
+			typedQuery.setParameter("useCaseId", useCaseId);
 		}
 		
 		return typedQuery.getResultList();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public LineChart getTestCommitsHistory(long repositoryId){
 		

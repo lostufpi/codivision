@@ -91,7 +91,7 @@
 						'types' : {
 							"FEATURE" : {
 								 "icon" : "glyphicon glyphicon-folder-close",
-							      "valid_children" : ["FEATUE", "ELEMENT"]
+							      "valid_children" : ["FEATURE", "ELEMENT"]
 							    },
 							"ELEMENT" : {
 							      "icon" : "jstree-file",
