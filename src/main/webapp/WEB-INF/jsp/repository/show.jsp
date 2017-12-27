@@ -98,7 +98,7 @@
 					<form method="get" action="${linkTo[TechnicalDebtController].infoTD(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Dívida Técnica</button>
 					</form>
-					<form method="get" action="${linkTo[RepositoryController].features(repository.id)}">
+					<form method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Features</button>
 					</form>
 				</div>

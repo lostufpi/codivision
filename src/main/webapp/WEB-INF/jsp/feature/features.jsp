@@ -15,11 +15,11 @@
 				<div class="panel-body">
 			
 					<h3 style="display:inline-block">Familiaridade sobre Casos de Uso no repositório ${repository.name}</h3>
-					<form class="pull-right" method="get" action="${linkTo[RepositoryController].usecase(repository.id)}">
+					<form class="pull-right" method="get" action="${linkTo[FeatureController].usecase(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
 					<button style="margin-top: 15px" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
-					<jsp:include page="chart-config-modal.jsp"/>
+					<jsp:include page="../repository/chart-config-modal.jsp"/>
 					
 					<hr>
 					
@@ -72,7 +72,7 @@
 			
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/repository/'+repository+'/usecase/tree',
+				url : '/codivision/usecase/repository/'+repository+'/tree',
 				success : function(treeData){
 					var data = treeData;
 					$('#jstree').jstree({
@@ -112,7 +112,7 @@
 				$('#truckfactor-label').text('');
 				$.ajax({
 					type : 'POST',
-					url : '/codivision/repository/'+repository+'/usecase/alterations',
+					url : '/codivision/usecase/repository/'+repository+'/alterations',
 					data : {'newPath' : newPath, 'nodeId' : nodeId},
 					success : function(chartData){
 						

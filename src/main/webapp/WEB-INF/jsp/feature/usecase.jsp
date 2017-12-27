@@ -3,8 +3,8 @@
 
 <head>
 	<link href="<c:url value="/vendor/jstree/themes/default/style.min.css" />" rel="stylesheet">
-	<link href="<c:url value="/vendor/datatable/bootstrap.min.css" />" rel="stylesheet">
-	<link href="<c:url value="/vendor/datatable/dataTables.bootstrap.min.css" />" rel="stylesheet">
+	<link href="<c:url value="/vendor/datatable/css/bootstrap.min.css" />" rel="stylesheet">
+	<link href="<c:url value="/vendor/datatable/css/dataTables.bootstrap.min.css" />" rel="stylesheet">
 </head>
 
 <body>
@@ -16,7 +16,7 @@
 				<div class="panel-body">
 			
 					<h3 style="display:inline-block">Definição de casos de uso no repositório ${repository.name}</h3>
-					<form class="pull-right" method="get" action="${linkTo[RepositoryController].usecase(repository.id)}">
+					<form class="pull-right" method="get" action="${linkTo[FeatureController].usecase(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
 					<hr>
@@ -55,15 +55,15 @@
 	<input type="hidden" id="repository" value="${repository.id}" />
 	
 	
-	<script src="<c:url value="/vendor/datatable/jquery-1.12.4.js" />"></script>
+	<script src="<c:url value="/vendor/datatable/js/jquery-1.12.4.js" />"></script>
 	<script src="<c:url value="/vendor/jstree/jstree.min.js" />"></script>
 	<script src="<c:url value="/vendor/highcharts/highcharts.js" />"></script>
 	<script src="<c:url value="/vendor/highcharts/modules/no-data-to-display.js" />"></script>
 	<script src="<c:url value="/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js" />"></script>
 	<script src="<c:url value="/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.pt-BR.min.js" />"></script>
 	
-    <script src="<c:url value="/vendor/datatable/jquery.dataTables.min.js" />"></script>
-    <script src="<c:url value="/vendor/datatable/dataTables.bootstrap.min.js" />"></script>
+    <script src="<c:url value="/vendor/datatable/js/jquery.dataTables.min.js" />"></script>
+    <script src="<c:url value="/vendor/datatable/js/dataTables.bootstrap.min.js" />"></script>
 	
 	<jsp:include page="use-case-name-modal.jsp" />
 	
@@ -79,7 +79,7 @@
 			 
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/repository/'+repository+'/feature/tree',
+				url : '/codivision/feature/repository/'+repository+'/tree',
 				success : function(treeData){
 					var data = treeData;
 					$('#jstree').jstree({
@@ -132,7 +132,7 @@
 		function delete_backend(node, path) {
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/remove/feature',
+				url : '/codivision/feature/remove',
 				data : {'idFeature' : node.id},
 			});
 		}
@@ -158,7 +158,7 @@
 			var name = $('#usecase_name').val();
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/agroup/'+repository+'/feature',
+				url : '/codivision/agroup/repository/'+repository+'/feature',
 				data : {'name' : name, 'features' : features},
 			});
 			$('#loading').modal('hide'); 
@@ -173,7 +173,7 @@
 			var repository = $('#repository').val();
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/repository/' + repository + '/usecases',
+				url : '/codivision/usecases/repository/' + repository,
 				success : function(data) {
 					var table_body = "";
 					for (i = 0; i < data.length; i++) {
