@@ -29,7 +29,7 @@
 						</div>
 						<div class="col-md-8 text-center">
 							<div id="table-use-cases">
-								<table id="example" class="table table-striped table-bordered" cellspacing="0" width="100%">
+								<table id="table_uc" class="table table-striped table-bordered" cellspacing="0" width="100%">
 									<thead>
 										<tr>
 	      									<th style="text-align: center" colspan="3"> Casos de Uso </th>
@@ -38,6 +38,7 @@
 											<th style="text-align: center">ID</th>
 											<th style="text-align: center">Nome</th>
 											<th style="text-align: center">Quant. de Features</th>
+											<th style="text-align: center">Opção</th>
 										</tr>
 									</thead>
 									<tbody id="table-use-cases-body">
@@ -70,7 +71,7 @@
 	<script>
 
 		window.onload = function() {
-			$('#example').DataTable();
+			$('#table_uc').DataTable();
 		};
 
 		$(document).ready(function(){
@@ -129,10 +130,11 @@
 			}
 		};
 	
-		function delete_backend(node, path) {
+		function delete_backend(node) {
+			var repository = $('#repository').val();
 			$.ajax({
 				type : 'POST',
-				url : '/codivision/feature/remove',
+				url : '/codivision/repository/'+repository+'/feature/remove',
 				data : {'idFeature' : node.id},
 			});
 		}
@@ -161,12 +163,12 @@
 				url : '/codivision/agroup/repository/'+repository+'/feature',
 				data : {'name' : name, 'features' : features},
 			});
-			$('#loading').modal('hide'); 
 		}
 
 		$('#btn_add_usecase').click(function(){
 			agroup();
 			updateUseCaseTable();
+			window.top.location.reload();
 		});
 
 		function updateUseCaseTable() {
@@ -178,17 +180,29 @@
 					var table_body = "";
 					for (i = 0; i < data.length; i++) {
 						table_body += '<tr><td>'
-								+ data[i].id
-								+ ' </td> <td> '
-								+ data[i].name
-								+ '</td><td>'
-								+ data[i].totalFeatures
-								+ ' </td></tr>';
+							+ data[i].id
+							+ ' </td> <td> '
+							+ data[i].name
+							+ '</td><td>'
+							+ data[i].totalFeatures
+							+ '</td><td>'
+							+ "<button type='button' class='btn btn-danger' id='"+data[i].id+"' onclick='usecase_delete("+data[i].id+");'><i class='glyphicon glyphicon-remove-sign'></i> </button>"
+							+ '</td></tr>';
 					}
 					document.getElementById("table-use-cases-body").innerHTML = table_body;
 				}
 			});
-			
 		}
+
+		function usecase_delete(id) {
+			var repository = $('#repository').val();
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/repository/'+repository+'/usecase/remove',
+				data : {'idUseCase' : id},
+			});
+			window.top.location.reload();
+		}
+		
 	</script>
 </body>

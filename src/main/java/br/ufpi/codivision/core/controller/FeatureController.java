@@ -32,16 +32,20 @@ import br.ufpi.codivision.feature.common.util.FeatureNodeType;
 import br.ufpi.codivision.feature.common.util.FeatureTree;
 import br.ufpi.codivision.feature.dao.FeatureDAO;
 import br.ufpi.codivision.feature.dao.FeatureElementDAO;
+import br.ufpi.codivision.feature.dao.FeatureUseCaseDAO;
+import br.ufpi.codivision.feature.dao.UseCaseDAO;
 
 @Controller
 public class FeatureController {
 	@Inject private FeatureDAO featureDAO;
 	@Inject private FeatureElementDAO featureElementDAO;
+	@Inject private UseCaseDAO useCaseDAO;
+	@Inject private FeatureUseCaseDAO featureUseCaseDAO;
 	@Inject private RepositoryDAO dao;
 	@Inject private Result result;
 	
 	@Permission(PermissionType.MEMBER)
-	@Get("/usecase/repository/{repositoryId}")
+	@Get("/repository/{repositoryId}/usecase/")
 	public void usecase(Long repositoryId) throws Exception {
 		Repository repository = dao.findById(repositoryId);
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
@@ -108,17 +112,18 @@ public class FeatureController {
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
 	
-	@Post("/feature/remove")
 	@Permission(PermissionType.MEMBER)
-	public void featureRemove(String idFeature) {
+	@Post("/repository/{repositoryId}/feature/remove")
+	public void featureRemove(Long repositoryId, String idFeature) {
 		if(idFeature != null) {
 			this.featureElementDAO.removeFeatureElementByFeatureId(Long.valueOf(idFeature.substring(4)));
+			this.featureUseCaseDAO.removeFeatureUseCaseByFeatureId(Long.valueOf(idFeature.substring(4)));
 			this.featureDAO.delete(Long.valueOf(idFeature.substring(4)));
 		}
 	}
 	
-	@Post("/agroup/repository/{repositoryId}/feature")
 	@Permission(PermissionType.MEMBER)
+	@Post("/agroup/repository/{repositoryId}/feature")
 	public void agroupFeature(Long repositoryId, String name, String[] features) {
 		Repository repository = dao.findById(repositoryId);
 		UseCase uc = new UseCase();
@@ -215,5 +220,14 @@ public class FeatureController {
 			root.getChildren().add(featureTree);
 		}
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/usecase/remove")
+	public void useCaseRemove(Long repositoryId, Long idUseCase) throws Exception {
+		if(idUseCase != null) {
+			this.featureUseCaseDAO.removeFeatureUseCaseByUseCaseId(idUseCase);
+			this.useCaseDAO.delete(idUseCase);
+		}
 	}
 }
