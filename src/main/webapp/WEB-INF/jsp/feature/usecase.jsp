@@ -16,7 +16,7 @@
 				<div class="panel-body">
 			
 					<h3 style="display:inline-block">Definição de casos de uso no repositório ${repository.name}</h3>
-					<form class="pull-right" method="get" action="${linkTo[FeatureController].usecase(repository.id)}">
+					<form class="pull-right" method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
 					<hr>
@@ -70,14 +70,10 @@
 	
 	<script>
 
-		window.onload = function() {
-			$('#table_uc').DataTable();
-		};
-
 		$(document).ready(function(){
 			var repository = $('#repository').val();
 			updateUseCaseTable();
-			 
+			
 			$.ajax({
 				type : 'POST',
 				url : '/codivision/feature/repository/'+repository+'/tree',
@@ -168,7 +164,7 @@
 		$('#btn_add_usecase').click(function(){
 			agroup();
 			updateUseCaseTable();
-			window.top.location.reload();
+			window.location.reload(true);
 		});
 
 		function updateUseCaseTable() {
@@ -190,6 +186,7 @@
 							+ '</td></tr>';
 					}
 					document.getElementById("table-use-cases-body").innerHTML = table_body;
+					$('#table_uc').DataTable();
 				}
 			});
 		}
@@ -201,7 +198,7 @@
 				url : '/codivision/repository/'+repository+'/usecase/remove',
 				data : {'idUseCase' : id},
 			});
-			window.top.location.reload();
+			window.location.reload(true);
 		}
 		
 	</script>
