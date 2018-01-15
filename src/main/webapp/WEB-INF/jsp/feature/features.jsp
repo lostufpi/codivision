@@ -168,6 +168,16 @@
 	                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' detém bastante conhecimento', style : {color: '#EAC300', fontWeight: 'bold'}});
 	                    	}
   						});
+
+						chartData.sort(function(a, b){return b.y-a.y});
+						var truckFactorTotal = 0;
+						$.each(chartData, function(i, item) {
+							truckFactorTotal += item.y/total;
+							if(truckFactorTotal > truckFactor/100) {
+								$('#truckfactor-label').text('Truck Factor: '+ (i+1));
+								return false;
+							}
+						});
 					}
 				});
 			}
