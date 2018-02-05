@@ -47,6 +47,7 @@ import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.debit.model.File;
 
 /**
  * @author Werney Ayala
@@ -132,13 +133,8 @@ public class RepositoryController {
 		path.setPath("/"+branch);
 
 		repository.setExtractionPath(path);
-
-		try {
-			if(login == null && password == null) {
-				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1));
-			} else
-				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
-
+		
+		if(local) {
 			repository = dao.save(repository);
 
 			User user = userDAO.findById(userSession.getUser().getId());
@@ -148,19 +144,38 @@ public class RepositoryController {
 			permission.setRepository(repository);
 			permission.setUser(user);
 			userRepositoryDAO.save(permission);
-
-			Extraction extraction = new Extraction(repository.getId(),
-					ExtractionType.REPOSITORY,
-					new RepositoryCredentials(login, password));
-
-			taskService.addTask(extraction);
-
+			
 			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+		}else {
 
-		} catch (Exception e) {
-			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
+			try {
+				if(login == null && password == null) {
+					GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1));
+				} else
+					GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
+
+				repository = dao.save(repository);
+
+				User user = userDAO.findById(userSession.getUser().getId());
+
+				UserRepository permission = new UserRepository();
+				permission.setPermission(PermissionType.OWNER);
+				permission.setRepository(repository);
+				permission.setUser(user);
+				userRepositoryDAO.save(permission);
+
+				Extraction extraction = new Extraction(repository.getId(),
+						ExtractionType.REPOSITORY,
+						new RepositoryCredentials(login, password));
+
+				taskService.addTask(extraction);
+
+				result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+
+			} catch (Exception e) {
+				result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
+			}
 		}
-
 	}
 	/**
 	 * This method modifies the name of a repository
@@ -484,6 +499,10 @@ public class RepositoryController {
 				if(!check){
 					repositoryCurrent.getTestFiles().add(file);
 				}
+			}
+			
+			for (File file3 : repositoryUpdate.getCodeSmallsFile()) {
+				repositoryCurrent.getCodeSmallsFile().add(file3);
 			}
 
 			dao.save(repositoryCurrent);
