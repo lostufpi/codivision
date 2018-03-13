@@ -28,4 +28,16 @@ public class AuthorDAO extends GenericDAO<Author>{
 			return null;
 		}
 	}
+	public Author findByName(String name) {
+		List<Author> authors; 
+		try{
+			authors = em.createQuery("SELECT a FROM Author a WHERE a.name = :name ", Author.class)
+					.setParameter("name", name)
+					.getResultList();
+			return authors.isEmpty() ? null : authors.get(0);
+			
+		} catch (NoResultException e) {
+			return null;
+		}	
+	}
 }

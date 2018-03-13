@@ -22,6 +22,7 @@ import br.com.caelum.vraptor.view.Results;
 import br.ufpi.codivision.common.annotation.Permission;
 import br.ufpi.codivision.common.annotation.Public;
 import br.ufpi.codivision.common.security.UserSession;
+import br.ufpi.codivision.core.dao.AuthorDAO;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
@@ -30,6 +31,7 @@ import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.ExtractionType;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.extractor.service.TaskService;
+import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.ExtractionPath;
 import br.ufpi.codivision.core.model.Repository;
@@ -61,6 +63,7 @@ public class RepositoryController {
 
 	@Inject private RepositoryDAO dao;
 	@Inject private UserDAO userDAO;
+	@Inject private AuthorDAO authorDAO;
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
 
@@ -70,6 +73,7 @@ public class RepositoryController {
 	@Inject private TaskService taskService;
 
 
+	@SuppressWarnings("null")
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}")
 	public void show(Long repositoryId) {
@@ -78,10 +82,36 @@ public class RepositoryController {
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 		List<RepositoryVO> repositoryList = dao.listMyRepositories(userSession.getUser().getId());
 		List<UserRepository> userRepositoryList = userRepositoryDAO.listByRepositoryId(repositoryId);
-
+		List<Revision> revisions = repository.getRevisions();
+		List<Author> authors = new ArrayList<Author>();
+		Author aux = null;
+		for (Revision rev : revisions) {
+			aux = rev.getAuthor();
+			if (!authors.contains(aux)) {
+				authors.add(aux);
+			}
+		}
+		
+		result.include("authors", authors);
+		result.include("revisions", revisions);
 		result.include("repository", repositoryVO);
 		result.include("repositoryList", repositoryList);
 		result.include("userRepositoryList", userRepositoryList);
+
+	}
+	
+	/**
+	 * This method modifies the email of an author
+	 * @param Author - The author to modify the email
+	 * @param String - New email of the author
+	 */
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/changemail")
+	public void changemail(Long repositoryId,Long authorName,String newEmail){
+		Author author = authorDAO.findById(authorName);
+		author.setEmail(newEmail);
+		authorDAO.save(author);
+		result.redirectTo(this).show(repositoryId);
 
 	}
 
@@ -185,7 +215,6 @@ public class RepositoryController {
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/edit")
 	public void edit(Long repositoryId,String repositoryName){
-
 		Repository repository = dao.findById(repositoryId);
 		repository.setName(repositoryName);
 		dao.save(repository);

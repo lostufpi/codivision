@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
+
 <body>
 
 	<div class="row">
@@ -163,8 +164,102 @@
 						</table>
 
 					</div>
+					
 				</div>
 			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div>
+						<b><fmt:message key="repository.authors" /></b>
+					</div>
+				</div>
+					<div class="panel-body">
+					 
+					<div style="margin-top: 10px">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th><fmt:message key="repository.authors" /></th>
+									<th><fmt:message key="user.email" /></th>
+								</tr>
+							</thead>
+							<tbody>
+								<c:forEach items="${authors}" var="member"
+									varStatus="s">
+									<tr>
+										<td>${s.index + 1}</td>
+										<td>${member.name}</td>
+										<td>${member.email}</td>
+										</tr>
+								</c:forEach>		
+							</tbody>
+						</table>
+						</div>		
+<!-- Parte que altera email dos autores -->								
+<div>
+
+	<button class="btn btn-primary pull-right" data-toggle="modal"
+		data-target="#editAuthor" style="margin-right: 5px">
+		<fmt:message key="change.email" />
+	</button>
+	<div class="modal fade" id="editAuthor">
+	
+<div class="modal-dialog">
+		
+		<div class="modal-content">
+		
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<fmt:message key="author.change.email" />
+				</h4>
+			</div>
+			<form method="post"
+				action="${linkTo[RepositoryController].changemail(repository.id)}">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.name" />:</label> 
+						<select name="authorName" id="authorName">
+						<c:forEach items="${authors}" var="member">
+						<option value="${member.id}">${member.name}</option>		
+										
+							</c:forEach>			
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.email" />:</label> <input type="email"
+							class="form-control" id="newEmail" name="newEmail" required>
+					</div>
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						<fmt:message key="close" />
+					</button>
+					<button type="submit" class="btn btn-primary">
+						<fmt:message key="save" />
+					</button>
+				</div>
+			</form>
+
+		</div>
+		
+	</div>
+</div>
+				</div>	
+
+				</div>
 		</div>
 	</div>
+	</div>
+	
 </body>
+
+

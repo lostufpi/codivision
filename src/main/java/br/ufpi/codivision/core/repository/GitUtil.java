@@ -179,7 +179,7 @@ public class GitUtil {
 	 */
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 
-		Iterable<RevCommit> log = this.git.log().setMaxCount(1).call();
+		Iterable<RevCommit> log = this.git.log().setMaxCount(100000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
 
 		for (RevCommit jgitCommit: log) {
