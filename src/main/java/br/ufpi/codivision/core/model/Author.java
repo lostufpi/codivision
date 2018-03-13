@@ -1,5 +1,9 @@
 package br.ufpi.codivision.core.model;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,6 +27,9 @@ public class Author implements PersistenceEntity{
 	
 	private String email;
 	
+	private Long autFather;
+	
+	
 	public Author() {
 	}
 
@@ -30,7 +37,17 @@ public class Author implements PersistenceEntity{
 		super();
 		this.name = name;
 		this.email = email;
+		this.autFather=null;
 	}
+
+	public Long getAutFather() {
+		return autFather;
+	}
+
+	public void setAutFather(Long autFather) {
+		this.autFather = autFather;
+	}
+
 
 	@Override
 	public Long getId() {

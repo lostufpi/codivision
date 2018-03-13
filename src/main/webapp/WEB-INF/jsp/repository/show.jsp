@@ -200,10 +200,10 @@
 <div>
 
 	<button class="btn btn-primary pull-right" data-toggle="modal"
-		data-target="#editAuthor" style="margin-right: 5px">
+		data-target="#editAuthorEmail" style="margin-right: 5px">
 		<fmt:message key="change.email" />
 	</button>
-	<div class="modal fade" id="editAuthor">
+	<div class="modal fade" id="editAuthorEmail">
 	
 <div class="modal-dialog">
 		
@@ -254,12 +254,118 @@
 	</div>
 </div>
 				</div>	
+				
+				
+<!--  Botão que Une autores repetidos -->
+				
+<div>
+
+	<button class="btn btn-primary pull-right" data-toggle="modal"
+		data-target="#editAuthor" style="margin-right: 5px">
+		<fmt:message key="author.edit" />
+	</button>
+	<div class="modal fade" id="editAuthor">
+	
+<div class="modal-dialog">
+		
+		<div class="modal-content">
+		
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<fmt:message key="author.edit.father" />
+				</h4>
+			</div>
+			<form method="post"
+				action="${linkTo[RepositoryController].removeAuthor(repository.id)}">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.father" />:</label> 
+						<select name="authorName" id="authorName">
+						<c:forEach items="${authors}" var="member">
+						<option value="${member.id}">${member.name}</option>		
+										
+							</c:forEach>			
+						</select>
+					</div>
+					
+						
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.father.others" />:</label> 
+								<p><c:forEach items="${authors}" var="member" varStatus="s">
+						<input id="authors${s.index}" type="checkbox" value="${member.id}">${member.name}					
+						</c:forEach></p>
+						<input type="hidden" 
+							class="form-control" id="removeAuthors" value="" name="removeAuthors">
+					</div>
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						<fmt:message key="close" />
+					</button>
+					<button type="submit" onclick="generateAuthors()" class="btn btn-primary">
+						<fmt:message key="save" />
+					</button>
+				</div>
+			</form>
+
+		</div>
+		
+	</div>
+</div>
+				</div>	
+				
 
 				</div>
 		</div>
 	</div>
 	</div>
-	
+<script>
+var removeA = document.getElementById("removeAuthors");
+
+
+function generateAuthors(){
+	removeA.value=""
+	var aux;
+	var i=0;
+	while(document.getElementById("authors"+i)!=null){
+		aux=document.getElementById("authors"+i);
+		if (aux.checked){
+			if(removeA.value==""){
+				removeA.value=aux.value;
+			}
+			else {
+				removeA.value=removeA.value +";" + aux.value;
+			}
+		}
+		i=i+1;
+	}
+}
+
+
+//var select = document.getElementById("authorName");
+//var choice = select.selectedIndex;
+//var i=0;
+//while(document.getElementById("authors"+i)!=null){
+//	aux=document.getElementById("authors"+i);
+//	if(i==choice){
+//		aux.disabled="disabled";
+//	}
+//	i=i+1;
+//}
+
+
+
+</script>
+
 </body>
+
 
 

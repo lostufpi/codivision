@@ -87,6 +87,9 @@ public class RepositoryController {
 		Author aux = null;
 		for (Revision rev : revisions) {
 			aux = rev.getAuthor();
+			if(aux.getAutFather()!=null) {
+				aux=authorDAO.findById(aux.getAutFather());
+			}
 			if (!authors.contains(aux)) {
 				authors.add(aux);
 			}
@@ -111,6 +114,23 @@ public class RepositoryController {
 		Author author = authorDAO.findById(authorName);
 		author.setEmail(newEmail);
 		authorDAO.save(author);
+		result.redirectTo(this).show(repositoryId);
+
+	}
+	
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/removeAuthor")
+	public void removeAuthor(Long repositoryId,Long authorName,String removeAuthors){
+		String[] ids = removeAuthors.split(";");
+		Long id = null;
+		Author son;
+		for(int i=0;i<ids.length;i++) {
+			id=Long.parseLong(ids[i]);
+			son = authorDAO.findById(id);
+			son.setAutFather(authorName);
+			authorDAO.save(son);
+		}
 		result.redirectTo(this).show(repositoryId);
 
 	}
