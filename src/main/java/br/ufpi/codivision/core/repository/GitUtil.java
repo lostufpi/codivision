@@ -348,12 +348,15 @@ public class GitUtil {
 					String fileCode = stream.toString();
 
 					CodeAnalysisProcessor processor = new CodeAnalysisProcessor();
-					br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
+					try {
 
-					if(processFile!=null && processFile.getPath()!=null) {
-						files.add(processFile);
+						br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
+						if(processFile!=null && processFile.getPath()!=null) {
+							files.add(processFile);
+						}
+					}catch (Exception e) {
+						System.err.println("Error na identificacao dos DTs no arquivo - "+filePath);
 					}
-
 				}
 
 				if(treeWalk.isSubtree()){

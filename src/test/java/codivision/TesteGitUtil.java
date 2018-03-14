@@ -33,6 +33,7 @@ public class TesteGitUtil {
 		
 		Repository repository = new Repository();
 		//url cadastrada na ferramenta
+		//pode deixar essa url que ja esta cadastrada na minha conta
 		repository.setUrl("sigaa");
 		
 		ExtractionPath path = new ExtractionPath();
@@ -77,6 +78,9 @@ public class TesteGitUtil {
 		
 		List<Class> arquivosJava = util.getRepositoryJavaFiles();
 		
+		
+		try {
+		
 		if(!arquivosJava.isEmpty()) {
 			ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
 			
@@ -93,6 +97,10 @@ public class TesteGitUtil {
 				
 			}
 			
+		}
+		
+		}catch (Exception e) {
+			System.err.println("Erro no calculo do acoplamento");
 		}
 		
 //		if(!arquivosJava.isEmpty()) {
