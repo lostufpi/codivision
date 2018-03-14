@@ -1,0 +1,22 @@
+#body{
+	margin:0.5%;
+	padding:0px;
+	position: absolute;
+	width: 99%;
+	height:99%;
+}
+
+#nopadmag {
+	margin:0px;
+	padding:0px;
+	width: 100%;
+	height:99%;
+}
+
+.dateAtt{
+	position:absolute;
+	margin:auto;
+	color:#bbbbbb;
+	right:1%;
+	bottom:2%;
+}

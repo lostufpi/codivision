@@ -102,6 +102,9 @@
 					<form method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Features</button>
 					</form>
+					<form method="get" action="${linkTo[GamificationController].painel(repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Gamification</button>
+					</form>
 				</div>
 			</div>
 			
