@@ -7,7 +7,7 @@
 	<meta name="decorator" content="/decorators/none.jsp"/>
 </head>
 
-<body onload="moveRelogio()">
+<body>
 
 
 
@@ -19,11 +19,20 @@
 				<div class="panel-body">
 				
 					<h3 style="display:inline-block">Painel do repositório ${repository.name}</h3>
-					<button style="margin-top: 15px; margin-left: 15px;" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
-					<jsp:include page="../repository/chart-config-modal.jsp" />
+					<c:choose>
+						<c:when test="${repository.gameId==null}">
+							<button style="margin-top: 15px; margin-left: 15px; width:100px;" class="btn btn-lg btn-success pull-right" data-toggle="modal" data-target="#start" ><i class="glyphicon glyphicon-play"></i></button>
+							<jsp:include page="painel-start-modal.jsp" />
+							</c:when>
+					<c:otherwise>
+							<<button style="margin-top: 15px; margin-left: 15px;" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
+							<jsp:include page="painel-conf-modal.jsp" />
+					</c:otherwise>
+					</c:choose>	
+					
 					<button style="margin-top: 15px; margin-left: 15px;" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-refresh"></i></button>
 					<jsp:include page="../repository/chart-config-modal.jsp" />
-					<a href="${linkTo[RepositoryController].show(repository.id)}"><button style="margin-top: 15px; margin-left: 15px;" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-home"></i></button></a>
+					<a href="${linkTo[RepositoryController].show(repository.id)}"><button style="margin-top: 15px; margin-left: 15px;" class="btn btn-lg btn-primary pull-right" ><i class="glyphicon glyphicon-home"></i></button></a>
 					<hr>
 					
 					<div class="row vdivided">

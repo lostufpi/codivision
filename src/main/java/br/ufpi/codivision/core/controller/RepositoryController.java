@@ -73,7 +73,6 @@ public class RepositoryController {
 	@Inject private TaskService taskService;
 
 
-	@SuppressWarnings("null")
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}")
 	public void show(Long repositoryId) {

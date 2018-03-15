@@ -29,7 +29,76 @@ public class Author implements PersistenceEntity{
 	
 	private Long autFather;
 	
+	private int score;
 	
+	private int numberOfLines;
+	
+	private int dmedal;
+	
+	private int gmedal;
+	
+	private int smedal;
+	
+	private int bmedal;
+	
+	public void resetGam() {
+		this.score=0;
+		this.numberOfLines=0;
+		this.dmedal=0;
+		this.gmedal=0;
+		this.smedal=0;
+		this.bmedal=0;
+		
+	}
+	
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = this.score + score;
+	}
+
+	public int getLines() {
+		return numberOfLines;
+	}
+
+	public void setLines(int lines) {
+		this.numberOfLines =this.numberOfLines + lines;
+	}
+
+	public int getDmedal() {
+		return dmedal;
+	}
+
+	public void setDmedal(int dmedal) {
+		this.dmedal =this.dmedal + dmedal;
+	}
+
+	public int getGmedal() {
+		return gmedal;
+	}
+
+	public void setGmedal(int gmedal) {
+		this.gmedal =this.gmedal + gmedal;
+	}
+
+	public int getSmedal() {
+		return smedal;
+	}
+
+	public void setSmedal(int smedal) {
+		this.smedal =this.smedal + smedal;
+	}
+
+	public int getBmedal() {
+		return bmedal;
+	}
+
+	public void setBmedal(int bmedal) {
+		this.bmedal =this.bmedal + bmedal;
+	}
+
 	public Author() {
 	}
 
@@ -38,6 +107,13 @@ public class Author implements PersistenceEntity{
 		this.name = name;
 		this.email = email;
 		this.autFather=null;
+		this.score=0;
+		this.numberOfLines=0;
+		this.dmedal=0;
+		this.gmedal=0;
+		this.smedal=0;
+		this.bmedal=0;
+
 	}
 
 	public Long getAutFather() {

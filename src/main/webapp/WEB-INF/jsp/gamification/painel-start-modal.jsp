@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<div class="modal fade" id="conf">
+<div class="modal fade" id="start">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -9,7 +9,7 @@
 					aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title">Configurações</h4>
+				<h4 class="modal-title">Iniciando Gamificação</h4>
 			</div>
 			
 			<form action="${linkTo[RepositoryController].config(repository.id, extractionPath.id)}" method="post">

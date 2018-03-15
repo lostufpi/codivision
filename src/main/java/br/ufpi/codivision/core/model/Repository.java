@@ -58,6 +58,27 @@ public class Repository implements PersistenceEntity{
 	
 	private boolean deleted;
 	
+	private Long gameId;
+	
+	
+	
+	public Long getGameId() {
+		return gameId;
+	}
+	
+	public boolean haveGameId() {
+		if(gameId==null) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	public void setGameId(Long gameId) {
+		this.gameId = gameId;
+	}
+
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="repositoryId")
 	private List<Revision> revisions;
@@ -97,6 +118,7 @@ public class Repository implements PersistenceEntity{
 		this.testFiles = new ArrayList<TestFile>();
 		this.codeSmallsFile = new ArrayList<>();
 		this.tdAuthor = new ArrayList<>();
+		this.gameId= null;
 	}
 	
 	public List<TestFile> getTestFiles() {
