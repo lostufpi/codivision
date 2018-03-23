@@ -34,6 +34,7 @@ public class ControllerDefiner {
 	 * @return
 	 */
 	public List<Package> controllersDefiner(){
+		System.out.println("INICIO DEFINIÇÃO DE CLASSES CONTROLLERS");
 		Set<NodeInfo> nodes = this.graph.vertexSet();
 		List<NodeInfo> candidateControllers = new ArrayList<NodeInfo>();
 		double averageIN, averageOUT, sumIN, sumOUT;
@@ -131,6 +132,8 @@ public class ControllerDefiner {
 		List<Package> packagesToRemove = new ArrayList<Package>();
 		List<NodeInfo> ancestralClasses = new ArrayList<NodeInfo>();
 		
+		System.out.println("INICIO CHECAGEM DE REFERENCIA ENTRE PACOTES");
+		System.out.println("QUANTIDADE PACOTES CONTROLLERS: " + packageControllers.size());
 		for (Package p1 : packageControllers) {
 			List<NodeInfo> classesFromFirstPackage = new ArrayList<NodeInfo>();
 			for (Package p2 : packageControllers) {
@@ -192,9 +195,11 @@ public class ControllerDefiner {
 					}
 				}
 			}
-			
+			System.out.println("PACOTE CONTROLLER ANALISADO: " + p1.getName() + " POSIÇÃO: " + packageControllers.indexOf(p1));
 		}
+		System.out.println("FIM CHECAGEM DE REFERENCIA ENTRE PACOTES");
 		packageControllers.removeAll(packagesToRemove); //REMOVE OS PACOTES CONTROLLERS FALSOS POSITIVOS
+		System.out.println("FIM DEFINIÇÃO DE CLASSES CONTROLLERS");
 		return packageControllers;
 	}
 	

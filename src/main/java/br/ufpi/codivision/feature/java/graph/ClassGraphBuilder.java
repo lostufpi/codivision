@@ -32,6 +32,7 @@ public class ClassGraphBuilder {
 	 * @param systemClasses to build system graph 
 	 */
 	private void buildClassGraph(List<Class> systemClasses) {
+		System.out.println("INICIO CONSTRUÇÃO DO GRAFO DE REFERÊNCIAS DO SISTEMA");
 		ClassReferenceManager crm = new ClassReferenceManager();
 		ClassVerificator cv = new ClassVerificator();
 		List<NodeInfo> nodes = new ArrayList<NodeInfo>();
@@ -66,6 +67,7 @@ public class ClassGraphBuilder {
 				}
 			}
 		}
+		System.out.println("FIM CONSTRUÇÃO DO GRAFO DE REFERÊNCIAS DO SISTEMA");
 	}
 	
 	/**

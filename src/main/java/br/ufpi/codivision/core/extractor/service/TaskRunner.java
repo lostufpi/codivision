@@ -127,9 +127,9 @@ public class TaskRunner implements Task{
 				}
 
 				repository.setRevisions(revisions);
-				log.info("Iniciando a extracao dos testes");
-				repository.setTestFiles(util.getTestFiles());
-				log.info("A extracao dos testes concluida");
+//				log.info("Iniciando a extracao dos testes");
+//				repository.setTestFiles(util.getTestFiles());
+//				log.info("A extracao dos testes concluida");
 				
 
 				DirTree tree = new DirTree();
@@ -140,33 +140,33 @@ public class TaskRunner implements Task{
 				log.info("Arvore concluida");
 				repository.getExtractionPath().setDirTree(tree);
 				
-				log.info("Iniciando DT");
-				repository.setCodeSmallsFile(util.getCodeSmellFiles());
-				log.info("Dt concluida");
+//				log.info("Iniciando DT");
+//				repository.setCodeSmallsFile(util.getCodeSmellFiles());
+//				log.info("Dt concluida");
 				
 				log.info("Extraindo arquivos de código...");
 				List<Class> arquivosJava = util.getRepositoryJavaFiles();
 				log.info("Extração de arquivos de código concluída!");
 				
-				if(!arquivosJava.isEmpty()) {
-					log.info("Inicializando a identificacao do acoplamento");
-					ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
-					
-					for (NodeInfo nodeInfo : graph.getG().vertexSet()) {
-						for (br.ufpi.codivision.debit.model.File file : repository.getCodeSmallsFile()) {
-							String full = "/src/main/java/" + file.getPath();	
-							full = full.concat(".java");
-
-							if(nodeInfo.getC().getFullname().equals(full)) {
-								file.setAcoplamento(nodeInfo.getDegreeOUT());
-							}
-								
-						}
-						
-					}
-					
-					log.info("Finalizando a identificacao do acoplamento");
-				}
+//				if(!arquivosJava.isEmpty()) {
+//					log.info("Inicializando a identificacao do acoplamento");
+//					ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
+//					
+//					for (NodeInfo nodeInfo : graph.getG().vertexSet()) {
+//						for (br.ufpi.codivision.debit.model.File file : repository.getCodeSmallsFile()) {
+//							String full = "/src/main/java/" + file.getPath();	
+//							full = full.concat(".java");
+//
+//							if(nodeInfo.getC().getFullname().equals(full)) {
+//								file.setAcoplamento(nodeInfo.getDegreeOUT());
+//							}
+//								
+//						}
+//						
+//					}
+//					
+//					log.info("Finalizando a identificacao do acoplamento");
+//				}
 				
 				if(!arquivosJava.isEmpty()) {
 					log.info("Inicializando a identificação de funcionalidades...");
@@ -179,24 +179,24 @@ public class TaskRunner implements Task{
 				}
 				
 				
-				log.info("Iniciando a extracao do historico de DTs pagas por cada desenvolvedor");
-				Map<String, Map<String, Integer>> tdRemove = Fuzzy.historicTDRemove(repository);
-				List<TDAuthor> list = new ArrayList<TDAuthor>();
-				for (String nameAuthor : tdRemove.keySet()) {
-					TDAuthor tdAuthor = new TDAuthor(nameAuthor);
-					Map<String, Integer> map = tdRemove.get(nameAuthor);
-					for (String dt : map.keySet()) {
-						InfoTD infoTD = new InfoTD();
-						infoTD.setCodeSmellType(dt);
-						infoTD.setQnt(map.get(dt));
-						tdAuthor.getYoursCodeSmell().add(infoTD);
-					}
-					
-					list.add(tdAuthor);
-				}
-				
-				repository.setTdAuthor(list);
-				log.info("Extracao do historico de DTs pagas por cada desenvolvedor concluída!");
+//				log.info("Iniciando a extracao do historico de DTs pagas por cada desenvolvedor");
+//				Map<String, Map<String, Integer>> tdRemove = Fuzzy.historicTDRemove(repository);
+//				List<TDAuthor> list = new ArrayList<TDAuthor>();
+//				for (String nameAuthor : tdRemove.keySet()) {
+//					TDAuthor tdAuthor = new TDAuthor(nameAuthor);
+//					Map<String, Integer> map = tdRemove.get(nameAuthor);
+//					for (String dt : map.keySet()) {
+//						InfoTD infoTD = new InfoTD();
+//						infoTD.setCodeSmellType(dt);
+//						infoTD.setQnt(map.get(dt));
+//						tdAuthor.getYoursCodeSmell().add(infoTD);
+//					}
+//					
+//					list.add(tdAuthor);
+//				}
+//				
+//				repository.setTdAuthor(list);
+//				log.info("Extracao do historico de DTs pagas por cada desenvolvedor concluída!");
 				
 				
 			

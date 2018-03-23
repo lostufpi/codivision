@@ -51,7 +51,9 @@ public class FeatureDefiner implements FeatureIdentify{
 	
 	@Override
 	public List<Feature> featureIdentify() {
+		System.out.println("INICIO IDENTIFICAÇÃO DE FUNCIONALIDADES");
 		return define();
+		
 	}
 
 	/**
@@ -64,6 +66,8 @@ public class FeatureDefiner implements FeatureIdentify{
 		List<FeatureElement> featureClasses = new ArrayList<FeatureElement>();
 		
 		for (Package controllerPackage : this.controllerPakages) {
+			System.out.println("INICIO DEFINIÇÃO DE CLASSES PARA O PACOTE: " + controllerPackage.getName());
+
 			for (Class controllerClass : controllerPackage.getClasses()) {
 				for (Method controllerMethod : controllerClass.getMethods()) {
 					if(isPrimaryMethod(controllerMethod, this.graph)){
@@ -83,6 +87,7 @@ public class FeatureDefiner implements FeatureIdentify{
 				}
 			}
 		}
+		System.out.println("FIM IDENTIFICAÇÃO DE FUNCIONALIDADES");
 		return features;
 	}
 	
@@ -140,7 +145,7 @@ public class FeatureDefiner implements FeatureIdentify{
 		List<Method> visitedMethods = new ArrayList<Method>();
 		List<Class> referencesClass = new ArrayList<Class>();
 		List<ClassMethodVisit> cmvList = new ArrayList<ClassMethodVisit>();
-		
+		System.out.println("INICIO DEFINIÇÃO DE CLASSES PARA A FEATURE: " + controllerClass.formatName() + "." + controllerMethod.getName());
 		cmvList.add(new ClassMethodVisit(controllerClass, controllerMethod));
 		
 		while(cmvList.size() > 0){
