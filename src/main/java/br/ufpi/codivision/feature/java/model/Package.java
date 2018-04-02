@@ -1,5 +1,6 @@
 package br.ufpi.codivision.feature.java.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,11 @@ import java.util.List;
  * @author Vanderson Moura
  *
  */
-public class Package {
+public class Package implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<Class> classes;
 	private String name;
 	

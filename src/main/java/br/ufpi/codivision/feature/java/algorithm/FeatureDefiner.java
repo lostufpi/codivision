@@ -420,7 +420,7 @@ public class FeatureDefiner implements FeatureIdentify{
 					}
 				}else{
 					//SE ESTÁ SENDO PASSADO COMO ARGUMENTO UMA INSTANCIAÇÃO DE UM OBJETO (EX.: new Object(), O TIPO SERÁ ENTÃO Object). O ESPAÇO APÓS O 'new' É NECESSÁRIO PARA NÃO CAPTURAR ARGUMENTOS COM SUBSTRING 'new'
-					if(argument.contains(Constants.NEW.concat(Constants.WHITESPACE))){ 
+					if(argument.contains(Constants.WHITESPACE.concat(Constants.NEW).concat(Constants.WHITESPACE)) || argument.contains(Constants.OPEN_PARENTHESE.concat(Constants.NEW).concat(Constants.WHITESPACE))){ 
 						types.add(argument.substring(argument.indexOf(Constants.NEW) + Constants.NEW.length() + 1, argument.indexOf(Constants.OPEN_PARENTHESE)));
 					}else if(!argument.contains(Constants.OPEN_KEY)){
 						Integer i = null;

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -42,16 +41,14 @@ import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.DeleteDir;
-import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.core.util.Outliers;
-import br.ufpi.codivision.debit.model.InfoTD;
-import br.ufpi.codivision.debit.model.TDAuthor;
+import br.ufpi.codivision.core.util.Serializable;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Class;
-import br.ufpi.codivision.feature.java.model.NodeInfo;
+import br.ufpi.codivision.feature.java.model.Package;
 
 
 @Scheduled(fixedRate = 60000, concurrent = false)
@@ -100,6 +97,7 @@ public class TaskRunner implements Task{
 							repository.getExtractionPath().getPath().substring(1),
 							credentials.getLogin(), credentials.getPassword());
 				}
+				
 				log.info("Clone finalizado");
 
 				log.info("Iniciando a extracao dos diffs");
@@ -172,7 +170,11 @@ public class TaskRunner implements Task{
 					log.info("Inicializando a identificação de funcionalidades...");
 					ClassGraphBuilder builder = new ClassGraphBuilder(arquivosJava);
 					ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
-					FeatureDefiner fd = new FeatureDefiner(controllerDefiner.controllersDefiner(), builder.getG());
+					List<Package> packages = controllerDefiner.controllersDefiner();
+					Serializable.serialize(packages);
+//					@SuppressWarnings("unchecked")
+//					List<Package> pk2 = (List<Package>)Serializable.deserialize(packages.getClass());
+					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
 					List<Feature> features = fd.featureIdentify();
 					repository.getExtractionPath().setFeatures(features);
 					log.info("Identificação de funcionalidades concluída!");
