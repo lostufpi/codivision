@@ -40,6 +40,7 @@ import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
+import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.DeleteDir;
 import br.ufpi.codivision.core.util.Outliers;
 import br.ufpi.codivision.core.util.Serializable;
@@ -89,19 +90,27 @@ public class TaskRunner implements Task{
 
 				GitUtil util = null;
 				log.info("Iniciando o Clone");
-				if(credentials.getLogin() == null || credentials.getPassword() == null) {
-					util = new GitUtil(repository.getUrl(),
-							repository.getExtractionPath().getPath().substring(1));
-				}else {
-					util = new GitUtil(repository.getUrl(),
-							repository.getExtractionPath().getPath().substring(1),
-							credentials.getLogin(), credentials.getPassword());
-				}
+//				if(credentials.getLogin() == null || credentials.getPassword() == null) {
+//					util = new GitUtil(repository.getUrl(),
+//							repository.getExtractionPath().getPath().substring(1));
+//				}else {
+//					util = new GitUtil(repository.getUrl(),
+//							repository.getExtractionPath().getPath().substring(1),
+//							credentials.getLogin(), credentials.getPassword());
+//				}
+				
+				util = new GitUtil("E:\\vanderson\\avaliacao\\sigsystem\\.git",
+						Constants.MASTER);
 				
 				log.info("Clone finalizado");
 
 				log.info("Iniciando a extracao dos diffs");
-				repository.setRevisions(util.getRevisions());
+
+				@SuppressWarnings("unchecked")
+				List<Revision> revisions_dat = (List<Revision>)Serializable.deserialize("sigsystem_revisions");
+				repository.setRevisions(revisions_dat);
+//				repository.setRevisions(util.getRevisions());
+				
 				log.info("Extracao dos diffs concluidas");
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 				repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
@@ -123,8 +132,10 @@ public class TaskRunner implements Task{
 						revisions.add(revision);
 					}
 				}
-
+				
 				repository.setRevisions(revisions);
+				
+				
 //				log.info("Iniciando a extracao dos testes");
 //				repository.setTestFiles(util.getTestFiles());
 //				log.info("A extracao dos testes concluida");
@@ -170,11 +181,11 @@ public class TaskRunner implements Task{
 					log.info("Inicializando a identificação de funcionalidades...");
 					ClassGraphBuilder builder = new ClassGraphBuilder(arquivosJava);
 					ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
-					List<Package> packages = controllerDefiner.controllersDefiner();
-					Serializable.serialize(packages);
-//					@SuppressWarnings("unchecked")
-//					List<Package> pk2 = (List<Package>)Serializable.deserialize(packages.getClass());
-					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
+					@SuppressWarnings("unchecked")
+					List<Package> packages_dat = (List<Package>)Serializable.deserialize("sigsystem_packages");
+//					List<Package> packages = controllerDefiner.controllersDefiner();
+//					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
+					FeatureDefiner fd = new FeatureDefiner(packages_dat, builder.getG());
 					List<Feature> features = fd.featureIdentify();
 					repository.getExtractionPath().setFeatures(features);
 					log.info("Identificação de funcionalidades concluída!");

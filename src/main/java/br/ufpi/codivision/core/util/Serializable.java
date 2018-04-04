@@ -7,9 +7,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class Serializable {
-	public static void serialize(Object object) {
+	public static void serialize(Object object, String fileName) {
 		try {
-			FileOutputStream output = new FileOutputStream( System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(object.getClass().getSimpleName().concat(".dat")));
+			FileOutputStream output = new FileOutputStream( System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(fileName.concat(".dat")));
 			ObjectOutputStream recorder = new ObjectOutputStream(output);
 			recorder.writeObject(object);
 			recorder.flush();
@@ -21,10 +21,10 @@ public class Serializable {
 		}
 	}
 	
-	public static Object deserialize(@SuppressWarnings("rawtypes") Class c) {
+	public static Object deserialize(String fileName) {
 		FileInputStream input;
 		try {
-			input = new FileInputStream(System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(c.getSimpleName().concat(".dat")));
+			input = new FileInputStream(System.getProperty("java.io.tmpdir").concat(System.getProperty("file.separator")).concat(fileName.concat(".dat")));
 			ObjectInputStream reader = new ObjectInputStream(input);
 			Object object = reader.readObject();
 			reader.close();

@@ -334,11 +334,13 @@ public class FeatureDefiner implements FeatureIdentify{
 		argumentsTypes = getTypes(arguments, sourceClass, sourceMethod);
 		
 		for (int i = 0; i < limitSize; i++) {
-			if(!argumentsTypes.get(i).equals(Constants.UNDEFINED)){
-				String paramType = formatType(targetMethod.getParameters().get(i).getType())[0];
-				String argumentType = formatType(argumentsTypes.get(i))[0];
-				if(!argumentType.equals(paramType)){
-					isEqualParam = false;
+			if(i < argumentsTypes.size()) {
+				if(!argumentsTypes.get(i).equals(Constants.UNDEFINED)){
+					String paramType = formatType(targetMethod.getParameters().get(i).getType())[0];
+					String argumentType = formatType(argumentsTypes.get(i))[0];
+					if(!argumentType.equals(paramType)){
+						isEqualParam = false;
+					}
 				}
 			}
 		}
@@ -421,6 +423,7 @@ public class FeatureDefiner implements FeatureIdentify{
 				}else{
 					//SE ESTÁ SENDO PASSADO COMO ARGUMENTO UMA INSTANCIAÇÃO DE UM OBJETO (EX.: new Object(), O TIPO SERÁ ENTÃO Object). O ESPAÇO APÓS O 'new' É NECESSÁRIO PARA NÃO CAPTURAR ARGUMENTOS COM SUBSTRING 'new'
 					if(argument.contains(Constants.WHITESPACE.concat(Constants.NEW).concat(Constants.WHITESPACE)) || argument.contains(Constants.OPEN_PARENTHESE.concat(Constants.NEW).concat(Constants.WHITESPACE))){ 
+						System.out.println("PARÂMETRO ANALISADO: " + argument);
 						types.add(argument.substring(argument.indexOf(Constants.NEW) + Constants.NEW.length() + 1, argument.indexOf(Constants.OPEN_PARENTHESE)));
 					}else if(!argument.contains(Constants.OPEN_KEY)){
 						Integer i = null;
