@@ -424,7 +424,14 @@ public class FeatureDefiner implements FeatureIdentify{
 					//SE ESTÁ SENDO PASSADO COMO ARGUMENTO UMA INSTANCIAÇÃO DE UM OBJETO (EX.: new Object(), O TIPO SERÁ ENTÃO Object). O ESPAÇO APÓS O 'new' É NECESSÁRIO PARA NÃO CAPTURAR ARGUMENTOS COM SUBSTRING 'new'
 					if(argument.contains(Constants.WHITESPACE.concat(Constants.NEW).concat(Constants.WHITESPACE)) || argument.contains(Constants.OPEN_PARENTHESE.concat(Constants.NEW).concat(Constants.WHITESPACE))){ 
 						System.out.println("PARÂMETRO ANALISADO: " + argument);
-						types.add(argument.substring(argument.indexOf(Constants.NEW) + Constants.NEW.length() + 1, argument.indexOf(Constants.OPEN_PARENTHESE)));
+						Method m = isMethodInvocationArgument(argument, sourceClass);
+						if(m != null) {
+							types.add(m.getReturnType());
+						}else {
+							String a = argument.substring(argument.indexOf(Constants.NEW));
+							String simbol = a.contains(Constants.OPEN_PARENTHESE) ? Constants.OPEN_PARENTHESE : Constants.OPEN_BRACKET;
+							types.add(a.substring(a.indexOf(Constants.NEW) + Constants.NEW.length() + 1, a.indexOf(simbol)));
+						}
 					}else if(!argument.contains(Constants.OPEN_KEY)){
 						Integer i = null;
 						try {
@@ -535,9 +542,10 @@ public class FeatureDefiner implements FeatureIdentify{
 	
 		for (Iterator<NodeInfo> iterator = this.graph.vertexSet().iterator(); iterator.hasNext();) {
 			NodeInfo node = iterator.next();
-			if(node.getC().equals(classSource)){
+			if(node.getC().equals(classSource) || node.getC().formatName().equals(classSource.formatName()) && node.getC().getPackageName().equals(classSource.getPackageName())){
 				ni = node;
-			}	
+				break;
+			}
 		}
 		type = formatType(type)[0];
 		
@@ -593,13 +601,24 @@ public class FeatureDefiner implements FeatureIdentify{
 		}
 		
 		if(!matchClasses.isEmpty()) {
-			for (Iterator<DefaultEdge> i = this.graph.edgesOf(nodeSource).iterator(); i.hasNext();) {
-				DefaultEdge de = (DefaultEdge) i.next();
-				for (Class mc : matchClasses) {
-					if(this.graph.getEdgeTarget(de).getC().equals(mc)) {
-						return mc;
+			if(nodeSource != null) {
+				for (Iterator<DefaultEdge> i = this.graph.edgesOf(nodeSource).iterator(); i.hasNext();) {
+					DefaultEdge de = (DefaultEdge) i.next();
+					for (Class mc : matchClasses) {
+						if(this.graph.getEdgeTarget(de).getC().equals(mc)) {
+							return mc;
+						}
 					}
 				}
+			}
+		}
+		return null;
+	}
+	
+	private Method isMethodInvocationArgument(String argument, Class sourceClass) {
+		for (Method m : sourceClass.getMethods()) {
+			if(argument.contains(m.getName().concat(Constants.OPEN_PARENTHESE))) {
+				return m;
 			}
 		}
 		return null;

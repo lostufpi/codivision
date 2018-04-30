@@ -99,7 +99,9 @@ public class TaskRunner implements Task{
 //							credentials.getLogin(), credentials.getPassword());
 //				}
 				
-				util = new GitUtil("E:\\vanderson\\avaliacao\\sigsystem\\.git",
+//				util = new GitUtil("E:\\vanderson\\avaliacao\\sigsystem\\.git",
+//						Constants.MASTER);
+				util = new GitUtil("C:\\Users\\Vanderson\\Documents\\Root\\Mestrado\\Evaluation\\SIGAA\\.git",
 						Constants.MASTER);
 				
 				log.info("Clone finalizado");
@@ -187,6 +189,7 @@ public class TaskRunner implements Task{
 //					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
 					FeatureDefiner fd = new FeatureDefiner(packages_dat, builder.getG());
 					List<Feature> features = fd.featureIdentify();
+//					Serializable.serialize(features, "sigsystem_features");
 					repository.getExtractionPath().setFeatures(features);
 					log.info("Identificação de funcionalidades concluída!");
 				}

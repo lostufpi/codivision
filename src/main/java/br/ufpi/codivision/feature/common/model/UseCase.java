@@ -33,6 +33,11 @@ public class UseCase implements PersistenceEntity{
 		super();
 		this.featureUseCases = new ArrayList<>();
 	}
+	
+	public UseCase(String name) {
+		this();
+		this.name = name;
+	}
 
 	@Override
 	public Long getId() {

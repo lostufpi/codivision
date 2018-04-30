@@ -19,7 +19,7 @@
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
 					<button style="margin-top: 15px" class="btn btn-lg btn-primary pull-right" data-toggle="modal" data-target="#config" ><i class="glyphicon glyphicon-cog"></i></button>
-					<jsp:include page="../repository/chart-config-modal.jsp"/>
+					<jsp:include page="../repository/features-config-modal.jsp"/>
 					
 					<hr>
 					

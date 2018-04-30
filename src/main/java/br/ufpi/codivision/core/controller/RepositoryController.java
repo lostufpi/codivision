@@ -491,4 +491,12 @@ public class RepositoryController {
 			result.use(Results.json()).withoutRoot().from("Repositorio atualizado").recursive().serialize();
 		}
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/javaFilesAlterations")
+	public void getJavaFilesAlterations(Long repositoryId){
+		List<AuthorPercentage> percentage = new ArrayList<>();
+		percentage = dao.getJavaFilesPercentege(repositoryId);
+		result.use(Results.json()).withoutRoot().from(percentage).recursive().serialize();
+	}
 }

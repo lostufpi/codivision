@@ -1,9 +1,13 @@
 package br.ufpi.codivision.core.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 
@@ -13,12 +17,14 @@ import br.com.caelum.vraptor.Post;
 import br.com.caelum.vraptor.Result;
 import br.com.caelum.vraptor.view.Results;
 import br.ufpi.codivision.common.annotation.Permission;
+import br.ufpi.codivision.core.dao.ConfigurationDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.ExtractionPath;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.enums.PermissionType;
 import br.ufpi.codivision.core.model.enums.TimeWindow;
+import br.ufpi.codivision.core.model.validator.ConfigurationValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.model.vo.UseCaseVO;
@@ -34,6 +40,13 @@ import br.ufpi.codivision.feature.dao.FeatureDAO;
 import br.ufpi.codivision.feature.dao.FeatureElementDAO;
 import br.ufpi.codivision.feature.dao.FeatureUseCaseDAO;
 import br.ufpi.codivision.feature.dao.UseCaseDAO;
+import jxl.Workbook;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 @Controller
 public class FeatureController {
@@ -43,6 +56,9 @@ public class FeatureController {
 	@Inject private FeatureUseCaseDAO featureUseCaseDAO;
 	@Inject private RepositoryDAO dao;
 	@Inject private Result result;
+	@Inject private ConfigurationValidator configurationValidator;
+	@Inject private ConfigurationDAO configurationDAO;
+
 	
 	@Permission(PermissionType.MEMBER)
 	@Get("/repository/{repositoryId}/usecase/")
@@ -229,5 +245,135 @@ public class FeatureController {
 			this.featureUseCaseDAO.removeFeatureUseCaseByUseCaseId(idUseCase);
 			this.useCaseDAO.delete(idUseCase);
 		}
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/agroup/repository/{repositoryId}/feature/automatic")
+	public void automaticAgroupFeatures(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		ExtractionPath extractionPath = repository.getExtractionPath();
+		List<Feature> features = extractionPath.getFeatures();
+		Map<String, List<Feature>> agroupFeatures = new HashMap<>();
+		List<UseCase> useCases = new ArrayList<>();
+		
+		for (Feature feature : features) {
+			String controllerName = feature.getName().substring(0, feature.getName().indexOf(Constants.DOT));
+			List<Feature> ftrs = agroupFeatures.get(controllerName);
+			if(ftrs == null) {
+				agroupFeatures.put(controllerName, new ArrayList<>(Arrays.asList(feature)));
+			}else {
+				ftrs.add(feature);
+			}
+		}
+		
+		for (Entry<String, List<Feature>> entry : agroupFeatures.entrySet()) {
+			UseCase uc = new UseCase(entry.getKey());
+			for (Feature feature : entry.getValue()) {
+				FeatureUseCase fuc = new FeatureUseCase(feature, uc);
+				uc.getFeatureUseCases().add(fuc);
+			}
+			useCases.add(uc);
+		}
+		
+		if(repository.getExtractionPath().getUseCases() != null) {
+			repository.getExtractionPath().getUseCases().addAll(useCases);
+		}else {
+			repository.getExtractionPath().setUseCases(useCases);
+		}
+		this.dao.save(repository);
+		
+//		Map<String, List<Double>> map = new HashMap<String, List<Double>>();
+//		inicializarMap(map);
+//		List<String> names = new ArrayList<>();
+//		List<UseCase> useCases = useCaseDAO.useCasesOrderByName();
+//		List<AuthorPercentage> percentage = new ArrayList<>();
+//		
+//		for (UseCase useCase : useCases) {
+//			percentage = dao.getUseCasePercentage(repositoryId, useCase.getId());
+//			
+//			Double total = calcularTotal(percentage);
+//			for (AuthorPercentage authorPercentage : percentage) {
+//				names.add(authorPercentage.getName());
+//				map.get(authorPercentage.getName()).add(authorPercentage.getY()/total);
+//			}
+//			
+//			for (Entry<String, List<Double>> entry : map.entrySet()) {
+//				if(!names.contains(entry.getKey())) {
+//					map.get(entry.getKey()).add(-1D);
+//				}
+//			}
+//			names = new ArrayList<>();
+//		}
+//		
+//		try {
+//			gerarDocExcel(map, useCases);
+//		} catch (WriteException | IOException e) {
+//			e.printStackTrace();
+//		}
+	}
+	
+	private Double calcularTotal(List<AuthorPercentage> ap) {
+		Double total = 0D;
+		for (AuthorPercentage authorPercentage : ap) {
+			total += authorPercentage.getY();
+		}
+		return total;
+	}
+	
+	private static void inicializarMap(Map<String, List<Double>> map) {
+		map.put("Cledjan", new ArrayList<Double>());
+		map.put("Danniel", new ArrayList<Double>());
+		map.put("Euclydes Melo", new ArrayList<Double>());
+		map.put("Francisco", new ArrayList<Double>());
+		map.put("Joelson Oliveira", new ArrayList<Double>());
+		map.put("Kannya Leal", new ArrayList<Double>());
+		map.put("Marcos Raniere", new ArrayList<Double>());
+		map.put("Matheus", new ArrayList<Double>());
+		map.put("mauriliojr21", new ArrayList<Double>());
+		map.put("Pacheco", new ArrayList<Double>());
+		map.put("Taison", new ArrayList<Double>());
+	}
+	
+	private static void gerarDocExcel(Map<String, List<Double>> map, List<UseCase> useCases) throws IOException, RowsExceededException, WriteException {
+		WritableWorkbook wwb = Workbook.createWorkbook(new File("C:\\Users\\Vanderson\\Documents\\result.xls"));
+		WritableSheet sheet = wwb.createSheet("Resultados", 0);
+		Label l = new Label(0, 0, "Caso de Uso");
+		sheet.addCell(l);
+		int c = 1;
+		
+		for (Entry<String, List<Double>> entry : map.entrySet()) {
+			l = new Label(c++, 0, entry.getKey());
+			sheet.addCell(l);
+		}
+		
+		int r = 1; 
+		for (UseCase useCase : useCases) {
+			l = new Label(0, r++, useCase.getName());
+			sheet.addCell(l);
+		}
+		
+		c = r = 1;
+		Number n;
+		for (Entry<String, List<Double>> entry : map.entrySet()) {
+			for (Double value : entry.getValue()) {
+				n = new Number (c, r++, value);
+				sheet.addCell(n);
+			}
+			r = 1;
+			c++;
+		}
+		wwb.write();
+		wwb.close();
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/feature/configuration")
+	public void config(Long repositoryId, Configuration configuration) throws Exception{
+		configurationValidator.validate(configuration);
+		configurationValidator.onErrorRedirectTo(this.getClass()).features(repositoryId);
+		Configuration config = dao.getConfiguration(repositoryId);
+		configuration.setId(config.getId());
+		configurationDAO.save(configuration);
+		result.redirectTo(this).features(repositoryId);
 	}
 }

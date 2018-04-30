@@ -34,6 +34,12 @@ public class FeatureUseCase implements PersistenceEntity {
 	public FeatureUseCase() {
 		super();
 	}
+	
+	public FeatureUseCase(Feature feature, UseCase useCase) {
+		this();
+		this.feature = feature;
+		this.useCase = useCase;
+	}
 
 	@Override
 	public Long getId() {

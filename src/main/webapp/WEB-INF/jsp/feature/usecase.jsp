@@ -23,6 +23,7 @@
 					<div class="row vdivided">
 						<div class="container-tree col-md-4" >
 							<button style="margin-bottom:10px; margin-left:2px; float: right" type="button" class="btn btn-lg btn-danger" onclick="feature_delete();"> <i class="glyphicon glyphicon-remove-sign"></i></button>
+							<button style="margin-bottom:10px; margin-left:2px; float: right" type="button" class="btn btn-lg btn-warning" onclick="auto_agroup();"> <i class="glyphicon glyphicon-th"></i></button>
 							<button style="margin-bottom:10px; float: right" type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#use-case-name-modal"> <i class="glyphicon glyphicon-th-large"></i></button>
 							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Pesquisar">
 							<div id="jstree"></div>
@@ -160,6 +161,15 @@
 				data : {'name' : name, 'features' : features},
 			});
 		}
+
+		function auto_agroup() {
+			var repository = $('#repository').val();
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/agroup/repository/'+repository+'/feature/automatic',
+			});
+		}
+		
 
 		$('#btn_add_usecase').click(function(){
 			agroup();

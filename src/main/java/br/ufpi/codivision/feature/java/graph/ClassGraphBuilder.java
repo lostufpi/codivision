@@ -39,6 +39,12 @@ public class ClassGraphBuilder {
 		ReferenceSet referenceSet;
 		List<NodeInfo> validsReferences;
 		
+		for (Class nodeInfo : systemClasses) {
+			if(nodeInfo.formatName().equals("SegurancaException") || nodeInfo.formatName().equals("ArqException") || nodeInfo.formatName().equals("NegocioException")) {
+				System.out.println(nodeInfo);
+			}
+		}
+		
 		inicializeNodes(nodes, systemClasses);
 		
 		for (NodeInfo n : nodes) {
@@ -55,9 +61,6 @@ public class ClassGraphBuilder {
 				if(!graph.containsVertex(reference)){
 					graph.addVertex(reference);
 				}
-				if(n.getC().formatName().equals("RepositoryController") && reference.getC().formatName().equals("RepositoryController")){
-					System.out.println("RepositoryController");
-				}
 				n.incrementOUT();
 				reference.incrementIN();
 				graph.addEdge(n,reference);
@@ -65,6 +68,12 @@ public class ClassGraphBuilder {
 				if(n.getC().getFullname().equals(reference.getC().getFullname())){
 					n.setHasCycle(true);
 				}
+			}
+		}
+		
+		for (NodeInfo nodeInfo : graph.vertexSet()) {
+			if(nodeInfo.getC().formatName().equals("SegurancaException") || nodeInfo.getC().formatName().equals("ArqException") || nodeInfo.getC().formatName().equals("NegocioException")) {
+				System.out.println(nodeInfo);
 			}
 		}
 		System.out.println("FIM CONSTRUÇÃO DO GRAFO DE REFERÊNCIAS DO SISTEMA");

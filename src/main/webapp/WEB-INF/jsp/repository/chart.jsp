@@ -22,6 +22,7 @@
 					
 					<div class="row vdivided">
 						<div class="container-tree col-md-4">
+							<button style="margin-bottom:10px; margin-left:2px; float: right" type="button" class="btn btn-lg btn-primary" onclick="requestJavaFilesAlterations();"> <i class="glyphicon glyphicon-folder-close"></i></button>
 							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Pesquisar">
 							<div id="jstree"></div>
 						</div>
@@ -210,8 +211,81 @@
 					}
 				});
 			}
-		
 		});
+
+		function requestJavaFilesAlterations(){
+			var repository = $('#repository').val();
+			var truckFactor = $('#truckfactor').val();
+			$('#truckfactor-label').text('');
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/repository/'+repository+'/javaFilesAlterations',
+				success : function(chartData){
+				    $('#chart').highcharts({
+				    	colors: ['#9370DB', '#778899', '#DEB887', '#87CEFA', '#D3D3D3', '#A0522D', '#6495ED', '#D8BFD8', '#BDB76B'],
+				        chart: {
+				        },
+				        credits: {
+				            text: ''
+				        },
+				        title: {
+				            text: 'Porcentagem das alterações neste diretório:'
+				        },
+				        subtitle: {
+				        	text: '#',
+					        	style: {
+					        		color: '#FFFFFF'
+					        	}
+				        },
+				        tooltip: {
+				            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+				        },
+				        plotOptions: {
+				            pie: {
+				            	borderWidth: 1,
+				                allowPointSelect: false,
+				                cursor: 'pointer',
+				                dataLabels: {
+				                    enabled: true,
+				                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+				                    style: {
+				                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+				                    }
+				                }
+				            }
+				        },
+				        series: [{
+				            type: 'pie',
+				            name: 'Modificações',
+				            data: chartData
+				        }]
+				    });
+					
+				    var total = 0;
+					$.each(chartData, function(i, item) {
+						total += item.y;
+					});
+					
+					$.each(chartData, function(i, item) {
+						if (item.y/total > existence/100.0) {
+                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' detém bastante conhecimento', style : {color: 'red', fontWeight: 'bold'}});
+                        } else if (item.y/total > alert/100.0) {
+                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' detém bastante conhecimento', style : {color: '#EAC300', fontWeight: 'bold'}});
+                    	}
+						});
+					
+					chartData.sort(function(a, b){return b.y-a.y});
+					var truckFactorTotal = 0;
+					$.each(chartData, function(i, item) {
+						truckFactorTotal += item.y/total;
+						if(truckFactorTotal > truckFactor/100) {
+							$('#truckfactor-label').text('Truck Factor: '+ (i+1));
+							return false;
+						}
+					});
+				}
+			});
+		}
 	</script>
 
 </body>

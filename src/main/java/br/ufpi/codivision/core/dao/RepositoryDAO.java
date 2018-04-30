@@ -172,7 +172,7 @@ public class RepositoryDAO extends GenericDAO<Repository>{
 		
 	}
 	
-public List<AuthorPercentage> getUseCasePercentage(Long repositoryId, Long useCaseId){
+	public List<AuthorPercentage> getUseCasePercentage(Long repositoryId, Long useCaseId){
 		
 		/* Obtem a quantidade de alterações realizadas por outros desenvolvedores no arquivo 
 		 * Essas alterações são calculadas em nível de arquivo pois foi a única forma que encotrei de fazer
@@ -238,6 +238,52 @@ public List<AuthorPercentage> getUseCasePercentage(Long repositoryId, Long useCa
 			typedQuery.setParameter("useCaseId", useCaseId);
 		}
 		
+		return typedQuery.getResultList();
+	}
+
+	public List<AuthorPercentage> getJavaFilesPercentege(Long repositoryId){
+		
+		String javaAlterations = "SELECT case when count(*) < 20 then count(*) else 20 end from "
+										+ "Repository as r, "
+										+ "IN(r.revisions) as rev, "
+										+ "IN(rev.files) as f "
+									+ "WHERE "
+										+ "f.path = file.path and "
+										+ "r.id = :repositoryId and "
+										+ "rev.author != revision.author and "
+										+ "rev.date > revision.date";
+		
+		String newAuthorPercentace = "new br.ufpi.codivision.core.model.vo.AuthorPercentage("
+										+ "revision.author.name, "
+								   		+ "sum( "
+								   			+ "((file.lineAdd * configuration.addWeight) + (file.lineMod * configuration.modWeight) + (file.lineDel * configuration.delWeight)) * "
+								   			+ "(1.0 - ( datediff(current_date(),cast(revision.date as date)) * configuration.monthlyDegradationPercentage)) * "
+								   			+ "(1.0 - ((" + javaAlterations + ") * (configuration.changeDegradation/100) )) "
+					   					+ "), "
+					   					+ "sum(file.lineAdd + file.lineMod + file.lineDel + 0)"
+				   					+ ")";
+		
+		String queryJavaFiles = new String();
+		
+		queryJavaFiles = "SELECT DISTINCT e.fullname FROM Element e ";
+		
+		/* A query principal */
+		String query = "SELECT " + newAuthorPercentace + " from "
+							+ "Repository as repository "
+							+ "inner join repository.configuration as configuration, "
+							+ "IN(repository.revisions) as revision, "
+							+ "IN(revision.files) as file "
+					+ "WHERE "
+						+ "file.path IN (" + queryJavaFiles + ") and "
+						+ "repository.id = :repositoryId and "
+						+ "revision.date >= configuration.initDate and "
+						+ "revision.date <= configuration.endDate "
+					+ "GROUP BY "
+						+ "revision.author.name "
+					+ "ORDER BY "
+						+ "revision.author.name ASC";
+		
+		TypedQuery<AuthorPercentage> typedQuery = em.createQuery(query, AuthorPercentage.class).setParameter("repositoryId", repositoryId);
 		return typedQuery.getResultList();
 	}
 
