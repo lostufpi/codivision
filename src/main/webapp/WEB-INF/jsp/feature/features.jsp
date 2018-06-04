@@ -14,7 +14,7 @@
 			<div class="panel panel-default">
 				<div class="panel-body">
 			
-					<h3 style="display:inline-block">Familiaridade sobre Casos de Uso no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Familiaridade sobre funcionalidades no repositório ${repository.name}</h3>
 					<form class="pull-right" method="get" action="${linkTo[FeatureController].usecase(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
@@ -124,7 +124,7 @@
 					            text: ''
 					        },
 					        title: {
-					            text: 'Familiaridade nesse Caso de Uso/Arquivo:'
+					            text: 'Familiaridade por desenvolvedor:'
 					        },
 					        subtitle: {
 					        	text: '#',

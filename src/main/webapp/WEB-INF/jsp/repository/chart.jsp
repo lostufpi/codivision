@@ -55,7 +55,7 @@
 	<script>
 		$(document).ready(function(){
 			
-			Highcharts.setOptions({lang: {noData: "Não houveram alterações neste diretório/arquivo no período especificado"}});
+			Highcharts.setOptions({lang: {noData: "Não houve alterações neste diretório/arquivo no período especificado"}});
 			
 			var repository = $('#repository').val();
 			var alert = $('#alert').val();

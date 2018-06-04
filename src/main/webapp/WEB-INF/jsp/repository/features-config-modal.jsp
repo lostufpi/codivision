@@ -12,7 +12,7 @@
 				<h4 class="modal-title">Configurações</h4>
 			</div>
 			
-			<form action="${linkTo[RepositoryController].config(repository.id, extractionPath.id)}" method="post">
+			<form action="${linkTo[FeatureController].config(repository.id, extractionPath.id)}" method="post">
 				<div class="modal-body">
 
 					<div class="row">

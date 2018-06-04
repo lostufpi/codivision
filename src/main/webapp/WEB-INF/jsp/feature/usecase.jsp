@@ -15,7 +15,7 @@
 			<div class="panel panel-default">
 				<div class="panel-body">
 			
-					<h3 style="display:inline-block">Definição de casos de uso no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Agregação de funcionalidades no repositório ${repository.name}</h3>
 					<form class="pull-right" method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
@@ -33,12 +33,12 @@
 								<table id="table_uc" class="table table-striped table-bordered" cellspacing="0" width="100%">
 									<thead>
 										<tr>
-	      									<th style="text-align: center" colspan="3"> Casos de Uso </th>
+	      									<th style="text-align: center" colspan="3"> Funcionalidades </th>
 	    								</tr>
 										<tr>
 											<th style="text-align: center">ID</th>
 											<th style="text-align: center">Nome</th>
-											<th style="text-align: center">Quant. de Features</th>
+											<th style="text-align: center">Quant. Sub. Features</th>
 											<th style="text-align: center">Opção</th>
 										</tr>
 									</thead>

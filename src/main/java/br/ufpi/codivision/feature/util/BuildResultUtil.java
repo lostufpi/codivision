@@ -24,7 +24,7 @@ public class BuildResultUtil {
 	
 	public static void generateResultInFileExcel(UseCaseDAO ucd, RepositoryDAO rd, Long repositoryId) {
 		Map<String, List<Double>> map = new HashMap<String, List<Double>>();
-		inicializarMap(map);
+		inicializarMapAr(map);
 		List<String> names = new ArrayList<>();
 		ResultData resultData = new ResultData();
 		resultData.setUseCases(ucd.useCasesOrderByName());
@@ -63,26 +63,14 @@ public class BuildResultUtil {
 		return total;
 	}
 	
-	private static void inicializarMap(Map<String, List<Double>> map) {
-		map.put("Cledjan", new ArrayList<Double>());
-		map.put("Danniel", new ArrayList<Double>());
-		map.put("Euclydes Melo", new ArrayList<Double>());
-		map.put("Francisco", new ArrayList<Double>());
-		map.put("Joelson Oliveira", new ArrayList<Double>());
-		map.put("Kannya Leal", new ArrayList<Double>());
-		map.put("Marcos Raniere", new ArrayList<Double>());
-		map.put("Matheus", new ArrayList<Double>());
-		map.put("mauriliojr21", new ArrayList<Double>());
-		map.put("Pacheco", new ArrayList<Double>());
-		map.put("Taison", new ArrayList<Double>());
-	}
-	
 	private static Integer computeTruckFactor(List<AuthorPercentage> percentage, Double total, ResultData rd){
 		GenericComparator.sortList(percentage, "y", SortType.DESC);
 		Double truckFactorSum = 0D;
+		Double tf = 0.7D;
+		
 		for (int i = 0; i < percentage.size(); i++) {
 			truckFactorSum += percentage.get(i).getY()/total;
-			if(truckFactorSum > 0.5) {
+			if(truckFactorSum > tf) {
 				String dominators = new String();
 				for (int j = 0; j < i+1; j++) {
 					dominators = dominators.concat(percentage.get(j).getName());
@@ -99,7 +87,7 @@ public class BuildResultUtil {
 	}
 	
 	private static void gerarDocExcel(ResultData resultData) throws IOException, RowsExceededException, WriteException {
-		WritableWorkbook wwb = Workbook.createWorkbook(new File("C:\\Users\\Vanderson\\Documents\\result.xls"));
+		WritableWorkbook wwb = Workbook.createWorkbook(new File("C:\\Users\\Vanderson\\Documents\\result_ar.xls"));
 		WritableSheet sheet = wwb.createSheet("Resultados", 0);
 		Label l = new Label(0, 0, "Caso de Uso");
 		sheet.addCell(l);
@@ -147,5 +135,27 @@ public class BuildResultUtil {
 		}
 		wwb.write();
 		wwb.close();
+	}
+	
+	private static void inicializarMapAr(Map<String, List<Double>> map) {
+		map.put("ely.miranda", new ArrayList<Double>());
+		map.put("Vinicius", new ArrayList<Double>());
+		map.put("Saulo de Társio", new ArrayList<Double>());
+		map.put("Valney Gama", new ArrayList<Double>());
+		map.put("Paulo Sergio Queiroz", new ArrayList<Double>());
+	}
+	
+	private static void inicializarMapSigaa(Map<String, List<Double>> map) {
+		map.put("Cledjan", new ArrayList<Double>());
+		map.put("Danniel", new ArrayList<Double>());
+		map.put("Euclydes Melo", new ArrayList<Double>());
+		map.put("Francisco", new ArrayList<Double>());
+		map.put("Joelson Oliveira", new ArrayList<Double>());
+		map.put("Kannya Leal", new ArrayList<Double>());
+		map.put("Marcos Raniere", new ArrayList<Double>());
+		map.put("Matheus", new ArrayList<Double>());
+		map.put("mauriliojr21", new ArrayList<Double>());
+		map.put("Pacheco", new ArrayList<Double>());
+		map.put("Taison", new ArrayList<Double>());
 	}
 }

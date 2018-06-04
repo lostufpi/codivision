@@ -335,7 +335,7 @@ public class FeatureDefiner implements FeatureIdentify{
 		
 		for (int i = 0; i < limitSize; i++) {
 			if(i < argumentsTypes.size()) {
-				if(!argumentsTypes.get(i).equals(Constants.UNDEFINED)){
+				if(argumentsTypes.get(i) != null && !argumentsTypes.get(i).equals(Constants.UNDEFINED)){
 					String paramType = formatType(targetMethod.getParameters().get(i).getType())[0];
 					String argumentType = formatType(argumentsTypes.get(i))[0];
 					if(!argumentType.equals(paramType)){
