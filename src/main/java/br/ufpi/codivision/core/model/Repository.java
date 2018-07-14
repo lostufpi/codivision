@@ -58,24 +58,15 @@ public class Repository implements PersistenceEntity{
 	
 	private boolean deleted;
 	
-	private Long gameId;
+	private boolean gameId;
 	
 	
-	
-	public Long getGameId() {
-		return gameId;
-	}
 	
 	public boolean haveGameId() {
-		if(gameId==null) {
-			return false;
-		}
-		else {
-			return true;
-		}
+		return gameId;
 	}
 
-	public void setGameId(Long gameId) {
+	public void setGameId(boolean gameId) {
 		this.gameId = gameId;
 	}
 
@@ -118,7 +109,7 @@ public class Repository implements PersistenceEntity{
 		this.testFiles = new ArrayList<TestFile>();
 		this.codeSmallsFile = new ArrayList<>();
 		this.tdAuthor = new ArrayList<>();
-		this.gameId= null;
+		this.gameId= false;
 	}
 	
 	public List<TestFile> getTestFiles() {

@@ -2,10 +2,12 @@ package br.ufpi.codivision.core.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import com.google.gson.Gson;
 
@@ -21,6 +23,7 @@ import br.ufpi.codivision.common.annotation.Public;
 import br.ufpi.codivision.common.security.UserSession;
 import br.ufpi.codivision.core.dao.AuthorDAO;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
+import br.ufpi.codivision.core.dao.GamificationDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.dao.UserRepositoryDAO;
@@ -31,6 +34,7 @@ import br.ufpi.codivision.core.extractor.service.TaskService;
 import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.ExtractionPath;
+import br.ufpi.codivision.core.model.Gamification;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.TestFile;
@@ -56,6 +60,7 @@ public class GamificationController {
 
 	@Inject private RepositoryDAO dao;
 	@Inject private UserDAO userDAO;
+	@Inject private GamificationDAO gDAO;
 	@Inject private AuthorDAO authorDAO;
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
@@ -86,7 +91,7 @@ public class GamificationController {
 				authors.add(aux);
 			}
 		}
-		
+		Collections.sort(authors);
 		result.include("authors", authors);
 		result.include("revisions", revisions);
 		result.include("repository", repositoryVO);
@@ -94,5 +99,21 @@ public class GamificationController {
 		result.include("userRepositoryList", userRepositoryList);
 
 	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/gamification/{repositoryId}/start")
+	public void start(Long repositoryId, Gamification start) {
+		System.out.println(start.getCicle());
+		Repository repository = dao.findById(repositoryId);
+		ExtractionPath extractionPath = repository.getExtractionPath();
+		System.out.println(extractionPath.getPath());
+		/*start.setId(repositoryId);
+		start.setDateInicial(new Date());
+		repository.setGameId(true);
+		dao.save(repository);
+		gDAO.save(start);*/
+		result.redirectTo(this).painel(repositoryId);
+	}
+
 	
 }

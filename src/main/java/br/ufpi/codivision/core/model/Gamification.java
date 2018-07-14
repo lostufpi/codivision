@@ -3,6 +3,7 @@ package br.ufpi.codivision.core.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,28 +23,21 @@ private static final long serialVersionUID = 1L;
 	
 	private Long cicle;
 	
+	private Long awardsAtt;
+	
 	private Long taskAtt;
 	
 	private Long msgTimer;
 	
-	private String dateInicial;
+	private Date dateInicial;
 	
-	private Long repId;
 
-	public String getDateInicial() {
+	public Date getDateInicial() {
 		return dateInicial;
 	}
 
-	public void setDateInicial(String dateInicial) {
+	public void setDateInicial(Date dateInicial) {
 		this.dateInicial = dateInicial;
-	}
-
-	public Long getRepId() {
-		return repId;
-	}
-
-	public void setRepId(Long repId) {
-		this.repId = repId;
 	}
 
 	public Long getCicle() {
@@ -85,13 +79,20 @@ private static final long serialVersionUID = 1L;
 		
 	}
 	
-	public Gamification(Long cicle, Long taskAtt, Long msgTimer, String date, Long repId) {
+	public Gamification(Long cicle, Long taskAtt, Long msgTimer, Date date) {
 		super();
 		this.cicle = cicle;
 		this.taskAtt = taskAtt;
 		this.msgTimer=msgTimer;
 		this.dateInicial=date;
-		this.repId=repId;
+	}
+
+	public Long getAwardsAtt() {
+		return awardsAtt;
+	}
+
+	public void setAwardsAtt(Long awardsAtt) {
+		this.awardsAtt = awardsAtt;
 	}
 	
 }

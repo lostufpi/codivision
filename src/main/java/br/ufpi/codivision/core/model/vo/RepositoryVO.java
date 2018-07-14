@@ -31,24 +31,19 @@ public class RepositoryVO implements Serializable{
 	
 	private boolean local;
 	
-	private Long gameId;
+	private boolean gameId;
 	
 	
 	
-	public Long getGameId() {
+	public boolean getGameId() {
 		return gameId;
 	}
 	
 	public boolean haveGameId() {
-		if(gameId==null) {
-			return false;
-		}
-		else {
-			return true;
-		}
+		return this.gameId;
 	}
 
-	public void setGameId(Long gameId) {
+	public void setGameId(boolean gameId) {
 		this.gameId = gameId;
 	}
 	
@@ -63,7 +58,7 @@ public class RepositoryVO implements Serializable{
 		this.lastUpdate = repository.getLastUpdate();
 		this.local = repository.isLocal();
 		this.branchName = repository.getExtractionPath().getPath();
-		this.gameId=repository.getGameId();
+		this.gameId=repository.haveGameId();
 	}
 
 	/**

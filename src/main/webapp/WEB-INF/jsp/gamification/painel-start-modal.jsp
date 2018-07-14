@@ -12,181 +12,43 @@
 				<h4 class="modal-title">Iniciando Gamificação</h4>
 			</div>
 			
-			<form action="${linkTo[RepositoryController].config(repository.id, extractionPath.id)}" method="post">
+			<form action="${linkTo[GamificationController].start(repository.id)}" method="post">
 				<div class="modal-body">
 
 					<div class="row">
 					
-						<div class="col-lg-4">
+						<div class="col-lg-4" style="width: 100%;">
 							<div class="form-group">
-								<label for="timeWindow"><fmt:message key="repository.config.time_window" />:</label> <select
-									class="form-control" id="timeWindow"
-									name="configuration.timeWindow">
-									<c:forEach var="option" items="${windows}">
-										<c:choose>
-											<c:when test="${option.type == 'window.custom'}">
-												<option id="show-date" value="${option}"><fmt:message key="${option.type}" /></option>
-											</c:when>
-											<c:otherwise>
-												<option value="${option}"><fmt:message key="${option.type}" /></option>
-											</c:otherwise>
-										</c:choose>
-									</c:forEach>
-								</select>
+								<label for="timeWindow"><fmt:message key="gamification.cicle.time" />:</label>
+								<input value="12" type="number" style="right: 40px; position: absolute;" id="cicleTime" name="start.cicle" data-toggle="popover" data-placement="left" data-trigger="hover"
+										data-content="<fmt:message key="gamification.cicle.time.title" />" ></input>
 							</div>
 						</div>
 						
-						<div class="col-lg-4">
-							<div class="form-group date">
-								<fmt:formatDate pattern="dd/MM/yyyy"
-									value="${configuration.initDate}" var="initDate" />
-								<label for="initDate"><fmt:message key="repository.config.date.init" />:</label> <input type="text"
-									class="form-control datepicker" id="initDate" placeholder="Data inicial"
-									name="configuration.initDate">
+						<div class="col-lg-4" style="width: 100%;">
+							<div class="form-group">
+								<label for="timeWindow"><fmt:message key="gamification.awards.time" />:</label>
+								<input value="7" type="number" style="right: 40px; position: absolute;" id="awardsTime" name="start.awardsAtt" data-toggle="popover" data-placement="left" data-trigger="hover"
+										data-content="<fmt:message key="gamification.awards.time.title" />" ></input>
 							</div>
 						</div>
 						
-						<div class="col-lg-4">
-							<div class="form-group date">
-								<fmt:formatDate pattern="dd/MM/yyyy"
-									value="${configuration.endDate}" var="endDate" />
-								<label for="endDate"><fmt:message key="repository.config.date.end" />:</label> <input type="text"
-									class="form-control datepicker" id="endDate" placeholder="Data final"
-									name="configuration.endDate">
+						<div class="col-lg-4" style="width: 100%;">
+							<div class="form-group">
+								<label for="timeWindow"><fmt:message key="gamification.frequency.update.time" />:</label>
+								<input value="24" type="number" style="right: 40px; position: absolute;" id="taskAttTime" name="start.taskAtt" data-toggle="popover" data-placement="left" data-trigger="hover"
+										data-content="<fmt:message key="gamification.frequency.update.time.title" />" ></input>
 							</div>
 						</div>
 						
+						<div class="col-lg-4" style="width: 100%;">
+							<div class="form-group">
+								<label for="timeWindow"><fmt:message key="gamification.frequency.notification" />:</label>
+								<input value="2" type="number" style="right: 40px; position: absolute;" id="msgsTime" name="start.msgTimer" data-toggle="popover" data-placement="left" data-trigger="hover"
+										data-content="<fmt:message key="gamification.frequency.notification.title" />" ></input>
+							</div>
+						</div>
 					</div>
-
-					<hr>
-
-					<h4><fmt:message key="repository.config.degradation" />:</h4>
-					
-					<div class="row">
-					
-					
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="monthlyReduction"><fmt:message key="repository.config.degradation.monthly" />:</label> 
-								<div class="input-group">
-									<input type="number" class="form-control" id="monthlyReduction"
-										placeholder="Redução mensal" name="configuration.monthlyDegradation"
-										value="${configuration.monthlyDegradation}"  data-container="body" 
-										data-toggle="popover" data-placement="left" data-trigger="hover"
-										data-content="<fmt:message key="repository.config.monthly.popover" />">
-									<div class="input-group-addon">%</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label for="changeReduction"><fmt:message key="repository.config.degradation.change" />:</label> 
-								<div class="input-group">
-									<input type="number" class="form-control" id="changeReduction"
-										placeholder="Redução por alteração" name="configuration.changeDegradation"
-										value="${configuration.changeDegradation}" data-container="body" 
-										data-toggle="popover" data-placement="right" data-trigger="hover"
-										data-content="<fmt:message key="repository.config.change.popover" />">
-									<div class="input-group-addon">%</div>
-								</div>
-							</div>
-						</div>
-						
-					</div>
-					
-					<hr>
-					
-					<h4><fmt:message key="repository.config.threshold" />:</h4>
-					
-					<div class="row">
-						
-						<div class="col-lg-4">
-							<div class="form-group">
-								<label for="add"><fmt:message key="repository.config.threshold.alert" />:</label> 
-								<div class="input-group"> 
-								<input type="number"
-									class="form-control" id="alert" placeholder="Peso para adição"
-									name="configuration.alertThreshold"
-									value="${configuration.alertThreshold}">
-									<div class="input-group-addon">%</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="col-lg-4 col-lg-offset-2">
-							<div class="form-group">
-								<label for="add"><fmt:message key="repository.config.threshold.existence" />:</label>
-								<div class="input-group"> 
-								<input type="number"
-									class="form-control" id="existence" placeholder="Peso para adição"
-									name="configuration.existenceThreshold"
-									value="${configuration.existenceThreshold}">
-									<div class="input-group-addon">%</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="col-lg-4">
-							<div class="form-group">
-								<label for="add"><fmt:message key="repository.config.threshold.truck_factor" />:</label>
-								<div class="input-group"> 
-								<input type="number"
-									class="form-control" id="truckfactor" placeholder="Peso para adição"
-									name="configuration.truckFactorThreshold"
-									value="${configuration.truckFactorThreshold}">
-									<div class="input-group-addon">%</div>
-								</div>
-							</div>
-						</div>
-						
-					</div>
-
-					<hr>
-					
-					<h4><fmt:message key="repository.config.weight" />:</h4>
-
-					<div class="row">
-					
-						<div class="col-lg-3">
-							<div class="form-group">
-								<label for="add"><fmt:message key="repository.config.weight.add" />:</label> <input type="number"
-									class="form-control" id="add" placeholder="Peso para adição"
-									name="configuration.addWeight"
-									value="${configuration.addWeight}">
-							</div>
-						</div>
-						
-						<div class="col-lg-3">
-							<div class="form-group">
-								<label for="mod"><fmt:message key="repository.config.weight.mod" />:</label> <input
-									type="number" class="form-control" id="mod"
-									placeholder="Peso para modificação"
-									name="configuration.modWeight"
-									value="${configuration.modWeight}">
-							</div>
-						</div>
-						
-						<div class="col-lg-3">
-							<div class="form-group">
-								<label for="del"><fmt:message key="repository.config.weight.del" />:</label> <input type="number"
-									class="form-control" id="del" placeholder="Peso para deleção"
-									name="configuration.delWeight"
-									value="${configuration.delWeight}">
-							</div>
-						</div>
-						
-						<div class="col-lg-3">
-							<div class="form-group">
-								<label for="del"><fmt:message key="repository.config.weight.condition" />:</label> <input type="number"
-									class="form-control" id="if" placeholder="Peso para condição"
-									name="configuration.conditionWeight"
-									value="${configuration.conditionWeight}">
-							</div>
-						</div>
-						
-					</div>
-
 				</div>
 
 				<div class="modal-footer">

@@ -50,9 +50,13 @@ import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.debit.mining.CodeAnalysisProcessor;
 import br.ufpi.codivision.feature.java.model.Class;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class GitUtil {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	private Repository repository;
 	private Git git;
 
@@ -181,8 +185,9 @@ public class GitUtil {
 
 		Iterable<RevCommit> log = this.git.log().setMaxCount(100000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
-
+			this.log.info("RevCommit " + log.toString());
 		for (RevCommit jgitCommit: log) {
+			int i = 0;
 			Author author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
 			Revision revision = new Revision();
 			revision.setExternalId(jgitCommit.getName());
@@ -190,10 +195,12 @@ public class GitUtil {
 			revision.setDate(jgitCommit.getAuthorIdent().getWhen());
 			revision.setFiles(new ArrayList<OperationFile>());
 			revision.setExtracted(true);
-
+			i++;
 			List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 			for (DiffEntry diff : diffsForTheCommit) {
-
+				this.log.info("Versão da revisão:" + i);
+				this.log.info(diff.toString());
+				this.log.info(Integer.toString(diff.getScore()));
 				OperationFile file = new OperationFile();
 
 				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());

@@ -12,7 +12,7 @@ import javax.persistence.Id;
 import br.ufpi.codivision.common.model.PersistenceEntity;
 
 @Entity
-public class Author implements PersistenceEntity{
+public class Author implements PersistenceEntity, Comparable<Author>{
 	
 	/**
 	 * 
@@ -149,5 +149,40 @@ public class Author implements PersistenceEntity{
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	@Override
+	public int compareTo(Author o) {
+		if(this.score > o.getScore()) {
+			return -1;
+		}
+		if (this.score < o.getScore()) {
+			return 1;
+		}
+		if (this.dmedal > o.getDmedal()) {
+			return -1;
+		}
+		if (this.dmedal < o.getDmedal()) {
+			return 1;
+		}
+		if (this.gmedal > o.getDmedal()) {
+			return -1;
+		}
+		if (this.gmedal < o.getDmedal()) {
+			return 1;
+		}
+		if (this.smedal > o.getDmedal()) {
+			return -1;
+		}
+		if (this.smedal < o.getDmedal()) {
+			return 1;
+		}
+		if (this.bmedal > o.getDmedal()) {
+			return -1;
+		}
+		if (this.bmedal < o.getDmedal()) {
+			return 1;
+		}
+		return 0;
 	}
 }
