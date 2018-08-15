@@ -21,9 +21,11 @@ import br.ufpi.codivision.core.extractor.model.Extraction;
 public class TaskService {
 	
 	private Queue<Extraction> taskQueue;
+	private Queue<Extraction> taskQueueUpdate;
 	
 	public TaskService() {
 		this.taskQueue = new LinkedList<>();
+		this.taskQueueUpdate = new LinkedList<>();
 	}
 	
 	public void addTask(Extraction value) {
@@ -34,7 +36,9 @@ public class TaskService {
 		return this.taskQueue.poll();
 	}
 	
-	
+	public void addTaskUpdate(Extraction value) {
+		this.taskQueueUpdate.add(value);
+	}
 
 	/**
 	 * @return the taskQueue
@@ -48,6 +52,18 @@ public class TaskService {
 	 */
 	public void setTaskQueue(Queue<Extraction> taskQueue) {
 		this.taskQueue = taskQueue;
+	}
+
+	public Queue<Extraction> getTaskQueueUpdate() {
+		return taskQueueUpdate;
+	}
+
+	public void setTaskQueueUpdate(Queue<Extraction> taskQueueUpdate) {
+		this.taskQueueUpdate = taskQueueUpdate;
+	}
+	
+	public Extraction getFirstTaskUpdate() {
+		return this.taskQueueUpdate.poll();
 	}
 
 

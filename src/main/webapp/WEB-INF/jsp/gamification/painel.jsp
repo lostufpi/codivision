@@ -41,11 +41,11 @@
 					</c:otherwise>
 				</c:choose>
 
-				<button style="margin-top: 15px; margin-left: 15px;"
+				<a href="${linkTo[RepositoryController].update(repository.id)}"><button style="margin-top: 15px; margin-left: 15px;"
 					class="btn btn-lg btn-primary pull-right" data-toggle="modal"
 					data-target="#config">
 					<i class="glyphicon glyphicon-refresh"></i>
-				</button>
+				</button></a>
 				<jsp:include page="../repository/chart-config-modal.jsp" />
 				<a href="${linkTo[RepositoryController].show(repository.id)}"><button
 						style="margin-top: 15px; margin-left: 15px;"

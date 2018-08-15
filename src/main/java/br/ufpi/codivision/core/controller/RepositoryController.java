@@ -322,13 +322,21 @@ public class RepositoryController {
 	@Post("/repository/{repositoryId}/update")
 	public void update(Long repositoryId) {
 
+		System.out.println("RepositoryController.update()");
 		validator.canUpdate(repositoryId);
 		validator.onErrorRedirectTo(this.getClass()).show(repositoryId);
+		
+		Repository repository = dao.findById(repositoryId);
+		
+		Extraction extraction = new Extraction(repository.getId(),
+				ExtractionType.REPOSITORY,
+				new RepositoryCredentials(null, null));
 
-		//TODO PARA ATUALIZAR
+		taskService.addTaskUpdate(extraction);
+
 
 		result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
-		result.redirectTo(this).show(repositoryId);
+		result.redirectTo(RepositoryController.class).show(repositoryId);
 
 	}
 

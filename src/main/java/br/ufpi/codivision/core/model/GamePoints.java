@@ -22,8 +22,6 @@ private static final long serialVersionUID = 1L;
 	
 	private String date;
 	
-	private Long authorId;
-	
 	private int score;
 	
 	private String lastContrib;
@@ -38,9 +36,8 @@ private static final long serialVersionUID = 1L;
 	
 	private int bmedal;
 	
-	public GamePoints(String date, Long authorId, int score, int numberOfLines, int dmedal, int gmedal, int smedal, int bmedal) {
+	public GamePoints(String date, int score, int numberOfLines, int dmedal, int gmedal, int smedal, int bmedal) {
 		this.date=date;
-		this.authorId=authorId;
 		this.score=score;
 		this.numberOfLines=numberOfLines;
 		this.dmedal=dmedal;
@@ -63,14 +60,6 @@ private static final long serialVersionUID = 1L;
 
 	public void setDate(String date) {
 		this.date = date;
-	}
-
-	public Long getAuthorId() {
-		return authorId;
-	}
-
-	public void setAuthorId(Long authorId) {
-		this.authorId = authorId;
 	}
 
 	public int getScore() {

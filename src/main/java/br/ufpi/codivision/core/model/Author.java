@@ -4,10 +4,14 @@ package br.ufpi.codivision.core.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
 import br.ufpi.codivision.common.model.PersistenceEntity;
 
@@ -48,9 +52,22 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 		this.gmedal=0;
 		this.smedal=0;
 		this.bmedal=0;
-		
 	}
 	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name="authorId")
+	private List<GamePoints> gamePoints;
+	
+	public List<GamePoints> getGamePoints() {
+		return gamePoints;
+	}
+
+	/**
+	 * @param revisions the revisions to set
+	 */
+	public void setGamePoints(List<GamePoints> gamePoints) {
+		this.gamePoints = gamePoints;
+	}
 	public int getScore() {
 		return score;
 	}
@@ -104,6 +121,7 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 
 	public Author(String name, String email) {
 		super();
+		this.gamePoints = new ArrayList<GamePoints>();
 		this.name = name;
 		this.email = email;
 		this.autFather=null;

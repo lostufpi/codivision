@@ -90,6 +90,9 @@
 						</button>
 						<jsp:include page="show-edit-modal.jsp" />
 					</div>
+					<form method="post" action="${linkTo[RepositoryController].update(repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px">up</button>
+					</form>
 					<form method="get" action="${linkTo[RepositoryController].chart(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px">Familiaridade</button>
 					</form>
