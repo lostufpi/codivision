@@ -220,7 +220,7 @@ public class TaskUpdate implements Task{
 			}
 
 			DeleteDir.deleteDir(new File(GitUtil.getDirectoryToSave().concat(repository.getUrl().replace(":", "-"))));
-			log.info("TaskRunner.finalizado()");
+			log.info("TaskUpdate.finalizado()");
 			transaction.commit();
 			em.close();
 		}

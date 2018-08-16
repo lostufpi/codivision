@@ -336,7 +336,7 @@ public class RepositoryController {
 
 
 		result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
-		result.redirectTo(RepositoryController.class).show(repositoryId);
+		result.redirectTo(this).show(repositoryId);
 
 	}
 

@@ -185,7 +185,6 @@ public class GitUtil {
 
 		Iterable<RevCommit> log = this.git.log().setMaxCount(100000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
-			this.log.info("RevCommit " + log.toString());
 		for (RevCommit jgitCommit: log) {
 			int i = 0;
 			Author author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
@@ -198,9 +197,6 @@ public class GitUtil {
 			i++;
 			List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 			for (DiffEntry diff : diffsForTheCommit) {
-				this.log.info("Versão da revisão:" + i);
-				this.log.info(diff.toString());
-				this.log.info(Integer.toString(diff.getScore()));
 				OperationFile file = new OperationFile();
 
 				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());
