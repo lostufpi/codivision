@@ -107,11 +107,16 @@ public class GamificationController {
 		Repository repository = dao.findById(repositoryId);
 		ExtractionPath extractionPath = repository.getExtractionPath();
 		System.out.println(extractionPath.getPath());
-		/*start.setId(repositoryId);
+		start.setId(repositoryId);
 		start.setDateInicial(new Date());
 		repository.setGameId(true);
 		dao.save(repository);
-		gDAO.save(start);*/
+		gDAO.save(start);
+		Extraction extraction = new Extraction(repository.getId(),
+				ExtractionType.REPOSITORY,
+				new RepositoryCredentials(null, null));
+
+		taskService.addTaskUpdate(extraction);
 		result.redirectTo(this).painel(repositoryId);
 	}
 

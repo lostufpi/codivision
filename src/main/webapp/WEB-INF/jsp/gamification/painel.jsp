@@ -115,16 +115,16 @@
 		</div>
 		<div class="dateAtt">
 			<c:choose>
-				<c:when test="${repository.lastUpdate==null}">Status do Repositório</c:when>
+				<c:when test="${repository.lastUpdateFromGit==null}">Status do Repositório</c:when>
 				<c:otherwise>
 					<fmt:message key="repository.update.date" />
 				</c:otherwise>
 			</c:choose>
 			<c:choose>
-				<c:when test="${repository.lastUpdate==null}">Atualizando</c:when>
+				<c:when test="${repository.lastUpdateFromGit==null}">Atualizando</c:when>
 				<c:otherwise>
 					<fmt:formatDate pattern="dd/MM/yyyy"
-						value="${repository.lastUpdate}" />
+						value="${repository.lastUpdateFromGit}" />
 				</c:otherwise>
 			</c:choose>
 		</div>

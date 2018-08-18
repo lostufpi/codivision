@@ -26,6 +26,8 @@ public class RepositoryVO implements Serializable{
 	private String url;
 	
 	private Date lastUpdate;
+
+	private Date lastUpdateFromGit;
 	
 	private String branchName;
 	
@@ -52,6 +54,7 @@ public class RepositoryVO implements Serializable{
 	}
 	
 	public RepositoryVO(Repository repository){
+		this.lastUpdateFromGit = repository.getLastUpdateFromGit();
 		this.id = repository.getId();
 		this.name = repository.getName();
 		this.url = repository.getUrl();
@@ -59,6 +62,14 @@ public class RepositoryVO implements Serializable{
 		this.local = repository.isLocal();
 		this.branchName = repository.getExtractionPath().getPath();
 		this.gameId=repository.haveGameId();
+	}
+
+	public Date getLastUpdateFromGit() {
+		return lastUpdateFromGit;
+	}
+
+	public void setLastUpdateFromGit(Date lastUpdateFromGit) {
+		this.lastUpdateFromGit = lastUpdateFromGit;
 	}
 
 	/**

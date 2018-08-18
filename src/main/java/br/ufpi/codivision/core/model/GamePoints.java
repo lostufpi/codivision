@@ -23,7 +23,11 @@ private static final long serialVersionUID = 1L;
 	
 	private String lastContrib;
 	
-	private int numberOfLines;
+	private int numberOfTestMethods;
+	
+	private int numberOfLinesCode;
+	
+	private int numberOfLinesTest;
 	
 	private int dmedal;
 	
@@ -33,17 +37,21 @@ private static final long serialVersionUID = 1L;
 	
 	private int bmedal;
 	
-	public GamePoints(String date, int score, int numberOfLines, int dmedal, int gmedal, int smedal, int bmedal) {
+	private int days;
+	
+	public GamePoints(String date, int score, int dmedal, int gmedal, int smedal, int bmedal) {
 		this.date=date;
 		this.score=score;
-		this.numberOfLines=numberOfLines;
 		this.dmedal=dmedal;
 		this.gmedal=gmedal;
 		this.smedal=smedal;
 		this.bmedal=bmedal;
+		this.setDays(0);
 	}
 	
-	public GamePoints() {}
+	public GamePoints() {
+		this.setDays(0);
+	}
 	
 	public Long getId() {
 		return id;
@@ -77,12 +85,28 @@ private static final long serialVersionUID = 1L;
 		this.lastContrib = lastContrib;
 	}
 
-	public int getNumberOfLines() {
-		return numberOfLines;
+	public int getNumberOfTestMethods() {
+		return numberOfTestMethods;
 	}
 
-	public void setNumberOfLines(int numberOfLines) {
-		this.numberOfLines = numberOfLines;
+	public void addNumberOfTestMethods(int numberOfTestMethods) {
+		this.numberOfTestMethods = numberOfTestMethods + this.numberOfTestMethods ;
+	}
+
+	public int getNumberOfLinesCode() {
+		return numberOfLinesCode;
+	}
+
+	public void addNumberOfLinesCode(int numberOfLinesCode) {
+		this.numberOfLinesCode = numberOfLinesCode + this.numberOfLinesCode;
+	}
+
+	public int getNumberOfLinesTest() {
+		return numberOfLinesTest;
+	}
+
+	public void addNumberOfLinesTest(int numberOfLinesTest) {
+		this.numberOfLinesTest = numberOfLinesTest + this.numberOfLinesTest;
 	}
 
 	public int getDmedal() {
@@ -115,6 +139,18 @@ private static final long serialVersionUID = 1L;
 
 	public void setBmedal(int bmedal) {
 		this.bmedal = bmedal;
+	}
+
+	public int getDays() {
+		return days;
+	}
+	
+	public void countDays() {
+		this.days += 1;
+	}
+	
+	public void setDays(int days) {
+		this.days = days;
 	}
 
 

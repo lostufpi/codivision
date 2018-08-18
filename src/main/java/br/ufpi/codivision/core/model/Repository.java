@@ -95,6 +95,10 @@ public class Repository implements PersistenceEntity{
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastUpdate;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastUpdateFromGit;
+	
+
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Configuration configuration;
 	
@@ -118,6 +122,14 @@ public class Repository implements PersistenceEntity{
 
 	public void setTestFiles(List<TestFile> testFiles) {
 		this.testFiles = testFiles;
+	}
+
+	public Date getLastUpdateFromGit() {
+		return lastUpdateFromGit;
+	}
+
+	public void setLastUpdateFromGit(Date lastUpdateFromGit) {
+		this.lastUpdateFromGit = lastUpdateFromGit;
 	}
 
 	/**

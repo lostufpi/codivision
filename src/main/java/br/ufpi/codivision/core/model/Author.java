@@ -34,8 +34,12 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	private Long autFather;
 	
 	private int score;
+
+	private int numberOfTestMethods;
 	
-	private int numberOfLines;
+	private int numberOfLinesCode;
+	
+	private int numberOfLinesTest;
 	
 	private int dmedal;
 	
@@ -47,7 +51,9 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	
 	public void resetGam() {
 		this.score=0;
-		this.numberOfLines=0;
+		this.numberOfTestMethods=0;
+		this.numberOfLinesCode=0;
+		this.numberOfLinesTest=0;
 		this.dmedal=0;
 		this.gmedal=0;
 		this.smedal=0;
@@ -59,7 +65,14 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	private List<GamePoints> gamePoints;
 	
 	public List<GamePoints> getGamePoints() {
-		return gamePoints;
+		return this.gamePoints;
+	}
+	
+	public GamePoints getLastGamePoint() {
+		if (this.gamePoints != null) {
+			return this.gamePoints.get(this.gamePoints.size()-1);
+		}
+		else return null;
 	}
 
 	/**
@@ -67,6 +80,9 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	 */
 	public void setGamePoints(List<GamePoints> gamePoints) {
 		this.gamePoints = gamePoints;
+	}
+	public void addGamePoints(GamePoints gamePoint) {
+		this.gamePoints.add(gamePoint);
 	}
 	public int getScore() {
 		return score;
@@ -76,12 +92,28 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 		this.score = this.score + score;
 	}
 
-	public int getLines() {
-		return numberOfLines;
+	public int getNumberOfTestMethods() {
+		return numberOfTestMethods;
 	}
 
-	public void setLines(int lines) {
-		this.numberOfLines =this.numberOfLines + lines;
+	public void addNumberOfTestMethods(int numberOfTestMethods) {
+		this.numberOfTestMethods = numberOfTestMethods + this.numberOfTestMethods ;
+	}
+
+	public int getNumberOfLinesCode() {
+		return numberOfLinesCode;
+	}
+
+	public void addNumberOfLinesCode(int numberOfLinesCode) {
+		this.numberOfLinesCode = numberOfLinesCode + this.numberOfLinesCode;
+	}
+
+	public int getNumberOfLinesTest() {
+		return numberOfLinesTest;
+	}
+
+	public void addNumberOfLinesTest(int numberOfLinesTest) {
+		this.numberOfLinesTest = numberOfLinesTest + this.numberOfLinesTest;
 	}
 
 	public int getDmedal() {
@@ -126,7 +158,9 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 		this.email = email;
 		this.autFather=null;
 		this.score=0;
-		this.numberOfLines=0;
+		this.numberOfTestMethods=0;
+		this.numberOfLinesCode=0;
+		this.numberOfLinesTest=0;
 		this.dmedal=0;
 		this.gmedal=0;
 		this.smedal=0;

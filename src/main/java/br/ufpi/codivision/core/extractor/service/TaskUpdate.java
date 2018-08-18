@@ -3,8 +3,11 @@ package br.ufpi.codivision.core.extractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +33,20 @@ import br.com.caelum.vraptor.tasks.Task;
 import br.com.caelum.vraptor.tasks.scheduler.Scheduled;
 import br.ufpi.codivision.common.notification.EmailDispatcher;
 import br.ufpi.codivision.core.dao.AuthorDAO;
+import br.ufpi.codivision.core.dao.GamePointsDAO;
+import br.ufpi.codivision.core.dao.GamificationDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
+import br.ufpi.codivision.core.dao.RevisionDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
 import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.DirTree;
+import br.ufpi.codivision.core.model.GamePoints;
+import br.ufpi.codivision.core.model.OperationFile;
 import br.ufpi.codivision.core.model.Repository;
 import br.ufpi.codivision.core.model.Revision;
+import br.ufpi.codivision.core.model.TestFile;
 import br.ufpi.codivision.core.model.User;
 import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
@@ -62,6 +71,9 @@ public class TaskUpdate implements Task{
 	@Inject private EntityManagerFactory factory;
 	private RepositoryDAO dao;
 	private AuthorDAO authorDAO;
+	private GamePointsDAO gamePointsDAO;
+	private GamificationDAO gameDAO;
+	private RevisionDAO revDAO;
 	
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -103,7 +115,30 @@ public class TaskUpdate implements Task{
 				log.info("Clone finalizado");
 
 				log.info("Iniciando a extracao dos diffs");
-				repository.setRevisions(util.getRevisions());
+				List<Revision> revs = util.getRevisions();
+				List<Revision> revs2 = dao.findByUrl(repository.getUrl()).getRevisions();
+				List<Revision> result = new ArrayList<Revision>();
+				System.out.println(repository.getUrl());
+				System.out.println(revs2.size());
+				boolean remove = false;
+				for (Revision rev : revs) {
+					for (Revision rev2 : revs2) {
+						System.out.println("compara " + rev.getExternalId() + "  "+ rev2.getExternalId());
+						if (rev.getExternalId().equals(rev2.getExternalId())) {
+							System.out.println("ingual");
+							result.add(rev2);
+							remove = true;
+							break;
+						}
+					}
+					if (remove) {
+						System.out.println("remover " + rev.getExternalId());
+						remove = false;
+					}
+					else result.add(rev);
+				}
+				System.out.println(result.size());
+				repository.setRevisions(result);
 				log.info("Extracao dos diffs concluidas");
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 				repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
@@ -223,9 +258,65 @@ public class TaskUpdate implements Task{
 			log.info("TaskUpdate.finalizado()");
 			transaction.commit();
 			em.close();
+			
+			if(repository.haveGameId()) {
+				DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+				Date today = new Date();
+				String reportDate = df.format(today);
+				for(Revision revision: repository.getRevisions()) {
+					if(repository.getLastUpdateFromGit().compareTo(revision.getDate()) < 0) {
+						Author auth = revision.getAuthor();
+						List<OperationFile> files = revision.getFiles();
+						List<TestFile> testFiles = repository.getTestFiles();
+						int LinesTest = 0;
+						int Lines = 0;
+						int MethodsTest = 0;
+						boolean aux = false;
+						for (OperationFile of : files) {
+							for(TestFile tf : testFiles) {
+								if (tf.getPath() == of.getPath()) {
+									LinesTest = LinesTest + of.getLineAdd() + of.getLineMod();
+									aux = true;
+								}
+							}
+							if (!aux) {
+								Lines = Lines + of.getLineAdd() + of.getLineMod();
+							}
+							aux = false;
+						}
+						if (auth.getLastGamePoint() == null) {
+							GamePoints gp = new GamePoints();
+							gp.addNumberOfLinesCode(Lines);
+							gp.addNumberOfLinesTest(LinesTest);
+							gp.countDays();
+							auth.addGamePoints(gp);
+							gamePointsDAO.save(gp);
+							authorDAO.save(auth);
+						}
+						else if(auth.getLastGamePoint().getDays() < gameDAO.findById(repository.getId()).getAwardsAtt()) {
+							GamePoints gp = auth.getLastGamePoint();
+							gp.addNumberOfLinesCode(Lines);
+							gp.addNumberOfLinesTest(LinesTest);
+							gp.countDays();
+							gamePointsDAO.save(gp);
+							authorDAO.save(auth);
+						}
+						else {
+							GamePoints gp = new GamePoints();
+							gp.addNumberOfLinesCode(Lines);
+							gp.addNumberOfLinesTest(LinesTest);
+							gp.countDays();
+							auth.addGamePoints(gp);
+							gamePointsDAO.save(gp);
+							authorDAO.save(auth);
+						}
+					}
+				}
+			}
+			repository.setLastUpdateFromGit(new Date());
 		}
 	}
-
+	
 	private void sendMail(User user, String repositoryName) {
 
 		try {

@@ -334,7 +334,6 @@ public class RepositoryController {
 
 		taskService.addTaskUpdate(extraction);
 
-
 		result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
 		result.redirectTo(this).show(repositoryId);
 

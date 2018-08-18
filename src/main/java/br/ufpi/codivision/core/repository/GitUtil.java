@@ -36,6 +36,7 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import br.ufpi.codivision.core.dao.RevisionDAO;
 import br.ufpi.codivision.core.exception.InvalidCredentialException;
 import br.ufpi.codivision.core.exception.InvalidExtractionPathException;
 import br.ufpi.codivision.core.exception.InvalidRepositoryUrlException;
@@ -59,6 +60,7 @@ public class GitUtil {
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private Repository repository;
 	private Git git;
+	private RevisionDAO revDAO;
 
 	/**
 	 * @param file
