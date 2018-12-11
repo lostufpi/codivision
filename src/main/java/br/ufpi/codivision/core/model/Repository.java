@@ -44,7 +44,7 @@ public class Repository implements PersistenceEntity{
 	
 	private String name;
 	
-	private String owner;
+	private Long owner;
 	
 	private String url;
 	
@@ -241,15 +241,15 @@ public class Repository implements PersistenceEntity{
 	/**
 	 * @return the owner
 	 */
-	public String getOwner() {
+	public Long getOwner() {
 		return owner;
 	}
 
 	/**
-	 * @param owner the owner to set
+	 * @param long1 the owner to set
 	 */
-	public void setOwner(String owner) {
-		this.owner = owner;
+	public void setOwner(Long long1) {
+		this.owner = long1;
 	}
 
 	/**

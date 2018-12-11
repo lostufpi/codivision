@@ -19,35 +19,26 @@ private static final long serialVersionUID = 1L;
 	
 	private String date;
 	
-	private int score;
+	private int score = 0;
 	
 	private String lastContrib;
 	
-	private int numberOfTestMethods;
+	private int numberOfTestMethods = 0;
 	
-	private int numberOfLinesCode;
+	private int numberOfLinesCode = 0;
 	
-	private int numberOfLinesTest;
+	private int numberOfLinesTest = 0;
 	
-	private int dmedal;
+	private int dmedal = 0;
 	
-	private int gmedal;
+	private int gmedal = 0;
 	
-	private int smedal;
+	private int smedal = 0;
 	
-	private int bmedal;
+	private int bmedal = 0;
 	
-	private int days;
-	
-	public GamePoints(String date, int score, int dmedal, int gmedal, int smedal, int bmedal) {
-		this.date=date;
-		this.score=score;
-		this.dmedal=dmedal;
-		this.gmedal=gmedal;
-		this.smedal=smedal;
-		this.bmedal=bmedal;
-		this.setDays(0);
-	}
+	private int days = 0;
+
 	
 	public GamePoints() {
 		this.setDays(0);

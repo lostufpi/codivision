@@ -124,11 +124,22 @@ public class RepositoryController {
 		String[] ids = removeAuthors.split(";");
 		Long id = null;
 		Author son;
+		Author father = authorDAO.findById(authorName);
 		for(int i=0;i<ids.length;i++) {
 			id=Long.parseLong(ids[i]);
-			son = authorDAO.findById(id);
-			son.setAutFather(authorName);
-			authorDAO.save(son);
+			if (!id.equals(authorName)) {
+				son = authorDAO.findById(id);
+				son.setAutFather(authorName);
+				if (son.getLastGamePoint() != null) {
+					father.addNumberOfLinesCode(son.getNumberOfLinesCode());
+					father.addNumberOfLinesTest(son.getNumberOfLinesTest());
+					father.setBmedal(son.getBmedal());
+					father.setGmedal(son.getGmedal());
+					father.setSmedal(son.getSmedal());
+				}
+				authorDAO.save(father);
+				authorDAO.save(son);
+			}
 		}
 		result.redirectTo(this).show(repositoryId);
 
@@ -203,20 +214,21 @@ public class RepositoryController {
 				} else
 					GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
 
-				repository = dao.save(repository);
-
 				User user = userDAO.findById(userSession.getUser().getId());
-
+				
+				repository.setOwner(user.getId());
+				repository = dao.save(repository);
+				
 				UserRepository permission = new UserRepository();
 				permission.setPermission(PermissionType.OWNER);
 				permission.setRepository(repository);
 				permission.setUser(user);
 				userRepositoryDAO.save(permission);
-
+				
 				Extraction extraction = new Extraction(repository.getId(),
 						ExtractionType.REPOSITORY,
 						new RepositoryCredentials(login, password));
-
+				extraction.setForce(true);
 				taskService.addTask(extraction);
 
 				result.use(Results.json()).withoutRoot().from("").recursive().serialize();
@@ -319,7 +331,7 @@ public class RepositoryController {
 	}
 
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/update")
+	@Post("/gamification/{repositoryId}/update")
 	public void update(Long repositoryId) {
 
 		System.out.println("RepositoryController.update()");
@@ -331,6 +343,7 @@ public class RepositoryController {
 		Extraction extraction = new Extraction(repository.getId(),
 				ExtractionType.REPOSITORY,
 				new RepositoryCredentials(null, null));
+		extraction.setForce(true);
 
 		taskService.addTaskUpdate(extraction);
 

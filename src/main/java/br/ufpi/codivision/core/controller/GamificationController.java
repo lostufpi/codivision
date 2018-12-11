@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import com.google.gson.Gson;
@@ -100,6 +102,21 @@ public class GamificationController {
 
 	}
 	
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/gamification/{repositoryId}/stop")
+	public void stop(Long repositoryId, Gamification start) {
+		Repository repository = dao.findById(repositoryId);
+		repository.setGameId(false);
+		dao.save(repository);
+		start.setActive(false);
+		gDAO.save(start);
+		result.redirectTo(this).painel(repositoryId);
+	}
+
+
+	
+	
 	@Permission(PermissionType.MEMBER)
 	@Post("/gamification/{repositoryId}/start")
 	public void start(Long repositoryId, Gamification start) {
@@ -115,7 +132,20 @@ public class GamificationController {
 		Extraction extraction = new Extraction(repository.getId(),
 				ExtractionType.REPOSITORY,
 				new RepositoryCredentials(null, null));
-
+		Long[] array = new Long[8];
+		for (int i=0 ; i<5; i++) {
+			if (i<4) {
+				array[i]=(long) 0;
+			}
+			else {
+				array[i]=start.getTaskAtt()*6;
+				array[i+1]=start.getMsgTimer()*144;
+				array[i+2]=start.getAwardsAtt()*144;
+				array[i+3]=start.getCicle()*4280;
+			}
+		}
+		extraction.setData(array);
+		extraction.setFirst(true);
 		taskService.addTaskUpdate(extraction);
 		result.redirectTo(this).painel(repositoryId);
 	}

@@ -31,6 +31,8 @@ private static final long serialVersionUID = 1L;
 	
 	private Date dateInicial;
 	
+	private boolean isActive;
+	
 
 	public Date getDateInicial() {
 		return dateInicial;
@@ -66,13 +68,12 @@ private static final long serialVersionUID = 1L;
 
 	@Override
 	public Long getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.id;
 	}
 
 	@Override
 	public void setId(Long id) {
-		// TODO Auto-generated method stub
+		this.id=id;
 		
 	}
 	public Gamification() {
@@ -85,6 +86,7 @@ private static final long serialVersionUID = 1L;
 		this.taskAtt = taskAtt;
 		this.msgTimer=msgTimer;
 		this.dateInicial=date;
+		this.setActive(true);
 	}
 
 	public Long getAwardsAtt() {
@@ -93,6 +95,14 @@ private static final long serialVersionUID = 1L;
 
 	public void setAwardsAtt(Long awardsAtt) {
 		this.awardsAtt = awardsAtt;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 	
 }

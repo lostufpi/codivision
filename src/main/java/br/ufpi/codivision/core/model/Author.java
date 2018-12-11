@@ -49,6 +49,8 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	
 	private int bmedal;
 	
+	private int gpValid = 0;
+	
 	public void resetGam() {
 		this.score=0;
 		this.numberOfTestMethods=0;
@@ -69,8 +71,15 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 	}
 	
 	public GamePoints getLastGamePoint() {
-		if (this.gamePoints != null) {
+		if (this.gamePoints.size() != 0) {
 			return this.gamePoints.get(this.gamePoints.size()-1);
+		}
+		else return null;
+	}
+	
+	public GamePoints getLastGamePointParam(int value) {
+		if (this.gamePoints.size() != 0) {
+			return this.gamePoints.get(value);
 		}
 		else return null;
 	}
@@ -205,6 +214,12 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 
 	@Override
 	public int compareTo(Author o) {
+		if(this.numberOfLinesTest > o.getNumberOfLinesTest()) {
+			return -1;
+		}
+		if (this.numberOfLinesTest < o.getNumberOfLinesTest()) {
+			return 1;
+		}
 		if(this.score > o.getScore()) {
 			return -1;
 		}
@@ -236,5 +251,13 @@ public class Author implements PersistenceEntity, Comparable<Author>{
 			return 1;
 		}
 		return 0;
+	}
+
+	public int getGpValid() {
+		return gpValid;
+	}
+
+	public void addGpValid() {
+		this.gpValid = this.gpValid + 1;
 	}
 }

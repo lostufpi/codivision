@@ -12,7 +12,9 @@ public class Extraction {
 	private Long target;
 	private ExtractionType type;
 	private RepositoryCredentials credentials;
-	
+	private Long[] data = new Long[8];
+	private boolean force = false;
+	private boolean first = false;
 	
 	/**
 	 * 
@@ -23,6 +25,7 @@ public class Extraction {
 		this.target =  target;
 		this.type = type;
 		this.setCredentials(credentials);
+		this.setData(null);
 	}
 	
 	/**
@@ -59,6 +62,30 @@ public class Extraction {
 
 	public void setCredentials(RepositoryCredentials credentials) {
 		this.credentials = credentials;
+	}
+
+	public Long[] getData() {
+		return data;
+	}
+
+	public void setData(Long[] data) {
+		this.data = data;
+	}
+
+	public boolean isForce() {
+		return force;
+	}
+
+	public void setForce(boolean force) {
+		this.force = force;
+	}
+
+	public boolean isFirst() {
+		return first;
+	}
+
+	public void setFirst(boolean first) {
+		this.first = first;
 	}
 
 	
