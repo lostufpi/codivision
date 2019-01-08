@@ -44,7 +44,7 @@ public class Repository implements PersistenceEntity{
 	
 	private String name;
 	
-	private String owner;
+	private Long owner;
 	
 	private String url;
 	
@@ -58,6 +58,18 @@ public class Repository implements PersistenceEntity{
 	
 	private boolean deleted;
 	
+	private boolean gameId;
+	
+	
+	
+	public boolean haveGameId() {
+		return gameId;
+	}
+
+	public void setGameId(boolean gameId) {
+		this.gameId = gameId;
+	}
+
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="repositoryId")
 	private List<Revision> revisions;
@@ -83,6 +95,10 @@ public class Repository implements PersistenceEntity{
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastUpdate;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastUpdateFromGit;
+	
+
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Configuration configuration;
 	
@@ -97,6 +113,7 @@ public class Repository implements PersistenceEntity{
 		this.testFiles = new ArrayList<TestFile>();
 		this.codeSmallsFile = new ArrayList<>();
 		this.tdAuthor = new ArrayList<>();
+		this.gameId= false;
 	}
 	
 	public List<TestFile> getTestFiles() {
@@ -105,6 +122,14 @@ public class Repository implements PersistenceEntity{
 
 	public void setTestFiles(List<TestFile> testFiles) {
 		this.testFiles = testFiles;
+	}
+
+	public Date getLastUpdateFromGit() {
+		return lastUpdateFromGit;
+	}
+
+	public void setLastUpdateFromGit(Date lastUpdateFromGit) {
+		this.lastUpdateFromGit = lastUpdateFromGit;
 	}
 
 	/**
@@ -216,15 +241,15 @@ public class Repository implements PersistenceEntity{
 	/**
 	 * @return the owner
 	 */
-	public String getOwner() {
+	public Long getOwner() {
 		return owner;
 	}
 
 	/**
-	 * @param owner the owner to set
+	 * @param long1 the owner to set
 	 */
-	public void setOwner(String owner) {
-		this.owner = owner;
+	public void setOwner(Long long1) {
+		this.owner = long1;
 	}
 
 	/**

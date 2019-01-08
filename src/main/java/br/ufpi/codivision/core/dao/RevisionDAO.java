@@ -1,6 +1,3 @@
-/**
- * 
- */
 package br.ufpi.codivision.core.dao;
 
 import java.util.Date;
@@ -8,8 +5,10 @@ import java.util.List;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import br.ufpi.codivision.common.dao.GenericDAO;
+import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.Revision;
 import br.ufpi.codivision.core.model.enums.RepositoryType;
 
@@ -24,6 +23,19 @@ public class RevisionDAO extends GenericDAO<Revision> {
 	 */
 	public RevisionDAO() {
 		super(Revision.class);
+	}
+	
+	public Revision findByExternalId(String externalId){
+		List<Revision> revs; 
+		try{
+			revs = em.createQuery("SELECT a FROM Revision a WHERE a.externalId = :externalId ", Revision.class)
+					.setParameter("externalId", externalId)
+					.getResultList();
+			return revs.isEmpty() ? null : revs.get(0);
+			
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 	
 	public List<Integer> getTotalFilesOfRevisions(Long repositoryId){

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -114,6 +115,7 @@ public class TaskRunner implements Task{
 //				repository.setRevisions(util.getRevisions());
 				
 				log.info("Extracao dos diffs concluidas");
+				repository.setLastUpdateFromGit(new Date());
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
 				repository.setLastRevision(repository.getRevisions().get(0).getExternalId());
 

@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
+
 <body>
 
 	<div class="row">
@@ -89,6 +90,9 @@
 						</button>
 						<jsp:include page="show-edit-modal.jsp" />
 					</div>
+					<form method="post" action="${linkTo[RepositoryController].update(repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px">Update</button>
+					</form>
 					<form method="get" action="${linkTo[RepositoryController].chart(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px">Familiaridade</button>
 					</form>
@@ -100,6 +104,9 @@
 					</form>
 					<form method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Features</button>
+					</form>
+					<form method="get" action="${linkTo[GamificationController].painel(repository.id)}">
+						<button class="btn btn-primary pull-right" style="margin-right: 5px" >Gamification</button>
 					</form>
 				</div>
 			</div>
@@ -163,8 +170,208 @@
 						</table>
 
 					</div>
+					
 				</div>
 			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div>
+						<b><fmt:message key="repository.authors" /></b>
+					</div>
+				</div>
+					<div class="panel-body">
+					 
+					<div style="margin-top: 10px">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th><fmt:message key="repository.authors" /></th>
+									<th><fmt:message key="user.email" /></th>
+								</tr>
+							</thead>
+							<tbody>
+								<c:forEach items="${authors}" var="member"
+									varStatus="s">
+									<tr>
+										<td>${s.index + 1}</td>
+										<td>${member.name}</td>
+										<td>${member.email}</td>
+										</tr>
+								</c:forEach>		
+							</tbody>
+						</table>
+						</div>		
+<!-- Parte que altera email dos autores -->								
+<div>
+
+	<button class="btn btn-primary pull-right" data-toggle="modal"
+		data-target="#editAuthorEmail" style="margin-right: 5px">
+		<fmt:message key="change.email" />
+	</button>
+	<div class="modal fade" id="editAuthorEmail">
+	
+<div class="modal-dialog">
+		
+		<div class="modal-content">
+		
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<fmt:message key="author.change.email" />
+				</h4>
+			</div>
+			<form method="post"
+				action="${linkTo[RepositoryController].changemail(repository.id)}">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.name" />:</label> 
+						<select name="authorName" id="authorName">
+						<c:forEach items="${authors}" var="member">
+						<option value="${member.id}">${member.name}</option>		
+										
+							</c:forEach>			
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.email" />:</label> <input type="email"
+							class="form-control" id="newEmail" name="newEmail" required>
+					</div>
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						<fmt:message key="close" />
+					</button>
+					<button type="submit" class="btn btn-primary">
+						<fmt:message key="save" />
+					</button>
+				</div>
+			</form>
+
+		</div>
+		
+	</div>
+</div>
+				</div>	
+				
+				
+<!--  Botão que Une autores repetidos -->
+				
+<div>
+
+	<button class="btn btn-primary pull-right" data-toggle="modal"
+		data-target="#editAuthor" style="margin-right: 5px">
+		<fmt:message key="author.edit" />
+	</button>
+	<div class="modal fade" id="editAuthor">
+	
+<div class="modal-dialog">
+		
+		<div class="modal-content">
+		
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<fmt:message key="author.edit.father" />
+				</h4>
+			</div>
+			<form method="post"
+				action="${linkTo[RepositoryController].removeAuthor(repository.id)}">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.father" />:</label> 
+						<select name="authorName" id="authorName">
+						<c:forEach items="${authors}" var="member">
+						<option value="${member.id}">${member.name}</option>		
+										
+							</c:forEach>			
+						</select>
+					</div>
+					
+						
+					<div class="form-group">
+						<label for="repositoryName"><fmt:message
+								key="author.father.others" />:</label> 
+								<p><c:forEach items="${authors}" var="member" varStatus="s">
+						<input id="authors${s.index}" type="checkbox" value="${member.id}">${member.name}					
+						</c:forEach></p>
+						<input type="hidden" 
+							class="form-control" id="removeAuthors" value="" name="removeAuthors">
+					</div>
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						<fmt:message key="close" />
+					</button>
+					<button type="submit" onclick="generateAuthors()" class="btn btn-primary">
+						<fmt:message key="save" />
+					</button>
+				</div>
+			</form>
+
+		</div>
+		
+	</div>
+</div>
+				</div>	
+				
+
+				</div>
 		</div>
 	</div>
+	</div>
+<script>
+var removeA = document.getElementById("removeAuthors");
+
+
+function generateAuthors(){
+	removeA.value=""
+	var aux;
+	var i=0;
+	while(document.getElementById("authors"+i)!=null){
+		aux=document.getElementById("authors"+i);
+		if (aux.checked){
+			if(removeA.value==""){
+				removeA.value=aux.value;
+			}
+			else {
+				removeA.value=removeA.value +";" + aux.value;
+			}
+		}
+		i=i+1;
+	}
+}
+
+
+//var select = document.getElementById("authorName");
+//var choice = select.selectedIndex;
+//var i=0;
+//while(document.getElementById("authors"+i)!=null){
+//	aux=document.getElementById("authors"+i);
+//	if(i==choice){
+//		aux.disabled="disabled";
+//	}
+//	i=i+1;
+//}
+
+
+
+</script>
+
 </body>
+
+
+

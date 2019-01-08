@@ -22,6 +22,7 @@ import br.com.caelum.vraptor.view.Results;
 import br.ufpi.codivision.common.annotation.Permission;
 import br.ufpi.codivision.common.annotation.Public;
 import br.ufpi.codivision.common.security.UserSession;
+import br.ufpi.codivision.core.dao.AuthorDAO;
 import br.ufpi.codivision.core.dao.ConfigurationDAO;
 import br.ufpi.codivision.core.dao.RepositoryDAO;
 import br.ufpi.codivision.core.dao.UserDAO;
@@ -30,6 +31,7 @@ import br.ufpi.codivision.core.extractor.model.Extraction;
 import br.ufpi.codivision.core.extractor.model.ExtractionType;
 import br.ufpi.codivision.core.extractor.model.RepositoryCredentials;
 import br.ufpi.codivision.core.extractor.service.TaskService;
+import br.ufpi.codivision.core.model.Author;
 import br.ufpi.codivision.core.model.Configuration;
 import br.ufpi.codivision.core.model.ExtractionPath;
 import br.ufpi.codivision.core.model.Repository;
@@ -47,6 +49,7 @@ import br.ufpi.codivision.core.model.vo.LineChart;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.QuickSort;
+import br.ufpi.codivision.debit.model.File;
 
 /**
  * @author Werney Ayala
@@ -60,6 +63,7 @@ public class RepositoryController {
 
 	@Inject private RepositoryDAO dao;
 	@Inject private UserDAO userDAO;
+	@Inject private AuthorDAO authorDAO;
 	@Inject private UserRepositoryDAO userRepositoryDAO;
 	@Inject private ConfigurationDAO configurationDAO;
 
@@ -77,10 +81,67 @@ public class RepositoryController {
 		RepositoryVO repositoryVO = new RepositoryVO(repository);
 		List<RepositoryVO> repositoryList = dao.listMyRepositories(userSession.getUser().getId());
 		List<UserRepository> userRepositoryList = userRepositoryDAO.listByRepositoryId(repositoryId);
-
+		List<Revision> revisions = repository.getRevisions();
+		List<Author> authors = new ArrayList<Author>();
+		Author aux = null;
+		for (Revision rev : revisions) {
+			aux = rev.getAuthor();
+			if(aux.getAutFather()!=null) {
+				aux=authorDAO.findById(aux.getAutFather());
+			}
+			if (!authors.contains(aux)) {
+				authors.add(aux);
+			}
+		}
+		
+		result.include("authors", authors);
+		result.include("revisions", revisions);
 		result.include("repository", repositoryVO);
 		result.include("repositoryList", repositoryList);
 		result.include("userRepositoryList", userRepositoryList);
+
+	}
+	
+	/**
+	 * This method modifies the email of an author
+	 * @param Author - The author to modify the email
+	 * @param String - New email of the author
+	 */
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/changemail")
+	public void changemail(Long repositoryId,Long authorName,String newEmail){
+		Author author = authorDAO.findById(authorName);
+		author.setEmail(newEmail);
+		authorDAO.save(author);
+		result.redirectTo(this).show(repositoryId);
+
+	}
+	
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/removeAuthor")
+	public void removeAuthor(Long repositoryId,Long authorName,String removeAuthors){
+		String[] ids = removeAuthors.split(";");
+		Long id = null;
+		Author son;
+		Author father = authorDAO.findById(authorName);
+		for(int i=0;i<ids.length;i++) {
+			id=Long.parseLong(ids[i]);
+			if (!id.equals(authorName)) {
+				son = authorDAO.findById(id);
+				son.setAutFather(authorName);
+				if (son.getLastGamePoint() != null) {
+					father.addNumberOfLinesCode(son.getNumberOfLinesCode());
+					father.addNumberOfLinesTest(son.getNumberOfLinesTest());
+					father.setBmedal(son.getBmedal());
+					father.setGmedal(son.getGmedal());
+					father.setSmedal(son.getSmedal());
+				}
+				authorDAO.save(father);
+				authorDAO.save(son);
+			}
+		}
+		result.redirectTo(this).show(repositoryId);
 
 	}
 
@@ -132,13 +193,8 @@ public class RepositoryController {
 		path.setPath("/"+branch);
 
 		repository.setExtractionPath(path);
-
-		try {
-			if(login == null && password == null) {
-				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1));
-			} else
-				GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
-
+		
+		if(local) {
 			repository = dao.save(repository);
 
 			User user = userDAO.findById(userSession.getUser().getId());
@@ -148,19 +204,39 @@ public class RepositoryController {
 			permission.setRepository(repository);
 			permission.setUser(user);
 			userRepositoryDAO.save(permission);
-
-			Extraction extraction = new Extraction(repository.getId(),
-					ExtractionType.REPOSITORY,
-					new RepositoryCredentials(login, password));
-
-			taskService.addTask(extraction);
-
+			
 			result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+		}else {
 
-		} catch (Exception e) {
-			result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
+			try {
+				if(login == null && password == null) {
+					GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1));
+				} else
+					GitUtil.testInfoRepository(repository.getUrl(), path.getPath().substring(1), login, password);	
+
+				User user = userDAO.findById(userSession.getUser().getId());
+				
+				repository.setOwner(user.getId());
+				repository = dao.save(repository);
+				
+				UserRepository permission = new UserRepository();
+				permission.setPermission(PermissionType.OWNER);
+				permission.setRepository(repository);
+				permission.setUser(user);
+				userRepositoryDAO.save(permission);
+				
+				Extraction extraction = new Extraction(repository.getId(),
+						ExtractionType.REPOSITORY,
+						new RepositoryCredentials(login, password));
+				extraction.setForce(true);
+				taskService.addTask(extraction);
+
+				result.use(Results.json()).withoutRoot().from("").recursive().serialize();
+
+			} catch (Exception e) {
+				result.use(Results.json()).withoutRoot().from(e.getMessage()).recursive().serialize();
+			}
 		}
-
 	}
 	/**
 	 * This method modifies the name of a repository
@@ -170,7 +246,6 @@ public class RepositoryController {
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/edit")
 	public void edit(Long repositoryId,String repositoryName){
-
 		Repository repository = dao.findById(repositoryId);
 		repository.setName(repositoryName);
 		dao.save(repository);
@@ -256,13 +331,21 @@ public class RepositoryController {
 	}
 
 	@Permission(PermissionType.MEMBER)
-	@Post("/repository/{repositoryId}/update")
+	@Post("/gamification/{repositoryId}/update")
 	public void update(Long repositoryId) {
 
+		System.out.println("RepositoryController.update()");
 		validator.canUpdate(repositoryId);
 		validator.onErrorRedirectTo(this.getClass()).show(repositoryId);
+		
+		Repository repository = dao.findById(repositoryId);
+		
+		Extraction extraction = new Extraction(repository.getId(),
+				ExtractionType.REPOSITORY,
+				new RepositoryCredentials(null, null));
+		extraction.setForce(true);
 
-		//TODO PARA ATUALIZAR
+		taskService.addTaskUpdate(extraction);
 
 		result.include("notice", new SimpleMessage("info", "repository.update.message", Severity.INFO));
 		result.redirectTo(this).show(repositoryId);
@@ -484,6 +567,10 @@ public class RepositoryController {
 				if(!check){
 					repositoryCurrent.getTestFiles().add(file);
 				}
+			}
+			
+			for (File file3 : repositoryUpdate.getCodeSmallsFile()) {
+				repositoryCurrent.getCodeSmallsFile().add(file3);
 			}
 
 			dao.save(repositoryCurrent);

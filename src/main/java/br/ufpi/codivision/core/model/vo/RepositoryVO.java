@@ -26,22 +26,50 @@ public class RepositoryVO implements Serializable{
 	private String url;
 	
 	private Date lastUpdate;
+
+	private Date lastUpdateFromGit;
 	
 	private String branchName;
 	
 	private boolean local;
+	
+	private boolean gameId;
+	
+	
+	
+	public boolean getGameId() {
+		return gameId;
+	}
+	
+	public boolean haveGameId() {
+		return this.gameId;
+	}
+
+	public void setGameId(boolean gameId) {
+		this.gameId = gameId;
+	}
 	
 	public RepositoryVO(){
 		
 	}
 	
 	public RepositoryVO(Repository repository){
+		this.lastUpdateFromGit = repository.getLastUpdateFromGit();
 		this.id = repository.getId();
 		this.name = repository.getName();
 		this.url = repository.getUrl();
 		this.lastUpdate = repository.getLastUpdate();
 		this.local = repository.isLocal();
 		this.branchName = repository.getExtractionPath().getPath();
+		this.gameId=repository.haveGameId();
+	}
+
+	public Date getLastUpdateFromGit() {
+		return lastUpdateFromGit;
+	}
+
+	public void setLastUpdateFromGit(Date lastUpdateFromGit) {
+		this.lastUpdateFromGit = lastUpdateFromGit;
 	}
 
 	/**

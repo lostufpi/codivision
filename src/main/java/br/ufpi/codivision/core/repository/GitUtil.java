@@ -36,6 +36,7 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import br.ufpi.codivision.core.dao.RevisionDAO;
 import br.ufpi.codivision.core.exception.InvalidCredentialException;
 import br.ufpi.codivision.core.exception.InvalidExtractionPathException;
 import br.ufpi.codivision.core.exception.InvalidRepositoryUrlException;
@@ -50,11 +51,16 @@ import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.debit.mining.CodeAnalysisProcessor;
 import br.ufpi.codivision.feature.java.model.Class;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class GitUtil {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	private Repository repository;
 	private Git git;
+	private RevisionDAO revDAO;
 
 	/**
 	 * @param file
@@ -179,10 +185,10 @@ public class GitUtil {
 	 */
 	public List<Revision> getRevisions() throws NoHeadException, GitAPIException, AmbiguousObjectException, IncorrectObjectTypeException, IOException{
 
-		Iterable<RevCommit> log = this.git.log().setMaxCount(2000).call();
+		Iterable<RevCommit> log = this.git.log().setMaxCount(100000).call();
 		List<Revision> revisions = new ArrayList<Revision>();
-
 		for (RevCommit jgitCommit: log) {
+			int i = 0;
 			Author author = new Author(jgitCommit.getCommitterIdent().getName(), jgitCommit.getCommitterIdent().getEmailAddress());
 			Revision revision = new Revision();
 			revision.setExternalId(jgitCommit.getName());
@@ -190,10 +196,9 @@ public class GitUtil {
 			revision.setDate(jgitCommit.getAuthorIdent().getWhen());
 			revision.setFiles(new ArrayList<OperationFile>());
 			revision.setExtracted(true);
-
+			i++;
 			List<DiffEntry> diffsForTheCommit = diffsForTheCommit(this.repository, jgitCommit);
 			for (DiffEntry diff : diffsForTheCommit) {
-
 				OperationFile file = new OperationFile();
 
 				List<br.ufpi.codivision.debit.model.File> findFileToIdentifyCodeSmells = findFileToIdentifyCodeSmells(diff.getNewPath(), jgitCommit.getTree());
@@ -348,12 +353,15 @@ public class GitUtil {
 					String fileCode = stream.toString();
 
 					CodeAnalysisProcessor processor = new CodeAnalysisProcessor();
-					br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
+					try {
 
-					if(processFile!=null && processFile.getPath()!=null) {
-						files.add(processFile);
+						br.ufpi.codivision.debit.model.File processFile = processor.processFile(fileCode);
+						if(processFile!=null && processFile.getPath()!=null) {
+							files.add(processFile);
+						}
+					}catch (Exception e) {
+						System.err.println("Error na identificacao dos DTs no arquivo - "+filePath);
 					}
-
 				}
 
 				if(treeWalk.isSubtree()){
