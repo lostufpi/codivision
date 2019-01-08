@@ -14,7 +14,7 @@
 			<div class="panel panel-default">
 				<div class="panel-body">
 			
-					<h3 style="display:inline-block">Familiaridade sobre funcionalidades no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Familiarity over features in the ${repository.name} repository</h3>
 					<form class="pull-right" method="get" action="${linkTo[FeatureController].usecase(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
@@ -25,7 +25,7 @@
 					
 					<div class="row vdivided">
 						<div class="container-tree col-md-4" >
-							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Pesquisar">
+							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Search">
 							<div id="jstree"></div>
 						</div>
 						<div class="col-md-8 text-center">
@@ -124,7 +124,7 @@
 					            text: ''
 					        },
 					        title: {
-					            text: 'Familiaridade por desenvolvedor:'
+					            text: 'Familiarity of the developers in the selected functionality:'
 					        },
 					        subtitle: {
 					        	text: '#',
@@ -163,9 +163,9 @@
 						
 						$.each(chartData, function(i, item) {
 							if ((item.y/total) > (existence/100.0)) {
-	                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' detém bastante conhecimento', style : {color: 'red', fontWeight: 'bold'}});
+	                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' is very familiar', style : {color: 'red', fontWeight: 'bold'}});
 	                        } else if (item.y/total > alert/100.0) {
-	                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' detém bastante conhecimento', style : {color: '#EAC300', fontWeight: 'bold'}});
+	                        	$('#chart').highcharts().setTitle(null, { text: item.name + ' is very familiar', style : {color: '#EAC300', fontWeight: 'bold'}});
 	                    	}
   						});
 

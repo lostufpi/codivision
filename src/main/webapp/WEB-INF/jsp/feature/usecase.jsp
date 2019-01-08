@@ -15,7 +15,7 @@
 			<div class="panel panel-default">
 				<div class="panel-body">
 			
-					<h3 style="display:inline-block">Agregação de funcionalidades no repositório ${repository.name}</h3>
+					<h3 style="display:inline-block">Agregação de features no repositório ${repository.name}</h3>
 					<form class="pull-right" method="get" action="${linkTo[FeatureController].features(repository.id)}">
 						<button style="margin-top: 15px; margin-left: 2px" class="btn btn-lg btn-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></button>
 					</form>
@@ -25,7 +25,7 @@
 							<button style="margin-bottom:10px; margin-left:2px; float: right" type="button" class="btn btn-lg btn-danger" onclick="feature_delete();"> <i class="glyphicon glyphicon-remove-sign"></i></button>
 							<button style="margin-bottom:10px; margin-left:2px; float: right" type="button" class="btn btn-lg btn-warning" onclick="auto_agroup();"> <i class="glyphicon glyphicon-th"></i></button>
 							<button style="margin-bottom:10px; float: right" type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#use-case-name-modal"> <i class="glyphicon glyphicon-th-large"></i></button>
-							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Pesquisar">
+							<input style="margin-bottom:10px" type="text" class="form-control" id="jstree-search" placeholder="Search">
 							<div id="jstree"></div>
 						</div>
 						<div class="col-md-8 text-center">
@@ -33,12 +33,13 @@
 								<table id="table_uc" class="table table-striped table-bordered" cellspacing="0" width="100%">
 									<thead>
 										<tr>
-	      									<th style="text-align: center" colspan="3"> Funcionalidades </th>
+	      									<th style="text-align: center" colspan="3"> Functionalities
+ </th>
 	    								</tr>
 										<tr>
 											<th style="text-align: center">ID</th>
 											<th style="text-align: center">Nome</th>
-											<th style="text-align: center">Quant. Sub. Features</th>
+											<th style="text-align: center">Nº Sub. Features</th>
 											<th style="text-align: center">Opção</th>
 										</tr>
 									</thead>
@@ -119,9 +120,9 @@
 				var node = tree.get_node(selected[i]);
 				var text = tree.get_node(selected[i]).text;
 				if(text != null){
+					delete_frontend(node);
 					if(!text.includes(".java")){
 						delete_backend(node);
-						delete_frontend(node);
 					}
 				}
 			}

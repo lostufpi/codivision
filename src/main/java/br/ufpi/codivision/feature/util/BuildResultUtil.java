@@ -24,7 +24,7 @@ public class BuildResultUtil {
 	
 	public static void generateResultInFileExcel(UseCaseDAO ucd, RepositoryDAO rd, Long repositoryId) {
 		Map<String, List<Double>> map = new HashMap<String, List<Double>>();
-		inicializarMapAr(map);
+		inicializarMapSigaa(map);
 		List<String> names = new ArrayList<>();
 		ResultData resultData = new ResultData();
 		resultData.setUseCases(ucd.useCasesOrderByName());
@@ -157,5 +157,17 @@ public class BuildResultUtil {
 		map.put("mauriliojr21", new ArrayList<Double>());
 		map.put("Pacheco", new ArrayList<Double>());
 		map.put("Taison", new ArrayList<Double>());
+	}
+	
+	private static void inicializarMapSerca(Map<String, List<Double>> map) {
+		map.put("Vanderson", new ArrayList<Double>());
+		map.put("Renato Felix", new ArrayList<Double>());
+		map.put("zilma.felix", new ArrayList<Double>());
+		map.put("Otavio Cury", new ArrayList<Double>());
+		map.put("irvayne", new ArrayList<Double>());
+		map.put("danilo", new ArrayList<Double>());
+		map.put("Leonardo Costa", new ArrayList<Double>());
+		map.put("wellington", new ArrayList<Double>());
+		map.put("Gleison Andrade", new ArrayList<Double>());
 	}
 }
