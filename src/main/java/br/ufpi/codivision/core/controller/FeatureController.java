@@ -23,8 +23,10 @@ import br.ufpi.codivision.core.model.enums.TimeWindow;
 import br.ufpi.codivision.core.model.validator.ConfigurationValidator;
 import br.ufpi.codivision.core.model.vo.AuthorPercentage;
 import br.ufpi.codivision.core.model.vo.RepositoryVO;
+import br.ufpi.codivision.core.model.vo.TDFile;
 import br.ufpi.codivision.core.model.vo.UseCaseVO;
 import br.ufpi.codivision.core.util.Constants;
+import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.feature.common.model.Element;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.common.model.FeatureElement;
@@ -117,6 +119,8 @@ public class FeatureController {
 		}
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
+	
+	
 	
 	@Permission(PermissionType.MEMBER)
 	@Post("/repository/{repositoryId}/feature/remove")
@@ -225,6 +229,7 @@ public class FeatureController {
 			}
 			root.getChildren().add(featureTree);
 		}
+		
 		result.use(Results.json()).withoutRoot().from(root).recursive().serialize();
 	}
 	
@@ -285,5 +290,87 @@ public class FeatureController {
 		configuration.setId(config.getId());
 		configurationDAO.save(configuration);
 		result.redirectTo(this).features(repositoryId);
+	}
+	
+	@Permission(PermissionType.MEMBER)
+	@Post("/repository/{repositoryId}/feature/criticality/chart")
+	public void calculaDT(Long repositoryId) {
+		Repository repository = dao.findById(repositoryId);
+		ExtractionPath extractionPath = repository.getExtractionPath();
+		List<UseCase> useCases = extractionPath.getUseCases();
+		HashMap<Long, Element> elementsUnique = new HashMap<>();
+
+		String a, b;
+		
+		List<TDFile> funcionalidades = new ArrayList<>();
+
+		for (UseCase uc : useCases) {
+			elementsUnique = new HashMap<>();
+			a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+			b = String.valueOf(uc.getId());
+			FeatureTree featureTree = new FeatureTree();
+			featureTree.setId(a.concat(b));
+			
+			//System.out.println("Funcionalidade - "+uc.getName());
+			int acoFuncionalidade = 0;
+			int compleFuncionalidade = 0;
+			int qntDtFuncionalidade = 0;
+			
+			
+			List<TDFile> criticidade = Fuzzy.dadosParaCalculoDaDTporFuncionalidades(repository);
+			
+			for (FeatureUseCase fuc : uc.getFeatureUseCases()) {
+				for (FeatureElement fe : fuc.getFeature().getFeatureElements()) {
+					if(elementsUnique.get(fe.getElement().getId()) == null) {
+						elementsUnique.put(fe.getElement().getId(), fe.getElement());
+						a = String.valueOf((int) (1000 + Math.random() * (10000 - 1000 + 1)));
+						b = String.valueOf(fe.getElement().getId());
+						FeatureTree elementTree = new FeatureTree();
+						elementTree.setId(a.concat(b));
+						
+						
+						
+						for (TDFile file : criticidade) {
+							if(fe.getElement().getFullname().contains(file.getPath())) {
+								//informacao para cada arquivo
+//								System.out.println(fe.getElement().getFullname());
+//								System.out.println(file.getAcoplamento()+"-"+file.getComplexidade()+"-"+file.getQntTD());
+								acoFuncionalidade += file.getAcoplamento();
+								compleFuncionalidade += file.getComplexidade();
+								qntDtFuncionalidade += file.getQntTD();
+								
+								break;
+							}
+						}
+						
+						
+						featureTree.getChildren().add(elementTree);
+					}
+				}
+			}
+			
+			TDFile funcionalidade = new TDFile(uc.getName(), acoFuncionalidade, compleFuncionalidade, qntDtFuncionalidade, 0);
+			funcionalidades.add(funcionalidade);
+			//System.out.println("- Acoplamento: "+acoFuncionalidade +"\n- Complexidade: "+compleFuncionalidade +"\n- Quantidade de DTs: "+qntDtFuncionalidade);
+		}
+		
+		List<TDFile> criticidade = Fuzzy.calculaCriticidadePorFuncionalidade(funcionalidades);
+		
+		String res = "";
+		for (int i = 0; i < criticidade.size(); i++) {
+			TDFile tdFile = criticidade.get(i);
+			if(i==0) {
+				res = res + "[[\""+tdFile.getPath()+"\","+Double.parseDouble(tdFile.getGc()+"");
+			}else if(i == criticidade.size() - 1) {
+				res = res + "],[\""+tdFile.getPath()+"\","+Double.parseDouble(tdFile.getGc()+"")+"]]";
+			}else {
+				res = res + "],[\""+tdFile.getPath()+"\","+Double.parseDouble(tdFile.getGc()+"");
+			}
+			
+			
+		}
+		
+		
+		result.use(Results.json()).withoutRoot().from(res).recursive().serialize();
 	}
 }

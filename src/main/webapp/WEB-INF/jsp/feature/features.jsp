@@ -38,6 +38,18 @@
 					<div id="jstree"></div>
 					<div id="chart"></div> -->
 					
+					<div class="col-lg-12">
+						
+						<div class="panel-body"  id="div-carregando">
+							<center>
+							<img src="http://i.kinja-img.com/gawker-media/image/upload/chag4hzw0pgvgy5ujnom.gif" class="img-responsive" alt="Cinque Terre">
+						</center></div>	
+							<div class="panel-body" style="display: none;" id="div-detalhar">
+								<div id="chart-bar"></div>
+							</div>
+					    
+					</div>
+					
 				</div>
 			</div>
 		</div>
@@ -63,6 +75,90 @@
 			var alert = $('#alert').val();
 			var existence = $('#existence').val();
 			var truckFactor = $('#truckfactor').val();
+			
+			
+			$('#div-detalhar').hide();
+			
+			
+			var fileId;
+			
+			
+			$.ajax({
+				type : 'POST',
+				url : '/codivision/repository/' + repository + '/feature/criticality/chart',
+				success : function(core) {
+					
+					
+					$('#div-detalhar').show();
+					$('#div-carregando').hide();
+					
+
+					var a1 = '{ "obj":';
+					var a2 = a1.concat(core);
+					var a3 = a2.concat('}');
+					
+					var myobj = JSON.parse(a3);
+					
+					$('#chart-bar').highcharts({
+					
+					    chart: {
+					        type: 'column'
+					    },
+					    title: {
+					        text: 'Criticidade das Funcionalidades em relação a presença de Dívidas Técnicas'
+					    },
+					    subtitle: {
+					        text: 'Criticidade inferida para cada funcionalidade levando-se em consideração o acoplamento, complexidade ciclomática e as dívidas técnicas'
+					    },
+					    xAxis: {
+					        type: 'category',
+					        labels: {
+					            rotation: -45,
+					            style: {
+					                fontSize: '13px',
+					                fontFamily: 'Verdana, sans-serif'
+					            }
+					        }
+					    },
+					    yAxis: {
+					        min: 0,
+					        title: {
+					            text: 'Criticidade'
+					        }
+					    },plotOptions: {
+					            series: {
+					                cursor: 'pointer',
+					                point: {}
+					            }
+					        },
+					    legend: {
+					        enabled: false
+					    },
+					    tooltip: {
+					        pointFormat: 'Criticidade: <b>{point.y:.1f} </b>'
+					    },
+					    series: [{
+					        name: 'Population',
+					        data: myobj.obj,
+					        dataLabels: {
+					            enabled: true,
+					            rotation: -90,
+					            color: '#FFFFFF',
+					            align: 'right',
+					            format: '{point.y:.1f}', // one decimal
+					            y: 10, // 10 pixels down from the
+					            style: {
+					                fontSize: '13px',
+					                fontFamily: 'Verdana, sans-serif'
+					            }
+					        }
+					    }]
+					});
+					
+			
+				}
+			});
+			
 
 			$('#jstree').on("changed.jstree", function (e, data) {
 			    var newPath = "/" + data.instance.get_path(data.selected[0], "/");

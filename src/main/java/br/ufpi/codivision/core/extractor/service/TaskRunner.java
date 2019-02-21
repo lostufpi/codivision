@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -42,13 +43,17 @@ import br.ufpi.codivision.core.model.enums.NodeType;
 import br.ufpi.codivision.core.repository.GitUtil;
 import br.ufpi.codivision.core.util.Constants;
 import br.ufpi.codivision.core.util.DeleteDir;
+import br.ufpi.codivision.core.util.Fuzzy;
 import br.ufpi.codivision.core.util.Outliers;
 import br.ufpi.codivision.core.util.Serializable;
+import br.ufpi.codivision.debit.model.InfoTD;
+import br.ufpi.codivision.debit.model.TDAuthor;
 import br.ufpi.codivision.feature.common.model.Feature;
 import br.ufpi.codivision.feature.java.algorithm.ControllerDefiner;
 import br.ufpi.codivision.feature.java.algorithm.FeatureDefiner;
 import br.ufpi.codivision.feature.java.graph.ClassGraphBuilder;
 import br.ufpi.codivision.feature.java.model.Class;
+import br.ufpi.codivision.feature.java.model.NodeInfo;
 import br.ufpi.codivision.feature.java.model.Package;
 
 
@@ -90,28 +95,28 @@ public class TaskRunner implements Task{
 
 				GitUtil util = null;
 				log.info("Iniciando o Clone");
-//				if(credentials.getLogin() == null || credentials.getPassword() == null) {
-//					util = new GitUtil(repository.getUrl(),
-//							repository.getExtractionPath().getPath().substring(1));
-//				}else {
-//					util = new GitUtil(repository.getUrl(),
-//							repository.getExtractionPath().getPath().substring(1),
-//							credentials.getLogin(), credentials.getPassword());
-//				}
+				if(credentials.getLogin() == null || credentials.getPassword() == null) {
+					util = new GitUtil(repository.getUrl(),
+							repository.getExtractionPath().getPath().substring(1));
+				}else {
+					util = new GitUtil(repository.getUrl(),
+							repository.getExtractionPath().getPath().substring(1),
+							credentials.getLogin(), credentials.getPassword());
+				}
 				
 //				util = new GitUtil("E:\\vanderson\\avaliacao\\sigsystem\\.git",
 //						Constants.MASTER);
-				util = new GitUtil("C:\\Users\\Vanderson\\Documents\\Root\\Mestrado\\Evaluation\\SIGAA\\.git",
-						Constants.MASTER);
+//				util = new GitUtil("C:\\Users\\Vanderson\\Documents\\Root\\Mestrado\\Evaluation\\SIGAA\\.git",
+//						Constants.MASTER);
 				
 				log.info("Clone finalizado");
 
 				log.info("Iniciando a extracao dos diffs");
 
-				@SuppressWarnings("unchecked")
-				List<Revision> revisions_dat = (List<Revision>)Serializable.deserialize("sigsystem_revisions");
-				repository.setRevisions(revisions_dat);
-//				repository.setRevisions(util.getRevisions());
+//				@SuppressWarnings("unchecked")
+//				List<Revision> revisions_dat = (List<Revision>)Serializable.deserialize("sigsystem_revisions");
+//				repository.setRevisions(revisions_dat);
+				repository.setRevisions(util.getRevisions());
 				
 				log.info("Extracao dos diffs concluidas");
 				repository.setLastUpdate(repository.getRevisions().get(0).getDate());
@@ -138,9 +143,9 @@ public class TaskRunner implements Task{
 				repository.setRevisions(revisions);
 				
 				
-//				log.info("Iniciando a extracao dos testes");
-//				repository.setTestFiles(util.getTestFiles());
-//				log.info("A extracao dos testes concluida");
+				log.info("Iniciando a extracao dos testes");
+				repository.setTestFiles(util.getTestFiles());
+				log.info("A extracao dos testes concluida");
 				
 
 				DirTree tree = new DirTree();
@@ -151,43 +156,43 @@ public class TaskRunner implements Task{
 				log.info("Arvore concluida");
 				repository.getExtractionPath().setDirTree(tree);
 				
-//				log.info("Iniciando DT");
-//				repository.setCodeSmallsFile(util.getCodeSmellFiles());
-//				log.info("Dt concluida");
+				log.info("Iniciando DT");
+				repository.setCodeSmallsFile(util.getCodeSmellFiles());
+				log.info("Dt concluida");
 				
 				log.info("Extraindo arquivos de código...");
 				List<Class> arquivosJava = util.getRepositoryJavaFiles();
 				log.info("Extração de arquivos de código concluída!");
 				
-//				if(!arquivosJava.isEmpty()) {
-//					log.info("Inicializando a identificacao do acoplamento");
-//					ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
-//					
-//					for (NodeInfo nodeInfo : graph.getG().vertexSet()) {
-//						for (br.ufpi.codivision.debit.model.File file : repository.getCodeSmallsFile()) {
-//							String full = "/src/main/java/" + file.getPath();	
-//							full = full.concat(".java");
-//
-//							if(nodeInfo.getC().getFullname().equals(full)) {
-//								file.setAcoplamento(nodeInfo.getDegreeOUT());
-//							}
-//								
-//						}
-//						
-//					}
-//					
-//					log.info("Finalizando a identificacao do acoplamento");
-//				}
+				if(!arquivosJava.isEmpty()) {
+					log.info("Inicializando a identificacao do acoplamento");
+					ClassGraphBuilder graph = new ClassGraphBuilder(arquivosJava);
+					
+					for (NodeInfo nodeInfo : graph.getG().vertexSet()) {
+						for (br.ufpi.codivision.debit.model.File file : repository.getCodeSmallsFile()) {
+							String full = "/src/main/java/" + file.getPath();	
+							full = full.concat(".java");
+
+							if(nodeInfo.getC().getFullname().equals(full)) {
+								file.setAcoplamento(nodeInfo.getDegreeOUT());
+							}
+								
+						}
+						
+					}
+					
+					log.info("Finalizando a identificacao do acoplamento");
+				}
 				
 				if(!arquivosJava.isEmpty()) {
 					log.info("Inicializando a identificação de funcionalidades...");
 					ClassGraphBuilder builder = new ClassGraphBuilder(arquivosJava);
 					ControllerDefiner controllerDefiner = new ControllerDefiner(builder.getG());
-					@SuppressWarnings("unchecked")
-					List<Package> packages_dat = (List<Package>)Serializable.deserialize("sigsystem_packages");
-//					List<Package> packages = controllerDefiner.controllersDefiner();
-//					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
-					FeatureDefiner fd = new FeatureDefiner(packages_dat, builder.getG());
+//					@SuppressWarnings("unchecked")
+//					List<Package> packages_dat = (List<Package>)Serializable.deserialize("sigsystem_packages");
+					List<Package> packages = controllerDefiner.controllersDefiner();
+					FeatureDefiner fd = new FeatureDefiner(packages, builder.getG());
+//					FeatureDefiner fd = new FeatureDefiner(packages_dat, builder.getG());
 					List<Feature> features = fd.featureIdentify();
 //					Serializable.serialize(features, "sigsystem_features");
 					repository.getExtractionPath().setFeatures(features);
@@ -195,24 +200,24 @@ public class TaskRunner implements Task{
 				}
 				
 				
-//				log.info("Iniciando a extracao do historico de DTs pagas por cada desenvolvedor");
-//				Map<String, Map<String, Integer>> tdRemove = Fuzzy.historicTDRemove(repository);
-//				List<TDAuthor> list = new ArrayList<TDAuthor>();
-//				for (String nameAuthor : tdRemove.keySet()) {
-//					TDAuthor tdAuthor = new TDAuthor(nameAuthor);
-//					Map<String, Integer> map = tdRemove.get(nameAuthor);
-//					for (String dt : map.keySet()) {
-//						InfoTD infoTD = new InfoTD();
-//						infoTD.setCodeSmellType(dt);
-//						infoTD.setQnt(map.get(dt));
-//						tdAuthor.getYoursCodeSmell().add(infoTD);
-//					}
-//					
-//					list.add(tdAuthor);
-//				}
-//				
-//				repository.setTdAuthor(list);
-//				log.info("Extracao do historico de DTs pagas por cada desenvolvedor concluída!");
+				log.info("Iniciando a extracao do historico de DTs pagas por cada desenvolvedor");
+				Map<String, Map<String, Integer>> tdRemove = Fuzzy.historicTDRemove(repository);
+				List<TDAuthor> list = new ArrayList<TDAuthor>();
+				for (String nameAuthor : tdRemove.keySet()) {
+					TDAuthor tdAuthor = new TDAuthor(nameAuthor);
+					Map<String, Integer> map = tdRemove.get(nameAuthor);
+					for (String dt : map.keySet()) {
+						InfoTD infoTD = new InfoTD();
+						infoTD.setCodeSmellType(dt);
+						infoTD.setQnt(map.get(dt));
+						tdAuthor.getYoursCodeSmell().add(infoTD);
+					}
+					
+					list.add(tdAuthor);
+				}
+				
+				repository.setTdAuthor(list);
+				log.info("Extracao do historico de DTs pagas por cada desenvolvedor concluída!");
 				
 				
 			

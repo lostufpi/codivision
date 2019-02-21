@@ -8,6 +8,7 @@ public class TDFile {
 	private int qntTD;
 	private double gc;
 	
+	
 	public TDFile(String path, int acoplamento, int complexidade, int qntTD, double gc) {
 		super();
 		this.path = path;

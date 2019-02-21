@@ -131,6 +131,103 @@ public class Fuzzy {
 		return tdFiles;
 	}
 	
+	public static List<TDFile> dadosParaCalculoDaDTporFuncionalidades(Repository repository) {
+		List<File> codeSmallsFile = repository.getCodeSmallsFile();
+
+		List<TDFile> tdFiles = new ArrayList<TDFile>();
+
+		
+
+		for (File file : codeSmallsFile) {
+			
+
+			int qntTD = file.getCodeSmells().size(); 
+			int qntCom = 0;
+			
+			for (Method method : file.getMethods()) {
+				qntTD = qntTD + method.getCodeSmells().size();
+				
+				for (MetricMethod metricMethod : method.getCodeMetrics()) {
+					if(metricMethod.getMetricType().equals(MetricID.CYCLO)) {
+						qntCom = qntCom + Integer.parseInt(metricMethod.getQnt()); 
+					}
+				}
+			}
+			
+//			if(qntTD == 0)
+//				continue;
+			
+			TDFile tdFile = new TDFile(file.getPath(), file.getAcoplamento(), qntCom, qntTD, 0);
+			tdFiles.add(tdFile);
+
+		}
+		
+		return tdFiles;
+	}
+	
+	public static List<TDFile> calculaCriticidadePorFuncionalidade(List<TDFile> funcionalidades) {
+		
+		int maiorAcoplamento = Integer.MIN_VALUE;
+		int maiorQntDT = Integer.MIN_VALUE;
+		int maiorComplex = Integer.MIN_VALUE;
+		
+		for(TDFile file: funcionalidades) {
+			if(file.getComplexidade() > maiorComplex)
+				maiorComplex = file.getComplexidade();
+
+			if(file.getQntTD() > maiorQntDT)
+				maiorQntDT = file.getQntTD();
+
+			if(file.getAcoplamento() > maiorAcoplamento)
+				maiorAcoplamento = file.getAcoplamento();
+		}
+		
+		for(TDFile file: funcionalidades) {
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			InputStream input = classLoader.getResourceAsStream("criticidade.fcl");
+
+			FIS fis = FIS.load(input, true);
+
+			if(fis == null){
+				System.err.println("Não foi possivel carregar o arquivo!!");
+				return null;
+			}
+			
+
+
+			if(maiorAcoplamento == 0 || file.getAcoplamento() == 0) {
+				fis.setVariable("ACOPLAMENTO",0);
+			}else {
+				fis.setVariable("ACOPLAMENTO",(double) file.getAcoplamento()/maiorAcoplamento);
+			}
+
+			if(file.getQntTD() == 0 || maiorQntDT == 0) {
+				fis.setVariable("DIVIDA", 0);
+			}else {
+				fis.setVariable("DIVIDA", (double) file.getQntTD()/maiorQntDT);
+			}
+			
+			if(file.getComplexidade() == 0 || maiorComplex == 0) {
+				fis.setVariable("COMPLEXIDADE", 0);
+			}else {
+				fis.setVariable("COMPLEXIDADE", (double) file.getComplexidade()/maiorComplex);
+			}
+
+			fis.evaluate();
+
+			double valor = fis.getVariable("GC").getValue();
+			System.out.println(file.getPath());
+			System.out.println("- Acoplamento: "+file.getAcoplamento() +"\n- Complexidade: "+file.getComplexidade() +"\n- Quantidade de DTs: "+file.getQntTD());
+			System.out.println("- Criticidade: "+valor);
+			file.setGc(valor);
+		}
+		
+		GenericComparator.sortList(funcionalidades, "gc", SortType.DESC);
+		
+		return funcionalidades;
+		
+	}
+	
 	public static List<TDDevChart> recommendation(Repository repository, File file, List<AuthorPercentage> percentage){
 		
 		List<TDDevChart> response = new ArrayList<TDDevChart>();
@@ -561,5 +658,7 @@ public class Fuzzy {
 		}
 		return hashMap;
 	}
+
+	
 
 }
